@@ -1,0 +1,1012 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "Sentence",
+      "description": "A natural-language input string with metadata.",
+      "properties": [
+        "text: STRING",
+        "language: STRING"
+      ]
+    },
+    {
+      "name": "Token",
+      "description": "A word/token with POS/lemma and index.",
+      "properties": [
+        "form: STRING",
+        "pos: STRING",
+        "lemma: STRING",
+        "index: INTEGER"
+      ]
+    },
+    {
+      "name": "Dependency",
+      "description": "Directed syntactic relation between tokens.",
+      "properties": [
+        "headIndex: INTEGER",
+        "depIndex: INTEGER",
+        "label: STRING"
+      ]
+    },
+    {
+      "name": "Ontology",
+      "description": "A knowledge base of concepts, frames, relations.",
+      "properties": [
+        "name: STRING",
+        "version: STRING"
+      ]
+    },
+    {
+      "name": "ConceptNode",
+      "description": "A concept in the ontology.",
+      "properties": [
+        "name: STRING",
+        "description: STRING"
+      ]
+    },
+    {
+      "name": "RelationNode",
+      "description": "A relation with fixed arity.",
+      "properties": [
+        "name: STRING",
+        "arity: INTEGER"
+      ]
+    },
+    {
+      "name": "Frame",
+      "description": "A predicate/frame (e.g., FrameNet style).",
+      "properties": [
+        "name: STRING",
+        "roles: [Role]"
+      ]
+    },
+    {
+      "name": "FrameElement",
+      "description": "A role/slot in a frame with a type.",
+      "properties": [
+        "name: STRING",
+        "type: ConceptNode"
+      ]
+    },
+    {
+      "name": "FrameInstance",
+      "description": "A concrete invocation of a frame with assignments.",
+      "properties": [
+        "frame: Frame",
+        "elements: Set<FrameElement>",
+        "assignments: Set<Assignment>",
+        "assignments: [Slot]"
+      ]
+    },
+    {
+      "name": "Assignment",
+      "description": "Role-filler assignment in a frame instance.",
+      "properties": [
+        "role: FrameElement",
+        "filler: Instance"
+      ]
+    },
+    {
+      "name": "Paraphrase",
+      "description": "A semantically equivalent sentence.",
+      "properties": [
+        "text: STRING"
+      ]
+    },
+    {
+      "name": "Judgement",
+      "description": "Inference status and confidence.",
+      "properties": [
+        "status: STRING",
+        "confidence: FLOAT"
+      ]
+    },
+    {
+      "name": "TextParser",
+      "description": "External parser interface.",
+      "properties": [
+        "TARGET: STRING",
+        "GETTER: Operator",
+        "SETTER: Operator"
+      ]
+    },
+    {
+      "name": "FrameLexicon",
+      "description": "Lexicon mapping lemmas to frames.",
+      "properties": [
+        "TARGET: STRING",
+        "GETTER: Operator",
+        "SETTER: Operator"
+      ]
+    },
+    {
+      "name": "SemanticChecker",
+      "description": "Constraint checking service.",
+      "properties": [
+        "TARGET: STRING",
+        "GETTER: Operator",
+        "SETTER: Operator"
+      ]
+    },
+    {
+      "name": "Paraphraser",
+      "description": "Paraphrase generation service.",
+      "properties": [
+        "TARGET: STRING",
+        "GETTER: Operator",
+        "SETTER: Operator"
+      ]
+    },
+    {
+      "name": "Agent",
+      "description": "Entity that performs an action.",
+      "properties": [
+        "name: STRING"
+      ]
+    },
+    {
+      "name": "Patient",
+      "description": "Entity that undergoes the action."
+    },
+    {
+      "name": "Instrument",
+      "description": "Entity used by an agent to perform an action."
+    },
+    {
+      "name": "Source",
+      "description": "Origin location/owner in transfer/motion."
+    },
+    {
+      "name": "Destination",
+      "description": "End location/owner in transfer/motion."
+    },
+    {
+      "name": "Experiencer",
+      "description": "Entity experiencing a mental state."
+    },
+    {
+      "name": "Stimulus",
+      "description": "Event/object causing a mental state."
+    },
+    {
+      "name": "Result",
+      "description": "Resultant state or action linked outcome."
+    },
+    {
+      "name": "ActionFrame",
+      "description": "Frame representing a primitive action.",
+      "properties": [
+        "primitive: PrimitiveAction",
+        "slots: [Slot]"
+      ]
+    },
+    {
+      "name": "StateChangeFrame",
+      "description": "Frame representing a before\u2192after state transition.",
+      "properties": [
+        "object: Instance",
+        "fromState: State",
+        "toState: State"
+      ]
+    },
+    {
+      "name": "PrimitiveAction",
+      "description": "Atomic action used for representation (e.g., propel, ingest, speak)."
+    },
+    {
+      "name": "State",
+      "description": "A set of properties holding for an entity at a time.",
+      "properties": [
+        "predicate: STRING",
+        "args: [Instance]"
+      ]
+    },
+    {
+      "name": "Slot",
+      "description": "A (role, filler) pair.",
+      "properties": [
+        "role: Role",
+        "filler: Instance"
+      ]
+    },
+    {
+      "name": "Role",
+      "description": "Thematic role placeholder in a frame.",
+      "properties": [
+        "name: STRING",
+        "expectedType: ConceptNode"
+      ]
+    },
+    {
+      "name": "Lexicon",
+      "description": "Lexical mapping from lemmas to frames/actions."
+    },
+    {
+      "name": "Parser",
+      "description": "Component producing tokens/dependencies."
+    },
+    {
+      "name": "Checker",
+      "description": "Semantic constraint checker."
+    },
+    {
+      "name": "commonsense inference",
+      "description": "an inference based on everyday knowledge and understanding of the world"
+    },
+    {
+      "name": "sentence",
+      "description": "a set of words that conveying a statement, question, exclamation, or command",
+      "properties": [
+        {
+          "name": "words",
+          "description": "the words contained in the sentence",
+          "type": "[Word]"
+        },
+        {
+          "name": "syntax",
+          "description": "the structural arrangement of words and phrases in the sentence",
+          "type": "[Syntax]"
+        },
+        {
+          "name": "meanings",
+          "description": "list of meanings of the sentence",
+          "type": "[Meaning]"
+        },
+        {
+          "name": "context",
+          "description": "the words and sentences surrounding a particular word or sentence",
+          "type": "[Context]"
+        }
+      ]
+    },
+    {
+      "name": "word",
+      "description": "a single distinct meaningful element of a sentence",
+      "properties": [
+        {
+          "name": "meaning",
+          "description": "list of meanings of the word",
+          "type": "[Meaning]"
+        },
+        {
+          "name": "context",
+          "description": "the words and sentences surrounding a particular word or sentence",
+          "type": "[Context]"
+        },
+        {
+          "name": "thematic role",
+          "description": "the part of speech or thematic role a word plays in a sentence",
+          "type": "[Thematic Role]"
+        }
+      ]
+    },
+    {
+      "name": "syntax",
+      "description": "the arrangement of words and phrases in a sentence"
+    },
+    {
+      "name": "meaning",
+      "description": "what is meant by a word or sentence"
+    },
+    {
+      "name": "context",
+      "description": "the words and sentences surrounding a particular word or sentence"
+    },
+    {
+      "name": "background knowledge",
+      "description": "general knowledge about the world used for inference"
+    },
+    {
+      "name": "part of speech",
+      "description": "a category to which a word is assigned in accordance with its syntactic functions"
+    },
+    {
+      "name": "ontology",
+      "description": "a specification of a conception of the world consisting of a list of primitive actions",
+      "properties": [
+        {
+          "name": "primitive actions",
+          "description": "list of primitive actions",
+          "type": "[Primitive Action]"
+        }
+      ]
+    },
+    {
+      "name": "lexicon",
+      "description": "the vocabulary of a language, consisting of a list of words and their meanings"
+    },
+    {
+      "name": "frame representation",
+      "description": "a data structure resembling a record with slots that hold specific attributes and their corresponding values",
+      "properties": [
+        {
+          "name": "slots",
+          "description": "a list of attributes and corresponding values, representing different aspects of the entity being modeled",
+          "type": "[Slot]"
+        }
+      ]
+    },
+    {
+      "name": "slot",
+      "description": "a specific attribute and corresponding value in a frame representation, representing a thematic role and the object that fills it in a frame representation",
+      "properties": [
+        {
+          "name": "attribute",
+          "description": "a thematic role of an object in a frame representation"
+        },
+        {
+          "name": "value",
+          "description": "the object that plays the thematic role in a frame representation"
+        }
+      ]
+    },
+    {
+      "name": "action frame representation",
+      "description": "a frame representation representing a primitive action",
+      "properties": [
+        {
+          "name": "primitive action",
+          "description": "the primitive action that fills the primitive slot of an action frame representation"
+        },
+        {
+          "name": "slots",
+          "description": "a list of attributes and corresponding values, representing different aspects of the entity being modeled",
+          "type": "[Slot]"
+        }
+      ]
+    },
+    {
+      "name": "state change frame representation",
+      "description": "a frame representation representing a state change",
+      "properties": [
+        {
+          "name": "object slot",
+          "description": "a slot for the role of a state or object undergoing change in a state change frame representation"
+        },
+        {
+          "name": "destination slot",
+          "description": "a slot for the resultant state of the object the state undergoing change in a state change frame representation"
+        }
+      ]
+    },
+    {
+      "name": "main verb",
+      "description": "a word conveying the primary action or state of being of the sentence"
+    },
+    {
+      "name": "noun phrase",
+      "description": "a word or set of words conveying an object, ",
+      "properties": [
+        {
+          "name": "thematic role",
+          "description": "the relationship between a noun phrase (or nominal argument) and the action or state described by the verb in a sentence"
+        }
+      ]
+    },
+    {
+      "name": "primitive action",
+      "description": "the central action, event, or state of being that the subject is involved in in a sentence"
+    },
+    {
+      "name": "sub-action",
+      "description": "an action that is necessarily performed whenever another action occurs"
+    },
+    {
+      "name": "state change",
+      "description": "a transition in the properties or state of the subject in a sentence"
+    },
+    {
+      "name": "object slot",
+      "description": "a slot for the role of a state or object undergoing change in a state change frame representation"
+    },
+    {
+      "name": "destination slot",
+      "description": "a slot for the resultant state of the object the state undergoing change in a state change frame representation"
+    },
+    {
+      "name": "Entity",
+      "description": "Entity concept.",
+      "properties": [],
+      "parent": null
+    },
+    {
+      "name": "PhysicalObject",
+      "description": "PhysicalObject concept.",
+      "properties": [],
+      "parent": "Entity"
+    },
+    {
+      "name": "Human",
+      "description": "Human concept.",
+      "properties": [
+        "name: STRING",
+        "age: INTEGER",
+        "gender: STRING"
+      ],
+      "parent": "Agent"
+    },
+    {
+      "name": "Animal",
+      "description": "Animal concept.",
+      "properties": [
+        "species: STRING"
+      ],
+      "parent": "Agent"
+    },
+    {
+      "name": "Tool",
+      "description": "Tool concept.",
+      "properties": [],
+      "parent": "PhysicalObject"
+    },
+    {
+      "name": "Weapon",
+      "description": "Weapon concept.",
+      "properties": [
+        "lethal: BOOLEAN"
+      ],
+      "parent": "Tool"
+    },
+    {
+      "name": "Substance",
+      "description": "Substance concept.",
+      "properties": [],
+      "parent": "PhysicalObject"
+    },
+    {
+      "name": "Food",
+      "description": "Food concept.",
+      "properties": [
+        "edible: BOOLEAN"
+      ],
+      "parent": "Substance"
+    },
+    {
+      "name": "Location",
+      "description": "Location concept.",
+      "properties": [
+        "label: STRING"
+      ],
+      "parent": "Entity"
+    },
+    {
+      "name": "Room",
+      "description": "Room concept.",
+      "properties": [],
+      "parent": "Location"
+    },
+    {
+      "name": "Field",
+      "description": "Field concept.",
+      "properties": [],
+      "parent": "Location"
+    },
+    {
+      "name": "Book",
+      "description": "Book concept.",
+      "properties": [],
+      "parent": "PhysicalObject"
+    },
+    {
+      "name": "Cart",
+      "description": "Cart concept.",
+      "properties": [],
+      "parent": "PhysicalObject"
+    },
+    {
+      "name": "Bullet",
+      "description": "Bullet concept.",
+      "properties": [],
+      "parent": "PhysicalObject"
+    },
+    {
+      "name": "Fertilizer",
+      "description": "Fertilizer concept.",
+      "properties": [],
+      "parent": "Substance"
+    },
+    {
+      "name": "Gun",
+      "description": "Gun concept.",
+      "properties": [],
+      "parent": "Weapon"
+    },
+    {
+      "name": "Emotion",
+      "description": "Emotion concept.",
+      "properties": [],
+      "parent": "Entity"
+    },
+    {
+      "name": "MoodState",
+      "description": "MoodState concept.",
+      "properties": [],
+      "parent": "Emotion"
+    },
+    {
+      "name": "Instance",
+      "description": "Generic instance placeholder object.",
+      "properties": [
+        "id: STRING"
+      ],
+      "parent": null
+    }
+  ],
+  "relations": [
+    {
+      "name": "hasToken",
+      "description": "Sentence has tokens.",
+      "concept1": "Sentence",
+      "concept2": "Token"
+    },
+    {
+      "name": "hasDependency",
+      "description": "Sentence has dependencies.",
+      "concept1": "Sentence",
+      "concept2": "Dependency"
+    },
+    {
+      "name": "realizes",
+      "description": "Verb token realizes candidate frame(s).",
+      "concept1": "Token",
+      "concept2": "Frame"
+    },
+    {
+      "name": "hasElement",
+      "description": "Frame has elements.",
+      "concept1": "Frame",
+      "concept2": "FrameElement"
+    },
+    {
+      "name": "hasType",
+      "description": "Frame element has a type.",
+      "concept1": "FrameElement",
+      "concept2": "ConceptNode"
+    },
+    {
+      "name": "assigns",
+      "description": "FrameInstance has assignment.",
+      "concept1": "FrameInstance",
+      "concept2": "Assignment"
+    },
+    {
+      "name": "fills",
+      "description": "Assignment is filled by instance.",
+      "concept1": "Assignment",
+      "concept2": "Instance"
+    },
+    {
+      "name": "paraphrasesAs",
+      "description": "FrameInstance paraphrases as text.",
+      "concept1": "FrameInstance",
+      "concept2": "Paraphrase"
+    },
+    {
+      "name": "judges",
+      "description": "FrameInstance yields judgement.",
+      "concept1": "FrameInstance",
+      "concept2": "Judgement"
+    },
+    {
+      "name": "inConcept",
+      "description": "Instance has concept type.",
+      "concept1": "Instance",
+      "concept2": "ConceptNode"
+    },
+    {
+      "name": "relatedBy",
+      "description": "Instances are related by ontology relation.",
+      "concept1": "Instance",
+      "concept2": "RelationNode"
+    },
+    {
+      "name": "mapsToFrame",
+      "description": "Sentence maps to a frame capturing meaning.",
+      "concept1": "Sentence",
+      "concept2": "Frame"
+    },
+    {
+      "name": "hasSlot",
+      "description": "Frame contains a role slot.",
+      "concept1": "Frame",
+      "concept2": "Slot"
+    },
+    {
+      "name": "subactionOf",
+      "description": "One action is a subaction of another.",
+      "concept1": "Frame",
+      "concept2": "Frame"
+    },
+    {
+      "name": "resultsIn",
+      "description": "Action/state leads to a resultant state/action.",
+      "concept1": "Frame",
+      "concept2": "Frame"
+    },
+    {
+      "name": "causesStateChange",
+      "description": "Action transforms an object state.",
+      "concept1": "ActionFrame",
+      "concept2": "StateChangeFrame"
+    },
+    {
+      "name": "equivalentMeaning",
+      "description": "Two sentences share same meaning.",
+      "concept1": "Sentence",
+      "concept2": "Sentence"
+    },
+    {
+      "name": "implies",
+      "description": "Sentence implies another sentence.",
+      "concept1": "Sentence",
+      "concept2": "Sentence"
+    },
+    {
+      "name": "infer",
+      "description": "describes when a sentence can be concluded given another sentence",
+      "concept1": "sentence",
+      "concept2": "sentence"
+    },
+    {
+      "name": "contains",
+      "description": "describes when a sentence contains a word",
+      "concept1": "sentence",
+      "concept2": "word"
+    },
+    {
+      "name": "represent",
+      "description": "describes when a frame representation captures the the meaning of a sentence in its context",
+      "concept1": "frame representation",
+      "concept2": "sentence"
+    },
+    {
+      "name": "has the same meaning as",
+      "description": "describes when two words or sentences share the same basic meaning",
+      "concept1": "word",
+      "concept2": "word"
+    },
+    {
+      "name": "expresses primitive action",
+      "description": "describes when the main verb of a sentence describes a primitive action",
+      "concept1": "main verb",
+      "concept2": "primitive action"
+    },
+    {
+      "name": "expresses state change",
+      "description": "describes when the main verb of a sentence describes a state change",
+      "concept1": "main verb",
+      "concept2": "state change"
+    },
+    {
+      "name": "uses",
+      "description": "Agent uses a tool.",
+      "concept1": "Agent",
+      "concept2": "Tool"
+    },
+    {
+      "name": "wields",
+      "description": "Agent wields a weapon.",
+      "concept1": "Agent",
+      "concept2": "Weapon"
+    },
+    {
+      "name": "ingests",
+      "description": "Agent eats food.",
+      "concept1": "Agent",
+      "concept2": "Food"
+    },
+    {
+      "name": "owns",
+      "description": "Ownership relation.",
+      "concept1": "Agent",
+      "concept2": "PhysicalObject"
+    },
+    {
+      "name": "locatedIn",
+      "description": "Object is at a location.",
+      "concept1": "PhysicalObject",
+      "concept2": "Location"
+    },
+    {
+      "name": "causes",
+      "description": "Action causes a state.",
+      "concept1": "ActionFrame",
+      "concept2": "State"
+    },
+    {
+      "name": "before",
+      "description": "Temporal ordering.",
+      "concept1": "State",
+      "concept2": "State"
+    },
+    {
+      "name": "after",
+      "description": "Temporal ordering.",
+      "concept1": "State",
+      "concept2": "State"
+    },
+    {
+      "name": "transfersTo",
+      "description": "Agent receives an object.",
+      "concept1": "Agent",
+      "concept2": "PhysicalObject"
+    },
+    {
+      "name": "transfersFrom",
+      "description": "Agent gives an object.",
+      "concept1": "Agent",
+      "concept2": "PhysicalObject"
+    }
+  ],
+  "instances": [
+    {
+      "name": "BaseKBAI",
+      "concept": "Ontology",
+      "properties": [
+        "name=BaseKBAI",
+        "version=1.0"
+      ]
+    },
+    {
+      "name": "DefaultFrameLexicon",
+      "concept": "FrameLexicon",
+      "properties": [
+        "TARGET=lex.default"
+      ]
+    },
+    {
+      "name": "SpacyLikeParser",
+      "concept": "TextParser",
+      "properties": [
+        "TARGET=parser.spacy"
+      ]
+    },
+    {
+      "name": "DefaultSemanticChecker",
+      "concept": "SemanticChecker",
+      "properties": [
+        "TARGET=sem.checker"
+      ]
+    },
+    {
+      "name": "DefaultParaphraser",
+      "concept": "Paraphraser",
+      "properties": [
+        "TARGET=para.default"
+      ]
+    },
+    {
+      "name": "'Ashok ate a frog.'",
+      "concept": "sentence"
+    },
+    {
+      "name": "'Ashok put the wedge on the block.'",
+      "concept": "sentence"
+    },
+    {
+      "name": "'Bob shot Bill.'",
+      "concept": "sentence"
+    },
+    {
+      "name": "'John pushed the cart.'",
+      "concept": "sentence"
+    },
+    {
+      "name": "'John fertilized the field.'",
+      "concept": "sentence"
+    },
+    {
+      "name": "'John took the book from Mary.'",
+      "concept": "sentence"
+    },
+    {
+      "name": "'Ashok enjoyed eating the frog.'",
+      "concept": "sentence"
+    },
+    {
+      "name": "'Susan comforted Jing.'",
+      "concept": "sentence"
+    },
+    {
+      "name": "'Maria told Ben to throw the ball.'",
+      "concept": "sentence"
+    },
+    {
+      "name": "move-body-part",
+      "concept": "primitive action"
+    },
+    {
+      "name": "expel",
+      "concept": "primitive action"
+    },
+    {
+      "name": "propel",
+      "concept": "primitive action"
+    },
+    {
+      "name": "see",
+      "concept": "primitive action"
+    },
+    {
+      "name": "smell",
+      "concept": "primitive action"
+    },
+    {
+      "name": "move-possession",
+      "concept": "primitive action"
+    },
+    {
+      "name": "think-about",
+      "concept": "primitive action"
+    },
+    {
+      "name": "move-object",
+      "concept": "primitive action"
+    },
+    {
+      "name": "ingest",
+      "concept": "PrimitiveAction"
+    },
+    {
+      "name": "speak",
+      "concept": "primitive action"
+    },
+    {
+      "name": "hear",
+      "concept": "primitive action"
+    },
+    {
+      "name": "feel",
+      "concept": "primitive action"
+    },
+    {
+      "name": "move-concept",
+      "concept": "primitive action"
+    },
+    {
+      "name": "conclude",
+      "concept": "primitive action"
+    },
+    {
+      "name": "'Ashok devoured a frog.'",
+      "concept": "Sentence"
+    },
+    {
+      "name": "'Bob killed Bill with a gun.'",
+      "concept": "Sentence"
+    },
+    {
+      "name": "'John put fertilizer on the field.'",
+      "concept": "Sentence"
+    },
+    {
+      "name": "Ashok",
+      "concept": "Human",
+      "properties": [
+        "name=Ashok"
+      ]
+    },
+    {
+      "name": "Bob",
+      "concept": "Human",
+      "properties": [
+        "name=Bob"
+      ]
+    },
+    {
+      "name": "Bill",
+      "concept": "Human",
+      "properties": [
+        "name=Bill"
+      ]
+    },
+    {
+      "name": "John",
+      "concept": "Human",
+      "properties": [
+        "name=John"
+      ]
+    },
+    {
+      "name": "Mary",
+      "concept": "Human",
+      "properties": [
+        "name=Mary"
+      ]
+    },
+    {
+      "name": "Susan",
+      "concept": "Human",
+      "properties": [
+        "name=Susan"
+      ]
+    },
+    {
+      "name": "Jing",
+      "concept": "Human",
+      "properties": [
+        "name=Jing"
+      ]
+    },
+    {
+      "name": "Maria",
+      "concept": "Human",
+      "properties": [
+        "name=Maria"
+      ]
+    },
+    {
+      "name": "Ben",
+      "concept": "Human",
+      "properties": [
+        "name=Ben"
+      ]
+    },
+    {
+      "name": "frog",
+      "concept": "Animal"
+    },
+    {
+      "name": "book",
+      "concept": "Book"
+    },
+    {
+      "name": "cart",
+      "concept": "Cart"
+    },
+    {
+      "name": "gun",
+      "concept": "Gun"
+    },
+    {
+      "name": "bullet",
+      "concept": "Bullet"
+    },
+    {
+      "name": "fertilizer",
+      "concept": "Fertilizer"
+    },
+    {
+      "name": "field",
+      "concept": "Field"
+    }
+  ],
+  "triples": [
+    {
+      "name": "'Ashok ate a frog' has the same sentence meaning as 'Ashok devoured a frog.'",
+      "instance1": "'Ashok ate a frog'",
+      "relation": "has the same sentence meaning as",
+      "instance2": "army"
+    },
+    {
+      "name": "'Bob shot Bill' has the same meaning as 'Bob killed Bill with a gun.'",
+      "instance1": "'Bob shot Bill'",
+      "relation": "has the same sentence meaning as",
+      "instance2": "'Bob killed Bill with a gun.'"
+    },
+    {
+      "name": "'John fertilized the field' has the same meaning as 'John put fertilizer on the field.'",
+      "instance1": "'John fertilized the field'",
+      "relation": "has the same sentence meaning as",
+      "instance2": "'John put fertilizer on the field.'"
+    },
+    {
+      "name": "Shot vs Killed",
+      "instance1": "'Bob shot Bill.'",
+      "relation": "equivalentMeaning",
+      "instance2": "'Bob killed Bill with a gun.'"
+    },
+    {
+      "name": "Fertilize paraphrase",
+      "instance1": "'John fertilized the field.'",
+      "relation": "equivalentMeaning",
+      "instance2": "'John put fertilizer on the field.'"
+    },
+    {
+      "name": "Ate synonyms",
+      "instance1": "'Ashok ate a frog.'",
+      "relation": "equivalentMeaning",
+      "instance2": "'Ashok devoured a frog.'"
+    }
+  ]
+}

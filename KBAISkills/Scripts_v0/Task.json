@@ -1,0 +1,108 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "Script-based Story Understanding",
+      "description": "Use script knowledge representations to comprehend and make sense of narratives, dialogues, and sequential events by matching observed events to stored script templates and filling in missing information through inference",
+      "inputParameters": [
+        "textual_narratives",
+        "dialogue_sequences",
+        "event_descriptions",
+        "script_library"
+      ],
+      "outputParameters": [
+        "coherent_interpretation",
+        "inferred_details",
+        "predicted_outcomes",
+        "causal_connections"
+      ],
+      "given": "Agent possesses relevant scripts in memory that match the domain of the input story; input contains sufficient contextual cues to activate appropriate script",
+      "makes": "Story is understood with all implicit information made explicit; agent can answer questions about unstated but implied events, motivations, and likely outcomes",
+      "means": [
+        {
+          "mechanismReference": "script_understanding",
+          "actualArguments": [
+            "story_text",
+            "discourse_sequence",
+            "available_scripts",
+            "current_context"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Script construction",
+      "description": "Build new script knowledge representations by identifying causally coherent sequences of events from experience and organizing them into the six-part script structure",
+      "inputParameters": [
+        "observed_event_sequences",
+        "domain_knowledge",
+        "existing_script_examples"
+      ],
+      "outputParameters": [
+        "well_formed_script"
+      ],
+      "given": "Sufficient examples of similar event sequences are available; agent has capability to identify causal relationships and common patterns across instances",
+      "makes": "New script is stored in memory and available for future story understanding and expectation generation; script is properly integrated into existing script hierarchy",
+      "means": [
+        {
+          "mechanismReference": "script_construction",
+          "actualArguments": [
+            "event_sequences",
+            "existing_scripts",
+            "domain_knowledge"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expectation Generation",
+      "description": "Generate predictions about what should happen next in a situation based on activated scripts and current scene progression",
+      "inputParameters": [
+        "current_scene",
+        "activated_script",
+        "script_execution_position"
+      ],
+      "outputParameters": [
+        "predicted_events",
+        "behavioral_expectations",
+        "anomaly_detection"
+      ],
+      "given": "Relevant script has been identified and activated for current situation; current position within script execution is determinable",
+      "makes": "Agent has clear expectations that can guide attention and response to unexpected events; violations of expectations can be detected and processed",
+      "means": [
+        {
+          "mechanismReference": "script_understanding",
+          "actualArguments": [
+            "active_script_instance",
+            "current_scene_position",
+            "observed_events"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "answer_story_questions",
+      "description": "Answer questions about a story using script-based inference to fill in implicit information",
+      "inputParameters": [
+        "story_text",
+        "questions"
+      ],
+      "outputParameters": [
+        "answers",
+        "explanations"
+      ],
+      "given": "story can be understood via scripts, questions are answerable from script knowledge",
+      "makes": "accurate answers provided with script-based reasoning",
+      "means": [
+        {
+          "mechanismReference": "script_understanding",
+          "actualArguments": [
+            "story_text",
+            "questions",
+            "script_library"
+          ]
+        }
+      ]
+    }
+  ]
+}

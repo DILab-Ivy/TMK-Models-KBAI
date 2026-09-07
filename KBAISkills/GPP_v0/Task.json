@@ -1,0 +1,121 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "TransportPassengersAcrossRiver",
+      "description": "Safely move guards and prisoners across the river.",
+      "inputParameters": ["initialConfiguration: configuration"],
+      "outputParameters": ["finalConfiguration: configuration"],
+      "given": "safe(initialConfiguration)",
+      "makes": "safe(finalConfiguration)",
+      "means": [
+        {
+          "mechanismReference": "GPPsolution",
+          "actualArguments": ["initialConfiguration", "finalConfiguration"]
+        }
+      ]
+    },
+    {
+      "name": "SafeConfiguration",
+      "description": "Determines if a configuration is safe based on guard-to-prisoner rules on both banks.",
+      "inputParameters": ["config: configuration"],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "(config.leftBank.guardCount == 0 || config.leftBank.guardCount >= config.leftBank.prisonerCount) && (config.rightBank.guardCount == 0 || config.rightBank.guardCount >= config.rightBank.prisonerCount)",
+      "means": []
+    },
+    {
+      "name": "MoveGuardAndPrisoner",
+      "description": "Move one guard and one prisoner across the river using the boat.",
+      "inputParameters": ["b: boat", "g: guard", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "MoveGuardAndPrisonerMechanism",
+          "actualArguments": ["b", "g", "p", "c"]
+        }
+      ]
+    },
+    {
+      "name": "ReturnGuard",
+      "description": "Return one guard back across the river.",
+      "inputParameters": ["b: boat", "g: guard", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "ReturnGuardMechanism",
+          "actualArguments": ["b", "g", "c"]
+        }
+      ]
+    },
+    {
+      "name": "ReturnPrisoner",
+      "description": "Return one prisoner back across the river.",
+      "inputParameters": ["b: boat", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "ReturnPrisonerMechanism",
+          "actualArguments": ["b", "p", "c"]
+        }
+      ]
+    },
+    {
+      "name": "MoveTwoPrisoners",
+      "description": "Move two prisoners across the river using the boat.",
+      "inputParameters": ["b: boat", "p1: prisoner", "p2: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "MoveTwoPrisonersMechanism",
+          "actualArguments": ["b", "p1", "p2", "c"]
+        }
+      ]
+    },
+    {
+      "name": "MoveTwoGuards",
+      "description": "Move two guards across the river using the boat.",
+      "inputParameters": ["b: boat", "g1: guard", "g2: guard", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "MoveTwoGuardsMechanism",
+          "actualArguments": ["b", "g1", "g2", "c"]
+        }
+      ]
+    },
+    {
+      "name": "ReturnGuardAndPrisoner",
+      "description": "Return a guard and a prisoner together across the river.",
+      "inputParameters": ["b: boat", "g: guard", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "ReturnGuardAndPrisonerMechanism",
+          "actualArguments": ["b", "g", "p", "c"]
+        }
+      ]
+    },
+    {
+      "name": "FailureGoal",
+      "description": "Represents a failure state in the task execution.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "false",
+      "means": []
+    }
+  ]
+} 

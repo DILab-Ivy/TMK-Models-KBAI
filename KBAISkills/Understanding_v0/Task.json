@@ -1,0 +1,142 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "Semantic Analysis of Sentences",
+      "description": "Analyze a sentence to extract its semantic meaning by identifying thematic roles and relationships between words and the central action or verb",
+      "inputParameters": [
+        "natural_language_sentence"
+      ],
+      "outputParameters": [
+        "thematic_role_frame_representation",
+        "inference_capability"
+      ],
+      "given": "The input sentence contains a verb and associated words that can be categorized into semantic roles",
+      "makes": "The agent can draw correct inferences from the meaning representation",
+      "means": [
+        {
+          "mechanismReference": "ThematicRoleFrameAnalysis",
+          "actualArguments": [
+            "sentence"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lexical and Syntactic Analysis",
+      "description": "Categorize words into lexical categories and identify the grammatical structure of the sentence",
+      "inputParameters": [
+        "raw_sentence_text"
+      ],
+      "outputParameters": [
+        "words_with_lexical_categories",
+        "sentence_structure_with_phrases"
+      ],
+      "given": "Sentence is provided as input text",
+      "makes": "Words are categorized and sentence structure is identified",
+      "means": [
+        {
+          "mechanismReference": "ParseSentence",
+          "actualArguments": [
+            "sentence_text"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Semantic Role Assignment",
+      "description": "Assign words to thematic roles based on their semantic relationship to the central verb",
+      "inputParameters": [
+        "sentence_structure",
+        "verb_identification",
+        "thematic_role_categories"
+      ],
+      "outputParameters": [
+        "words_assigned_to_thematic_roles"
+      ],
+      "given": "Syntactic structure is available and semantic categories are defined",
+      "makes": "Each relevant word is assigned to appropriate thematic role slots",
+      "means": [
+        {
+          "mechanismReference": "IdentifyVerbAndRoles",
+          "actualArguments": [
+            "syntactic_structure",
+            "semantic_knowledge"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Frame Construction and Inference",
+      "description": "Build complete frame representation and enable inference generation from the frame",
+      "inputParameters": [
+        "thematic_role_assignments",
+        "frame_template"
+      ],
+      "outputParameters": [
+        "complete_thematic_role_frame",
+        "inference_capability"
+      ],
+      "given": "Semantic role assignments are complete",
+      "makes": "Frame representation enables correct inferences about unstated information",
+      "means": [
+        {
+          "mechanismReference": "ConstructSemanticFrame",
+          "actualArguments": [
+            "role_assignments",
+            "frame_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Verb Disambiguation",
+      "description": "Resolve ambiguous verb meanings by selecting the correct interpretation from multiple possible meanings using contextual constraints",
+      "inputParameters": [
+        "sentence_with_ambiguous_verb",
+        "context_words",
+        "multiple_candidate_frames"
+      ],
+      "outputParameters": [
+        "correct_verb_frame",
+        "disambiguated_meaning"
+      ],
+      "given": "A verb has multiple possible meanings represented by different thematic role frames",
+      "makes": "Only one frame remains active that correctly captures the verb's meaning",
+      "means": [
+        {
+          "mechanismReference": "ResolveAmbiguity",
+          "actualArguments": [
+            "ambiguous_sentence",
+            "candidate_frames"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Apply Disambiguation Constraints",
+      "description": "Apply object, preposition, and particle constraints to eliminate incompatible frame interpretations",
+      "inputParameters": [
+        "candidate_frames",
+        "object_properties",
+        "prepositions",
+        "particles"
+      ],
+      "outputParameters": [
+        "single_correct_frame"
+      ],
+      "given": "Multiple candidate frames exist with contextual information available",
+      "makes": "Constraint application reduces candidates to one correct frame",
+      "means": [
+        {
+          "mechanismReference": "ApplyConstraints",
+          "actualArguments": [
+            "frames",
+            "constraints",
+            "background_knowledge"
+          ]
+        }
+      ]
+    }
+  ]
+}

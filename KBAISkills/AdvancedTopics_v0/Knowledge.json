@@ -1,0 +1,83 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "VisuospatialReasoning",
+      "description": "Reasoning with visuospatial knowledge that combines visual information (what) and spatial information (where). Causality is often implicit, allowing inference of hidden relationships from visual scenes such as in the Duncker radiation problem or engineering diagrams."
+    },
+    {
+      "name": "SystemsThinking",
+      "description": "Understanding systems as composed of interacting components across multiple levels of abstraction. Involves reasoning about invisible processes derived from visible structures, enabling analysis of behaviors in ecological, mechanical, or organizational systems."
+    },
+    {
+      "name": "DesignThinking",
+      "description": "An approach to solving open-ended, ill-defined problems where both problem and solution co-evolve"
+    },
+    {
+      "name": "Creativity",
+      "description": "The ability to produce results that are novel, non-obvious, and desirable."
+    },
+    {
+      "name": "AIEthics",
+      "description": "The study of moral and societal implications of artificial intelligence, including its impact on employment, defense, autonomy, and the definition of human-machine boundaries. Raises questions of responsibility, alignment, and civil rights for intelligent systems."
+    },
+
+    { "name": "VisualPart", "description": "Visible objects, shapes, and perceptual details in a scene." },
+    { "name": "SpatialPart", "description": "Arrangement and geometric relations between visual elements." },
+    { "name": "VisuoSpatialContent", "description": "Combination of visual and spatial information used for reasoning.", "properties": [
+      { "name": "visual", "type": "VisualPart" },
+      { "name": "spatial", "type": "SpatialPart" }
+    ] },
+    { "name": "RepresentationMode", "description": "Type of representation used in reasoning.", "instances": ["propositional", "analogical"] },
+    { "name": "PropositionalRepresentation", "description": "Symbolic representation with entities and relations expressed as propositions." },
+    { "name": "AnalogicalRepresentation", "description": "Structural representation maintaining spatial or relational correspondence between domains." },
+    { "name": "CausalPattern", "description": "Generalized cause–effect schema extracted from examples." },
+    { "name": "ProblemContext", "description": "Context or situation in which reasoning or problem solving occurs." },
+    { "name": "VisuoSpatialSolution", "description": "Solution generated from visuospatial reasoning or analogy." },
+    { "name": "System", "description": "Set of components forming a functional whole." },
+    { "name": "StructureModel", "description": "Model representing physical components and visible interconnections of a system." },
+    { "name": "BehaviorModel", "description": "Model of internal processes or state transitions in a system." },
+    { "name": "FunctionModel", "description": "Model describing intended outcomes or purposes of a system." },
+    { "name": "SBFModel", "description": "Integrated Structure–Behavior–Function representation linking structure, behavior, and function. Also referred as SBF or FBS Ontology", "properties": [
+      { "name": "structure", "type": "StructureModel" },
+      { "name": "behavior", "type": "BehaviorModel" },
+      { "name": "function", "type": "FunctionModel" }
+    ] },
+    { "name": "DesignGoal", "description": "Desired objective or requirement in a design problem." },
+    { "name": "Constraints", "description": "Limitations or boundary conditions on design or reasoning." },
+    { "name": "ProposedDesign", "description": "Generated artifact or solution proposed through design reasoning." },
+    { "name": "DesignPattern", "description": "Reusable schema or principle that captures effective design structure." }
+  ],
+
+  "Instances": [
+    { "concept": "VisualPart", "name": "fortressScene" },
+    { "concept": "SpatialPart", "name": "DifferentDirections" },
+    { "concept": "VisualPart", "name": "medicalScene" },
+    { "concept": "VisualPart", "name": "ravenMatrix" },
+    { "concept": "SpatialPart", "name": "inside" },
+    { "concept": "SpatialPart", "name": "above" },
+    { "concept": "System", "name": "flashlightSystem" },
+    { "concept": "StructureModel", "name": "batterySwitchBulb" },
+    { "concept": "BehaviorModel", "name": "PressOnSwitchCausingLight" },
+    { "concept": "FunctionModel", "name": "emitLight" },
+    { "concept": "DesignGoal", "name": "twentyLumenOutput" },
+    { "concept": "Constraints", "name": "limitedBatteryPower" }
+  ],
+
+  "Assertions": [
+    { "name": "consistent", "description": "Ensures the solution aligns with problem constraints.", "equivalentTo": "consistent(visuoSpatialSolution, problemContext)" },
+    { "name": "aligned", "description": "Ensures structure, behavior, and function are coherent in SBF.", "equivalentTo": "SBF models aligned" },
+    { "name": "addresses", "description": "Evaluates whether the proposed design satisfies its goal.", "equivalentTo": "addresses(ProposedDesign, DesignGoal)" },
+
+    { "name": "VR", "description": "Abbreviation for VisuospatialReasoning", "equivalentTo": "VisuospatialReasoningSolution" },
+    { "name": "RVC", "description": "Abbreviation for RetrieveVisuoSpatialContent", "equivalentTo": "RetrieveVisuoSpatialContentSolution" },
+    { "name": "EVC", "description": "Abbreviation for EncodeVisuoSpatialContentAndSolve", "equivalentTo": "EncodeVisuoSpatialContentAndSolveSolution" },
+    { "name": "SPR", "description": "Abbreviation for SolveUsingPropositionalRepresentation", "equivalentTo": "SolveUsingPropositionalRepresentationSolution" },
+    { "name": "SAR", "description": "Abbreviation for SolveUsingAnalogicalRepresentation", "equivalentTo": "SolveUsingAnalogicalRepresentationSolution" },
+    { "name": "SBF", "description": "Abbreviation for StructureBehaviorFunctionModeling", "equivalentTo": "StructureBehaviorFunctionModelingSolution" },
+    { "name": "BSF", "description": "Abbreviation for Structure Behavior Function Modeling"},
+    { "name": "RIBF", "description": "Abbreviation for RepresentInvisibleBehaviorAndFunction", "equivalentTo": "RepresentInvisibleBehaviorAndFunctionSolution" },
+    { "name": "DT", "description": "Abbreviation for DesignThinking", "equivalentTo": "DesignThinkingSolution" },
+    { "name": "GCD", "description": "Abbreviation for GenerateCreativeDesign", "equivalentTo": "GenerateCreativeDesignSolution" }
+  ]
+}

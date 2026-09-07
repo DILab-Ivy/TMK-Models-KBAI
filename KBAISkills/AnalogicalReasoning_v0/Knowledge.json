@@ -1,0 +1,278 @@
+{
+    "model": "Knowledge",
+    "concepts": [
+        {
+            "name": "object"
+        },
+        {
+            "name": "problem"
+        },
+        {
+            "name": "solution"
+        },
+        {
+            "name": "case",
+            "properties": [
+                {
+                    "name": "sourceProblem",
+                    "type": "problem"
+                },
+                {
+                    "name": "sourceSolution",
+                    "type": "solution"
+                }
+            ]
+        },
+        {
+            "name": "memoryStore",
+            "properties": [
+                {
+                    "name": "cases",
+                    "type": "Set<case>"
+                }
+            ]
+        },
+        {
+            "name": "similarityType"
+        },
+        {
+            "name": "superficialSimilarity",
+            "superConcept": [
+                "similarityType"
+            ]
+        },
+        {
+            "name": "deepSimilarity",
+            "superConcept": [
+                "similarityType"
+            ]
+        },
+        {
+            "name": "semanticSimilarity",
+            "superConcept": [
+                "similarityType"
+            ]
+        },
+        {
+            "name": "pragmaticSimilarity",
+            "superConcept": [
+                "similarityType"
+            ]
+        },
+        {
+            "name": "structuralSimilarity",
+            "superConcept": [
+                "similarityType"
+            ]
+        }
+    ],
+    "Instances": [
+        {
+            "name": "physician",
+            "concept": "object"
+        },
+        {
+            "name": "patient",
+            "concept": "object"
+        },
+        {
+            "name": "tumor",
+            "concept": "object"
+        },
+        {
+            "name": "radiationBeam",
+            "concept": "object"
+        },
+        {
+            "name": "fortress",
+            "concept": "object"
+        },
+        {
+            "name": "army",
+            "concept": "object"
+        },
+        {
+            "name": "king",
+            "concept": "object"
+        },
+        {
+            "name": "mines",
+            "concept": "object"
+        },
+        {
+            "name": "healthyTissue",
+            "concept": "object"
+        },
+        {
+            "name": "sun",
+            "concept": "object"
+        },
+        {
+            "name": "planet",
+            "concept": "object"
+        },
+        {
+            "name": "nucleus",
+            "concept": "object"
+        },
+        {
+            "name": "electron",
+            "concept": "object"
+        },
+        {
+            "name": "force",
+            "concept": "object"
+        },
+        {
+            "name": "mass",
+            "concept": "object"
+        },
+        {
+            "name": "dunkersRadiationProblem",
+            "concept": "problem"
+        },
+        {
+            "name": "fortressProblem",
+            "concept": "problem"
+        },
+        {
+            "name": "solarSystemModel",
+            "concept": "problem"
+        },
+        {
+            "name": "atomicStructureModel",
+            "concept": "problem"
+        },
+        {
+            "name": "fortressSolution",
+            "concept": "solution"
+        },
+        {
+            "name": "radiationStrategy",
+            "concept": "solution"
+        },
+        {
+            "name": "exampleMemory",
+            "concept": "memoryStore",
+            "values": {
+                "cases": [
+                    {
+                        "sourceProblem": "fortressProblem",
+                        "sourceSolution": "fortressSolution"
+                    }
+                ]
+            }
+        }
+    ],
+    "Relations": [
+        {
+            "name": "correspondsTo",
+            "domain": "object",
+            "range": "object"
+        },
+        {
+            "name": "providesSolutionFor",
+            "domain": "problem",
+            "range": "problem"
+        },
+        {
+            "name": "stores",
+            "domain": "memoryStore",
+            "range": "case"
+        }
+    ],
+    "Triples": [
+        {
+            "instance1": "radiationBeam",
+            "relation": "correspondsTo",
+            "instance2": "army"
+        },
+        {
+            "instance1": "tumor",
+            "relation": "correspondsTo",
+            "instance2": "king"
+        },
+        {
+            "instance1": "patient",
+            "relation": "correspondsTo",
+            "instance2": "fortress"
+        },
+        {
+            "instance1": "mines",
+            "relation": "correspondsTo",
+            "instance2": "healthyTissue"
+        },
+        {
+            "instance1": "fortressProblem",
+            "relation": "providesSolutionFor",
+            "instance2": "dunkersRadiationProblem"
+        },
+        {
+            "instance1": "sun",
+            "relation": "correspondsTo",
+            "instance2": "nucleus"
+        },
+        {
+            "instance1": "planet",
+            "relation": "correspondsTo",
+            "instance2": "electron"
+        },
+        {
+            "instance1": "solarSystemModel",
+            "relation": "providesSolutionFor",
+            "instance2": "atomicStructureModel"
+        }
+    ],
+    "Assertions": [
+        {
+            "name": "isWellFormed",
+            "description": "Problem is syntactically / semantically valid",
+            "equivalentTo": "IsWellFormed(problem)"
+        },
+        {
+            "name": "solved",
+            "description": "Solution satisfies its problem",
+            "equivalentTo": "Solved(problem, solution)"
+        },
+        {
+            "name": "contains",
+            "description": "MemoryStore contains case <P,S>",
+            "equivalentTo": "stores(memoryStore, case)"
+        },
+        {
+            "name": "size",
+            "description": "Cardinality helper",
+            "equivalentTo": "Size(collection, integer)"
+        },
+        {
+            "name": "SCR",
+            "description": "Abbrev. for SourceCaseRetrieved",
+            "equivalentTo": "SourceCaseRetrieved"
+        },
+        {
+            "name": "MAP",
+            "description": "Abbrev. for MappingIsValid",
+            "equivalentTo": "MappingIsValid"
+        },
+        {
+            "name": "GEN",
+            "description": "Abbrev. for CandidateSolutionGenerated",
+            "equivalentTo": "CandidateSolutionGenerated"
+        },
+        {
+            "name": "VER",
+            "description": "Abbrev. for SolutionVerified",
+            "equivalentTo": "SolutionVerified"
+        },
+        {
+            "name": "CST",
+            "description": "Abbrev. for CaseStored",
+            "equivalentTo": "CaseStored"
+        },
+        {
+            "name": "PSS",
+            "description": "Abbrev. for ProblemSolvedStored",
+            "equivalentTo": "ProblemSolvedStored"
+        }
+    ]
+}

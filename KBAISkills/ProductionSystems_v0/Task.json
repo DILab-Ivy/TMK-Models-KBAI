@@ -1,0 +1,147 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "ActionSelection",
+      "description": "Map perceptual history to action selection using production system reasoning with if-then rules",
+      "inputParameters": [
+        "environmental-percepts",
+        "internal-goals"
+      ],
+      "outputParameters": [
+        "selected-action"
+      ],
+      "given": "agent has production rules in procedural memory, percepts observable from environment, goal defined in working memory",
+      "makes": "single action selected and executed, working memory updated with new state",
+      "means": [
+        {
+          "mechanismReference": "ProductionSystemCycle",
+          "actualArguments": [
+            "percepts",
+            "goals"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RuleMatchingAndFiring",
+      "description": "Match working memory contents against production rule antecedents and fire matching rules",
+      "inputParameters": [
+        "working-memory-contents",
+        "procedural-knowledge-rules"
+      ],
+      "outputParameters": [
+        "activated-rules",
+        "suggested-operators"
+      ],
+      "given": "working memory contains percepts and goals in feature-value format, procedural memory contains if-then production rules",
+      "makes": "matching rules fire, consequents applied, operators suggested, working memory updated until single operator selected",
+      "means": [
+        {
+          "mechanismReference": "MatchAndActivate",
+          "actualArguments": [
+            "working-memory-contents",
+            "production-rules"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PitchDecisionMaking",
+      "description": "Determine whether to pitch to the batter or intentionally walk the batter based on game situation",
+      "inputParameters": [
+        "game-state-percepts",
+        "inning",
+        "outs",
+        "runners-on-base",
+        "batter-identity",
+        "escape-inning-goal"
+      ],
+      "outputParameters": [
+        "pitch-or-walk-decision"
+      ],
+      "given": "pitcher perceives current game state including number of outs, runner positions, and batter characteristics, goal is to escape inning without allowing runs",
+      "makes": "decision is made to either pitch or intentionally walk based on strategic situation, appropriate operator is selected",
+      "means": [
+        {
+          "mechanismReference": "ProductionSystemCycle",
+          "actualArguments": [
+            "percepts",
+            "goals"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PitchTypeSelection",
+      "description": "Choose the specific type of pitch to throw (curveball, fastball, slider) given the decision to pitch",
+      "inputParameters": [
+        "pitch-goal",
+        "batter-handedness",
+        "game-context"
+      ],
+      "outputParameters": [
+        "pitch-type"
+      ],
+      "given": "decision to pitch has been made, batter characteristics are known, multiple pitch-type operators are available",
+      "makes": "specific pitch type is selected and sent to motor system, pitch-thrown state is added to working memory",
+      "means": [
+        {
+          "mechanismReference": "ProductionSystemCycle",
+          "actualArguments": [
+            "percepts",
+            "goals"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ImpasseResolutionThroughLearning",
+      "description": "Resolve decision impasse when multiple operators conflict or no operators available by learning new production rule from episodic memory",
+      "inputParameters": [
+        "impasse-signal",
+        "current-situation",
+        "episodic-memory"
+      ],
+      "outputParameters": [
+        "new-production-rule"
+      ],
+      "given": "impasse detected (multiple conflicting operators or no operators), episodic memory contains relevant past events with outcome information",
+      "makes": "new production rule created and stored in procedural memory, impasse can be broken in future similar situations",
+      "means": [
+        {
+          "mechanismReference": "ChunkingLearningProcess",
+          "actualArguments": [
+            "impasse-signal",
+            "current-situation",
+            "episodic-memory"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ChunkingLearning",
+      "description": "Learn new production rule from episodic memory to break impasse and resolve decision conflict",
+      "inputParameters": [
+        "impasse-context",
+        "current-percepts",
+        "episodic-memory"
+      ],
+      "outputParameters": [
+        "new-production-rule"
+      ],
+      "given": "impasse detected, episodic memory contains relevant past event with similar features and outcome information",
+      "makes": "new rule created encapsulating episode knowledge, rule added to procedural memory, impasse broken",
+      "means": [
+        {
+          "mechanismReference": "ChunkingLearningProcess",
+          "actualArguments": [
+            "impasse-signal",
+            "current-situation",
+            "episodic-memory"
+          ]
+        }
+      ]
+    }
+  ]
+}

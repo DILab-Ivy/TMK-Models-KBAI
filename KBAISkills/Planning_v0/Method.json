@@ -1,0 +1,556 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "PartialOrderPlanner",
+      "description": "An organizer mechanism that implements Partial-Order Planning (POP) to create a valid plan for a set of subgoals by detecting and resolving conflicts (goal clobbering).",
+      "inputParameters": ["initialConfiguration: configuration", "goalConfiguration: configuration"],
+      "outputParameters": ["finalPlan: plan"],
+      "assertions": [
+        {
+          "name": "safe(partialPlans)",
+          "description": "True if the set of generated partial plans is internally consistent and each subgoal plan was successfully constructed.",
+          "equivalentTo": "partialPlans != null && forAll(p in partialPlans: p.steps != null && p.steps.size() > 0)"
+        },
+        {
+          "name": "conflictsFound(conflictReport)",
+          "description": "True if the conflict report identifies at least one goal-clobbering conflict between the partial plans.",
+          "equivalentTo": "conflictReport != null && conflictReport.conflicts.size() > 0"
+        },
+        {
+          "name": "safe(reorderedPlan)",
+          "description": "True if the reordering process produced a conflict-free ordered plan.",
+          "equivalentTo": "reorderedPlan != null && reorderedPlan.conflicts.size() == 0"
+        },
+        {
+          "name": "safe(execution)",
+          "description": "True if the last plan step executed successfully without a precondition violation.",
+          "equivalentTo": "execution.status == SUCCESS && execution.preconditionsMet == true"
+        },
+        {
+          "name": "stateMatchesGoal(currentState, goalConfiguration)",
+          "description": "True if every proposition in goalConfiguration is satisfied by currentState.",
+          "equivalentTo": "forAll(p in goalConfiguration.propositions: currentState.satisfies(p))"
+        }
+      ],
+      "organizer": {
+        "startState": "S0_Start",
+        "successState": "S_Success",
+        "failureState": "S_Fail",
+        "states": [
+          {
+            "name": "S0_Start",
+            "goalInvocation": {
+              "goalReference": "GenerateSubgoalPlans",
+              "type": "task",
+              "actualArguments": ["goalConfiguration", "initialConfiguration"],
+              "description": "Generate initial partial plans for each subgoal in the goal state."
+            }
+          },
+          {
+            "name": "S1_CheckConflicts",
+            "goalInvocation": {
+              "goalReference": "CheckForConflictsMechanism",
+              "type": "operation",
+              "actualArguments": ["partialPlans"],
+              "description": "Analyze the set of partial plans for any goal clobbering conflicts."
+            }
+          },
+          {
+            "name": "S2_ReorderPlans",
+            "goalInvocation": {
+              "goalReference": "Reorder Subgoal Plans",
+              "type": "task",
+              "actualArguments": ["partialPlans", "conflictReport"],
+              "description": "Add ordering constraints to resolve the identified conflicts."
+            }
+          },
+          {
+            "name": "S3_ExecutePlan",
+            "goalInvocation": {
+              "goalReference": "ExecutePlanStepMechanism",
+              "type": "operation",
+              "actualArguments": ["nextStep", "currentState"],
+              "description": "Execute the next step in the now-ordered, conflict-free plan."
+            }
+          },
+          {
+            "name": "S4_CheckCompletion",
+            "goalInvocation": {
+              "goalReference": "CheckCompletion",
+              "type": "operation",
+              "actualArguments": ["currentState", "goalConfiguration"],
+              "description": "Check if the current state matches the goal state."
+            }
+          },
+          {
+            "name": "S_Success",
+            "goalInvocation": {
+              "goalReference": "SuccessGoal",
+              "type": "task",
+              "actualArguments": [],
+              "description": "Planning is complete and successful."
+            }
+          },
+          {
+            "name": "S_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": [],
+              "description": "Planning failed due to an unresolvable conflict."
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "S0_Start",
+            "targetState": "S1_CheckConflicts",
+            "dataCondition": "safe(partialPlans)"
+          },
+          {
+            "sourceState": "S0_Start",
+            "targetState": "S_Fail",
+            "dataCondition": "NOT safe(partialPlans)"
+          },
+          {
+            "sourceState": "S1_CheckConflicts",
+            "targetState": "S2_ReorderPlans",
+            "dataCondition": "conflictsFound(conflictReport)"
+          },
+          {
+            "sourceState": "S1_CheckConflicts",
+            "targetState": "S3_ExecutePlan",
+            "dataCondition": "NOT conflictsFound(conflictReport)"
+          },
+          {
+            "sourceState": "S2_ReorderPlans",
+            "targetState": "S1_CheckConflicts",
+            "dataCondition": "safe(reorderedPlan)"
+          },
+          {
+            "sourceState": "S2_ReorderPlans",
+            "targetState": "S_Fail",
+            "dataCondition": "NOT safe(reorderedPlan)"
+          },
+          {
+            "sourceState": "S3_ExecutePlan",
+            "targetState": "S4_CheckCompletion",
+            "dataCondition": "safe(execution)"
+          },
+          {
+            "sourceState": "S3_ExecutePlan",
+            "targetState": "S_Fail",
+            "dataCondition": "NOT safe(execution)"
+          },
+          {
+            "sourceState": "S4_CheckCompletion",
+            "targetState": "S_Success",
+            "dataCondition": "stateMatchesGoal(currentState, goalConfiguration)"
+          },
+          {
+            "sourceState": "S4_CheckCompletion",
+            "targetState": "S1_CheckConflicts",
+            "dataCondition": "NOT stateMatchesGoal(currentState, goalConfiguration)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "HierarchicalTaskNetworkPlanner",
+      "description": "An organizer mechanism that implements HTN planning by selecting and decomposing high-level macro-operators (tasks) into primitive operations.",
+      "inputParameters": ["initialConfiguration: configuration", "goalConfiguration: configuration"],
+      "outputParameters": ["finalPlan: plan"],
+      "assertions": [
+        {
+          "name": "macroTaskSelected",
+          "description": "True if a suitable high-level macro-task was found for the current state and remaining goal.",
+          "equivalentTo": "selectedMacroTask != null"
+        },
+        {
+          "name": "safe(decomposition)",
+          "description": "True if the macro-task was successfully decomposed into a non-empty sequence of sub-tasks or primitive operations.",
+          "equivalentTo": "decomposition != null && decomposition.steps.size() > 0"
+        },
+        {
+          "name": "safe(execution)",
+          "description": "True if the last primitive operation executed successfully without a precondition violation.",
+          "equivalentTo": "execution.status == SUCCESS && execution.preconditionsMet == true"
+        },
+        {
+          "name": "decompositionComplete",
+          "description": "True if all steps from the current macro-task decomposition have been executed.",
+          "equivalentTo": "decomposition.remainingSteps.size() == 0"
+        },
+        {
+          "name": "stateMatchesGoal(currentState, goalConfiguration)",
+          "description": "True if every proposition in goalConfiguration is satisfied by currentState.",
+          "equivalentTo": "forAll(p in goalConfiguration.propositions: currentState.satisfies(p))"
+        }
+      ],
+      "organizer": {
+        "startState": "S0_SelectMacroTask",
+        "successState": "S_Success",
+        "failureState": "S_Fail",
+        "states": [
+          {
+            "name": "S0_SelectMacroTask",
+            "goalInvocation": {
+              "goalReference": "SelectHTNMacro",
+              "type": "operation",
+              "actualArguments": ["currentState", "goalConfiguration"],
+              "description": "Select the next appropriate high-level macro-task (e.g., Unstack, Stack)."
+            }
+          },
+          {
+            "name": "S1_DecomposeTask",
+            "goalInvocation": {
+              "goalReference": "DecomposeMacroTask",
+              "type": "operation",
+              "actualArguments": ["selectedMacroTask", "currentState"],
+              "description": "Decompose the selected macro-task into its constituent sub-tasks or primitive operations."
+            }
+          },
+          {
+            "name": "S2_ExecuteDecomposition",
+            "goalInvocation": {
+              "goalReference": "ExecutePlanStepMechanism",
+              "type": "operation",
+              "actualArguments": ["nextPrimitiveOperation", "currentState"],
+              "description": "Execute the next primitive operation from the decomposition."
+            }
+          },
+          {
+            "name": "S3_CheckCompletion",
+            "goalInvocation": {
+              "goalReference": "CheckCompletion",
+              "type": "operation",
+              "actualArguments": ["currentState", "goalConfiguration"],
+              "description": "Check if the current state matches the goal state."
+            }
+          },
+          {
+            "name": "S_Success",
+            "goalInvocation": {
+              "goalReference": "SuccessGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "S_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "S0_SelectMacroTask",
+            "targetState": "S1_DecomposeTask",
+            "dataCondition": "macroTaskSelected"
+          },
+          {
+            "sourceState": "S0_SelectMacroTask",
+            "targetState": "S_Fail",
+            "dataCondition": "NOT macroTaskSelected"
+          },
+          {
+            "sourceState": "S1_DecomposeTask",
+            "targetState": "S2_ExecuteDecomposition",
+            "dataCondition": "safe(decomposition)"
+          },
+          {
+            "sourceState": "S1_DecomposeTask",
+            "targetState": "S_Fail",
+            "dataCondition": "NOT safe(decomposition)"
+          },
+          {
+            "sourceState": "S2_ExecuteDecomposition",
+            "targetState": "S2_ExecuteDecomposition",
+            "dataCondition": "safe(execution) && NOT decompositionComplete"
+          },
+          {
+            "sourceState": "S2_ExecuteDecomposition",
+            "targetState": "S3_CheckCompletion",
+            "dataCondition": "safe(execution) && decompositionComplete"
+          },
+          {
+            "sourceState": "S3_CheckCompletion",
+            "targetState": "S_Success",
+            "dataCondition": "stateMatchesGoal(currentState, goalConfiguration)"
+          },
+          {
+            "sourceState": "S3_CheckCompletion",
+            "targetState": "S0_SelectMacroTask",
+            "dataCondition": "NOT stateMatchesGoal(currentState, goalConfiguration)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UnstackMacro",
+      "description": "HTN Macro-operator (Organizer) to unstack all blocks to the table.",
+      "inputParameters": ["currentConfig: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "assertions": [
+        {
+          "name": "blockToMoveFound",
+          "description": "True if there exists a clear block in the current configuration that is not on the table.",
+          "equivalentTo": "exists(b in currentConfig.blocks: isClear(b) && NOT on(b, Table))"
+        },
+        {
+          "name": "safe(move)",
+          "description": "True if the Move Block to Table operation completed successfully.",
+          "equivalentTo": "move.status == SUCCESS && move.preconditionsMet == true"
+        }
+      ],
+      "organizer": {
+        "startState": "S0_CheckStack",
+        "successState": "S_AllClear",
+        "failureState": "S_Fail",
+        "states": [
+          {
+            "name": "S0_CheckStack",
+            "goalInvocation": {
+              "goalReference": "FindBlockToUnstack",
+              "type": "operation",
+              "actualArguments": ["currentConfig"]
+            }
+          },
+          {
+            "name": "S1_MoveToTable",
+            "goalInvocation": {
+              "goalReference": "MoveBlockToTableOperation",
+              "type": "operation",
+              "actualArguments": ["blockToMove", "currentConfig"]
+            }
+          },
+          {
+            "name": "S_AllClear",
+            "goalInvocation": {
+              "goalReference": "SuccessGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "S_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "S0_CheckStack",
+            "targetState": "S1_MoveToTable",
+            "dataCondition": "blockToMoveFound"
+          },
+          {
+            "sourceState": "S0_CheckStack",
+            "targetState": "S_AllClear",
+            "dataCondition": "NOT blockToMoveFound"
+          },
+          {
+            "sourceState": "S1_MoveToTable",
+            "targetState": "S0_CheckStack",
+            "dataCondition": "safe(move)"
+          },
+          {
+            "sourceState": "S1_MoveToTable",
+            "targetState": "S_Fail",
+            "dataCondition": "NOT safe(move)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StackAscendingMacro",
+      "description": "HTN Macro-operator (Organizer) to stack blocks in a specified order.",
+      "inputParameters": ["currentConfig: configuration", "goalOrder: list"],
+      "outputParameters": ["newConfig: configuration"],
+      "assertions": [
+        {
+          "name": "nextBlockFound",
+          "description": "True if there is a next block in goalOrder that has not yet been placed on its target block.",
+          "equivalentTo": "exists(b in goalOrder: NOT on(b, targetOf(b, goalOrder)))"
+        },
+        {
+          "name": "safe(move)",
+          "description": "True if the Move Block to Block operation completed successfully.",
+          "equivalentTo": "move.status == SUCCESS && move.preconditionsMet == true"
+        }
+      ],
+      "organizer": {
+        "startState": "S0_CheckNextBlock",
+        "successState": "S_AllStacked",
+        "failureState": "S_Fail",
+        "states": [
+          {
+            "name": "S0_CheckNextBlock",
+            "goalInvocation": {
+              "goalReference": "FindNextBlockToStack",
+              "type": "operation",
+              "actualArguments": ["currentConfig", "goalOrder"]
+            }
+          },
+          {
+            "name": "S1_MoveToStack",
+            "goalInvocation": {
+              "goalReference": "MoveBlockToBlockOperation",
+              "type": "operation",
+              "actualArguments": ["blockToMove", "targetBlock", "currentConfig"]
+            }
+          },
+          {
+            "name": "S_AllStacked",
+            "goalInvocation": {
+              "goalReference": "SuccessGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "S_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "S0_CheckNextBlock",
+            "targetState": "S1_MoveToStack",
+            "dataCondition": "nextBlockFound"
+          },
+          {
+            "sourceState": "S0_CheckNextBlock",
+            "targetState": "S_AllStacked",
+            "dataCondition": "NOT nextBlockFound"
+          },
+          {
+            "sourceState": "S1_MoveToStack",
+            "targetState": "S0_CheckNextBlock",
+            "dataCondition": "safe(move)"
+          },
+          {
+            "sourceState": "S1_MoveToStack",
+            "targetState": "S_Fail",
+            "dataCondition": "NOT safe(move)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GenerateSubgoalPlanMechanism",
+      "description": "Generates a sequence of operations to achieve a single subgoal.",
+      "inputParameters": ["subgoal: configuration", "currentState: configuration"],
+      "outputParameters": ["subgoalPlan: plan"],
+      "requires": "valid(subgoal) && valid(currentState)",
+      "provides": "A plan (sequence of operations) that achieves the subgoal."
+    },
+    {
+      "name": "CheckForConflictsMechanism",
+      "description": "Compares partial plans to find goal clobbering conflicts.",
+      "inputParameters": ["partialPlans: list"],
+      "outputParameters": ["conflictReport: report"],
+      "requires": "valid(partialPlans)",
+      "provides": "A report detailing any identified conflicts between plans."
+    },
+    {
+      "name": "ReorderSubgoalPlansMechanism",
+      "description": "Adds ordering constraints to resolve conflicts.",
+      "inputParameters": ["partialPlans: list", "conflictReport: report"],
+      "outputParameters": ["orderedPlan: plan"],
+      "requires": "valid(conflictReport)",
+      "provides": "A single, ordered plan that resolves the conflicts."
+    },
+    {
+      "name": "ExecutePlanStepMechanism",
+      "description": "Executes a single atomic operation and returns the new state. The specific operation applied (e.g., ClimbLadderOperation, PaintCeilingOperation, PaintLadderOperation, DescendLadderOperation, MoveBlockToBlockOperation, MoveBlockToTableOperation) is selected by the calling organizer based on the current plan step.",
+      "inputParameters": ["planStep: operator", "currentState: configuration"],
+      "outputParameters": ["nextState: configuration"],
+      "requires": "preconditionsMet(planStep, currentState)",
+      "provides": "The new configuration after the operation is applied."
+    },
+    {
+      "name": "CheckCompletion",
+      "description": "Operation to check if the current state satisfies the goal configuration.",
+      "inputParameters": ["currentState: configuration", "goalConfiguration: configuration"],
+      "outputParameters": ["isComplete: boolean"],
+      "requires": "valid(currentState) && valid(goalConfiguration)",
+      "provides": "True if currentState matches goalConfiguration, else False."
+    },
+    {
+      "name": "FindBlockToUnstack",
+      "description": "Operation to find the next clear block that is not on the table.",
+      "inputParameters": ["currentConfig: configuration"],
+      "outputParameters": ["blockToMove: block"],
+      "requires": "valid(currentConfig)",
+      "provides": "The next block to be moved to the table, or null if all are on the table."
+    },
+    {
+      "name": "FindNextBlockToStack",
+      "description": "Operation to find the next clear block from the table that needs to be stacked.",
+      "inputParameters": ["currentConfig: configuration", "goalOrder: list"],
+      "outputParameters": ["blockToMove: block", "targetBlock: block"],
+      "requires": "valid(currentConfig) && valid(goalOrder)",
+      "provides": "The next block to move and its target block, or null if complete."
+    },
+    {
+      "name": "ClimbLadderOperation",
+      "description": "Executes the 'Climb Ladder' action. Invoked via ExecutePlanStepMechanism when the current planStep is climb-ladder.",
+      "inputParameters": ["currentConfig: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "requires": "On(Robot, Floor) && Dry(Ladder)",
+      "provides": "newConfig where On(Robot, Ladder) && NOT On(Robot, Floor)"
+    },
+    {
+      "name": "DescendLadderOperation",
+      "description": "Executes the 'Descend Ladder' action. Invoked via ExecutePlanStepMechanism when the current planStep is descend-ladder.",
+      "inputParameters": ["currentConfig: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "requires": "On(Robot, Ladder) && Dry(Ladder)",
+      "provides": "newConfig where On(Robot, Floor) && NOT On(Robot, Ladder)"
+    },
+    {
+      "name": "PaintCeilingOperation",
+      "description": "Executes the 'Paint Ceiling' action. Invoked via ExecutePlanStepMechanism when the current planStep is paint-ceiling.",
+      "inputParameters": ["currentConfig: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "requires": "On(Robot, Ladder)",
+      "provides": "newConfig where Painted(Ceiling) && NOT Dry(Ceiling)"
+    },
+    {
+      "name": "PaintLadderOperation",
+      "description": "Executes the 'Paint Ladder' action. Invoked via ExecutePlanStepMechanism when the current planStep is paint-ladder.",
+      "inputParameters": ["currentConfig: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "requires": "On(Robot, Floor)",
+      "provides": "newConfig where Painted(Ladder) && NOT Dry(Ladder)"
+    },
+    {
+      "name": "MoveBlockToBlockOperation",
+      "description": "Executes the 'Move Block to Block' action. Invoked via ExecutePlanStepMechanism or directly from StackAscendingMacro when the current planStep is Move(x,y).",
+      "inputParameters": ["blockToMove: block", "targetBlock: block", "currentConfig: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "requires": "isClear(blockToMove) && isClear(targetBlock)",
+      "provides": "newConfig where on(blockToMove, targetBlock) && NOT isClear(targetBlock) && isClear(oldLocation)"
+    },
+    {
+      "name": "MoveBlockToTableOperation",
+      "description": "Executes the 'Move Block to Table' action. Invoked via ExecutePlanStepMechanism or directly from UnstackMacro when the current planStep is Move(x,Table).",
+      "inputParameters": ["blockToMove: block", "currentConfig: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "requires": "isClear(blockToMove)",
+      "provides": "newConfig where on(blockToMove, Table) && isClear(oldLocation)"
+    }
+  ]
+}

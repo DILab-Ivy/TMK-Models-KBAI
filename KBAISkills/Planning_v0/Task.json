@@ -1,0 +1,142 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "Solve Planning Problem",
+      "description": "Select a sequence of actions (a plan) to transition from an initial state to a desired goal state, often involving multiple subgoals and potential conflicts.",
+      "inputParameters": ["initialConfiguration: configuration", "goalConfiguration: configuration"],
+      "outputParameters": ["finalPlan: plan"],
+      "given": "valid(initialConfiguration) && valid(goalConfiguration)",
+      "makes": "achieves(finalPlan, goalConfiguration)",
+      "means": [
+        {
+          "mechanismReference": "PartialOrderPlanner",
+          "actualArguments": ["initialConfiguration", "goalConfiguration"]
+        },
+        {
+          "mechanismReference": "HierarchicalTaskNetworkPlanner",
+          "actualArguments": ["initialConfiguration", "goalConfiguration"]
+        }
+      ]
+    },
+    {
+      "name": "Execute Plan Step",
+      "description": "Abstract task for executing a single primitive operation from a plan. Concrete domain tasks (e.g., 'Execute Painting Plan Step', 'Execute Block Move') specialize this task by listing their domain-specific operations in means.",
+      "inputParameters": ["planStep: operator", "currentState: configuration"],
+      "outputParameters": ["nextState: configuration"],
+      "given": "preconditionsMet(planStep, currentState)",
+      "makes": "safe(execution)",
+      "means": [
+        { "mechanismReference": "ExecutePlanStepMechanism", "actualArguments": ["planStep", "currentState"] }
+      ]
+    },
+    {
+      "name": "Execute Painting Plan Step",
+      "description": "Specialization of Execute Plan Step for the robot painting domain.",
+      "inputParameters": ["planStep: operator", "currentState: configuration"],
+      "outputParameters": ["nextState: configuration"],
+      "given": "preconditionsMet(planStep, currentState)",
+      "makes": "safe(execution)",
+      "means": [
+        { "mechanismReference": "ClimbLadderOperation",   "actualArguments": ["currentState"] },
+        { "mechanismReference": "PaintCeilingOperation",  "actualArguments": ["currentState"] },
+        { "mechanismReference": "DescendLadderOperation", "actualArguments": ["currentState"] },
+        { "mechanismReference": "PaintLadderOperation",   "actualArguments": ["currentState"] }
+      ]
+    },
+    {
+      "name": "Execute Block Move",
+      "description": "Specialization of Execute Plan Step for the Block World domain.",
+      "inputParameters": ["planStep: operator", "currentState: configuration"],
+      "outputParameters": ["nextState: configuration"],
+      "given": "preconditionsMet(planStep, currentState)",
+      "makes": "safe(execution)",
+      "means": [
+        { "mechanismReference": "MoveBlockToBlockOperation", "actualArguments": ["blockToMove", "targetBlock", "currentState"] },
+        { "mechanismReference": "MoveBlockToTableOperation", "actualArguments": ["blockToMove", "currentState"] }
+      ]
+    },
+    {
+      "name": "Paint ladder and ceiling",
+      "description": "Creates a plan to solve the robot painting problem using partial order planning by creating plans to achieve the subgoal of painting the ceiling and subgoal of painting the ladder and then reordering the plans so that neither plan clobbers the goal of the other one.",
+      "inputParameters": ["initialConfiguration: configuration", "goalConfiguration: configuration"],
+      "outputParameters": ["finalPlan: plan"],
+      "given": "valid(initialConfiguration) && valid(goalConfiguration) && initialConfiguration == (On(Robot, Floor) ^ Dry(Ladder) ^ Dry(Ceiling)) && goalConfiguration == (Painted(Ladder) ^ Painted(Ceiling))",
+      "makes": "achieves(finalPlan, goalConfiguration)",
+      "means": [
+        {
+          "mechanismReference": "PartialOrderPlanner",
+          "actualArguments": ["initialConfiguration", "goalConfiguration"]
+        },
+        {
+          "mechanismReference": "HierarchicalTaskNetworkPlanner",
+          "actualArguments": ["initialConfiguration", "goalConfiguration"]
+        }
+      ]
+    },
+    {
+      "name": "Solve Block World problem",
+      "description": "Creates a plan to solve the Block World problem using partial order planning.",
+      "inputParameters": ["initialConfiguration: configuration", "goalConfiguration: configuration"],
+      "outputParameters": ["finalPlan: plan"],
+      "given": "valid(initialConfiguration) && valid(goalConfiguration)",
+      "makes": "achieves(finalPlan, goalConfiguration)",
+      "means": [
+        {
+          "mechanismReference": "PartialOrderPlanner",
+          "actualArguments": ["initialConfiguration", "goalConfiguration"]
+        },
+        {
+          "mechanismReference": "HierarchicalTaskNetworkPlanner",
+          "actualArguments": ["initialConfiguration", "goalConfiguration"]
+        }
+      ]
+    },
+    {
+      "name": "GenerateSubgoalPlans",
+      "description": "For each subgoal in the goal configuration, generate an independent partial plan that achieves it. This is a task because it reasons over multiple subgoals and produces multiple partial plans, not a single world-state transition.",
+      "inputParameters": ["goalConfiguration: configuration", "initialConfiguration: configuration"],
+      "outputParameters": ["partialPlans: list"],
+      "given": "valid(goalConfiguration) && valid(initialConfiguration)",
+      "makes": "safe(partialPlans)",
+      "means": [
+        {
+          "mechanismReference": "GenerateSubgoalPlanMechanism",
+          "actualArguments": ["goalConfiguration", "initialConfiguration"]
+        }
+      ]
+    },
+    {
+      "name": "Reorder Subgoal Plans",
+      "description": "Given a conflict report, add ordering constraints to the partial plans to resolve all identified goal-clobbering conflicts. This is a task because it reasons across multiple partial plans and produces a revised multi-plan structure, not a single world-state transition.",
+      "inputParameters": ["partialPlans: list", "conflictReport: report"],
+      "outputParameters": ["reorderedPlan: plan"],
+      "given": "valid(partialPlans) && valid(conflictReport)",
+      "makes": "safe(reorderedPlan)",
+      "means": [
+        {
+          "mechanismReference": "ReorderSubgoalPlansMechanism",
+          "actualArguments": ["partialPlans", "conflictReport"]
+        }
+      ]
+    },
+    {
+      "name": "SuccessGoal",
+      "description": "Terminal task representing successful completion of a planning process.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "planningSucceeded",
+      "means": []
+    },
+    {
+      "name": "FailureGoal",
+      "description": "Terminal task representing failure of a planning process due to an unresolvable conflict or invalid state.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "planningFailed",
+      "means": []
+    }
+  ]
+}

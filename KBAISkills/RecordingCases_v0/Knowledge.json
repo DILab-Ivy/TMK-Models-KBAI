@@ -1,0 +1,534 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "object"
+    },
+    {
+      "name": "number"
+    },
+
+    {
+      "name": "point2D",
+      "properties": [
+        {
+          "name": "x",
+          "type": "number"
+        },
+        {
+          "name": "y",
+          "type": "number"
+        }
+      ]
+    },
+
+    {
+      "name": "problem"
+    },
+    {
+      "name": "solution"
+    },
+
+    {
+      "name": "colour",
+      "superConcept": "solution"
+    },
+    {
+      "name": "routeChoice",
+      "superConcept": "solution"
+    },
+
+    {
+      "name": "blockProblem",
+      "superConcept": "problem",
+      "properties": [
+        {
+          "name": "width",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "type": "number"
+        }
+      ]
+    },
+
+    {
+      "name": "routeProblem",
+      "superConcept": "problem",
+      "properties": [
+        {
+          "name": "start",
+          "type": "point2D"
+        },
+        {
+          "name": "end",
+          "type": "point2D"
+        }
+      ]
+    },
+
+    {
+      "name": "case",
+      "properties": [
+        {
+          "name": "sourceProblem",
+          "type": "problem"
+        },
+        {
+          "name": "sourceSolution",
+          "type": "solution"
+        }
+      ]
+    },
+
+    {
+      "name": "memoryStore",
+      "properties": [
+        {
+          "name": "cases",
+          "type": "set<case>"
+        }
+      ]
+    },
+
+    {
+      "name": "similarityMetric"
+    },
+    {
+      "name": "blockSizeEuclidean",
+      "superConcept": "similarityMetric"
+    },
+    {
+      "name": "routeEndpointEuclidean",
+      "superConcept": "similarityMetric"
+    },
+
+    {
+      "name": "similarityType"
+    },
+    {
+      "name": "superficialSimilarity",
+      "superConcept": "similarityType"
+    },
+    {
+      "name": "deepSimilarity",
+      "superConcept": "similarityType"
+    },
+    {
+      "name": "semanticSimilarity",
+      "superConcept": "similarityType"
+    },
+    {
+      "name": "pragmaticSimilarity",
+      "superConcept": "similarityType"
+    },
+    {
+      "name": "structuralSimilarity",
+      "superConcept": "similarityType"
+    }
+  ],
+
+  "instances": [
+    {
+      "name": "blue",
+      "concept": "colour"
+    },
+    {
+      "name": "black",
+      "concept": "colour"
+    },
+    {
+      "name": "green",
+      "concept": "colour"
+    },
+    {
+      "name": "purple",
+      "concept": "colour"
+    },
+    {
+      "name": "orange",
+      "concept": "colour"
+    },
+    {
+      "name": "red",
+      "concept": "colour"
+    },
+    {
+      "name": "pink",
+      "concept": "colour"
+    },
+    {
+      "name": "brown",
+      "concept": "colour"
+    },
+    {
+      "name": "white",
+      "concept": "colour"
+    },
+    {
+      "name": "teal",
+      "concept": "colour"
+    },
+    {
+      "name": "violet",
+      "concept": "colour"
+    },
+    {
+      "name": "magenta",
+      "concept": "colour"
+    },
+    {
+      "name": "lightBlue",
+      "concept": "colour"
+    },
+    {
+      "name": "lightGreen",
+      "concept": "colour"
+    },
+    {
+      "name": "lightPurple",
+      "concept": "colour"
+    },
+    {
+      "name": "lightViolet",
+      "concept": "colour"
+    },
+    {
+      "name": "yellow",
+      "concept": "colour"
+    },
+    {
+      "name": "grey",
+      "concept": "colour"
+    },
+    {
+      "name": "maroon",
+      "concept": "colour"
+    },
+    {
+      "name": "mauve",
+      "concept": "colour"
+    },
+    {
+      "name": "chartreuse",
+      "concept": "colour"
+    },
+
+    {
+      "name": "blkBlue",
+      "concept": "blockProblem",
+      "values": {
+        "width": 0.5,
+        "height": 2.0
+      }
+    },
+    {
+      "name": "blkBlack",
+      "concept": "blockProblem",
+      "values": {
+        "width": 1.0,
+        "height": 1.5
+      }
+    },
+    {
+      "name": "blkGreen",
+      "concept": "blockProblem",
+      "values": {
+        "width": 1.5,
+        "height": 1.5
+      }
+    },
+    {
+      "name": "blkPurple",
+      "concept": "blockProblem",
+      "values": {
+        "width": 2.0,
+        "height": 1.0
+      }
+    },
+    {
+      "name": "blkOrange",
+      "concept": "blockProblem",
+      "values": {
+        "width": 1.5,
+        "height": 0.5
+      }
+    },
+    {
+      "name": "blkRed",
+      "concept": "blockProblem",
+      "values": {
+        "width": 0.5,
+        "height": 0.5
+      }
+    },
+
+    {
+      "name": "blkTarget_0_8_0_8",
+      "concept": "blockProblem",
+      "values": {
+        "width": 0.8,
+        "height": 0.8
+      }
+    },
+
+    {
+      "name": "caseBlue",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "blkBlue",
+        "sourceSolution": "blue"
+      }
+    },
+    {
+      "name": "caseBlack",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "blkBlack",
+        "sourceSolution": "black"
+      }
+    },
+    {
+      "name": "caseGreen",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "blkGreen",
+        "sourceSolution": "green"
+      }
+    },
+    {
+      "name": "casePurple",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "blkPurple",
+        "sourceSolution": "purple"
+      }
+    },
+    {
+      "name": "caseOrange",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "blkOrange",
+        "sourceSolution": "orange"
+      }
+    },
+    {
+      "name": "caseRed",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "blkRed",
+        "sourceSolution": "red"
+      }
+    },
+
+    {
+      "name": "blockWorldMemory",
+      "concept": "memoryStore",
+      "values": {
+        "cases": [
+          "caseBlue",
+          "caseBlack",
+          "caseGreen",
+          "casePurple",
+          "caseOrange",
+          "caseRed"
+        ]
+      }
+    },
+
+    {
+      "name": "routeA",
+      "concept": "routeChoice"
+    },
+    {
+      "name": "routeB",
+      "concept": "routeChoice"
+    },
+    {
+      "name": "routeC",
+      "concept": "routeChoice"
+    },
+    {
+      "name": "routeD",
+      "concept": "routeChoice"
+    },
+    {
+      "name": "routeE",
+      "concept": "routeChoice"
+    },
+    {
+      "name": "routeF",
+      "concept": "routeChoice"
+    },
+
+    {
+      "name": "routeProblemA",
+      "concept": "routeProblem"
+    },
+    {
+      "name": "routeProblemB",
+      "concept": "routeProblem"
+    },
+    {
+      "name": "routeProblemC",
+      "concept": "routeProblem"
+    },
+    {
+      "name": "routeProblemD",
+      "concept": "routeProblem"
+    },
+    {
+      "name": "routeProblemE",
+      "concept": "routeProblem"
+    },
+    {
+      "name": "routeProblemF",
+      "concept": "routeProblem"
+    },
+
+    {
+      "name": "routeTargetQ",
+      "concept": "routeProblem"
+    },
+
+    {
+      "name": "caseRouteA",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "routeProblemA",
+        "sourceSolution": "routeA"
+      }
+    },
+    {
+      "name": "caseRouteB",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "routeProblemB",
+        "sourceSolution": "routeB"
+      }
+    },
+    {
+      "name": "caseRouteC",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "routeProblemC",
+        "sourceSolution": "routeC"
+      }
+    },
+    {
+      "name": "caseRouteD",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "routeProblemD",
+        "sourceSolution": "routeD"
+      }
+    },
+    {
+      "name": "caseRouteE",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "routeProblemE",
+        "sourceSolution": "routeE"
+      }
+    },
+    {
+      "name": "caseRouteF",
+      "concept": "case",
+      "values": {
+        "sourceProblem": "routeProblemF",
+        "sourceSolution": "routeF"
+      }
+    },
+
+    {
+      "name": "routeWorldMemory",
+      "concept": "memoryStore",
+      "values": {
+        "cases": [
+          "caseRouteA",
+          "caseRouteB",
+          "caseRouteC",
+          "caseRouteD",
+          "caseRouteE",
+          "caseRouteF"
+        ]
+      }
+    },
+    {
+      "name": "combinedMemory",
+      "concept": "memoryStore",
+      "values": {
+        "cases": [
+          "caseBlue",
+          "caseBlack",
+          "caseGreen",
+          "casePurple",
+          "caseOrange",
+          "caseRed",
+
+          "caseRouteA",
+          "caseRouteB",
+          "caseRouteC",
+          "caseRouteD",
+          "caseRouteE",
+          "caseRouteF"
+        ]
+      }
+    }
+  ],
+
+  "relations": [
+    {
+      "name": "usesMetric",
+      "domain": "problem",
+      "range": "similarityMetric"
+    },
+    {
+      "name": "stores",
+      "domain": "memoryStore",
+      "range": "case"
+    },
+    {
+      "name": "nearestTo",
+      "domain": "problem",
+      "range": "case"
+    }
+  ],
+
+  "triples": [
+    {
+      "instance1": "blkTarget_0_8_0_8",
+      "relation": "usesMetric",
+      "instance2": "blockSizeEuclidean"
+    },
+    {
+      "instance1": "routeTargetQ",
+      "relation": "usesMetric",
+      "instance2": "routeEndpointBiEuclidean"
+    }
+  ],
+
+  "assertions": [
+    {
+      "name": "isWellFormed",
+      "description": "Problem is syntactically and semantically valid",
+      "equivalentTo": "IsWellFormed(problem)"
+    },
+    {
+      "name": "solved",
+      "description": "Solution solves the problem",
+      "equivalentTo": "Solved(problem, solution)"
+    },
+    {
+      "name": "contains",
+      "description": "MemoryStore contains case (problem, solution)",
+      "equivalentTo": "stores(memoryStore, case)"
+    },
+    {
+      "name": "size",
+      "description": "Retrieve the cardinality of a collection",
+      "equivalentTo": "Size(collection, integer)"
+    }
+  ]
+}

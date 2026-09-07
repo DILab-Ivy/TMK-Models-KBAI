@@ -1,0 +1,362 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "script_understanding",
+      "description": "Complete method for understanding stories using script-based reasoning, including situation classification, script instantiation, and expectation generation",
+      "inputParameters": [
+        "story_text",
+        "script_library"
+      ],
+      "outputParameters": [
+        "story_interpretation",
+        "answered_questions",
+        "predicted_events"
+      ],
+      "requires": "natural language story, collection of scripts, inference capabilities",
+      "provides": "coherent story understanding, ability to answer questions, expectation generation",
+      "organizer": {
+        "startState": "parse_story",
+        "successState": "comprehension_complete",
+        "failureState": "understanding_failed",
+        "states": [
+          {
+            "name": "parse_story",
+            "goalInvocation": {
+              "goalReference": "parsing",
+              "type": "task",
+              "actualArguments": [
+                "story_text"
+              ]
+            }
+          },
+          {
+            "name": "match_script",
+            "goalInvocation": {
+              "goalReference": "Script Selection and Classification",
+              "type": "task",
+              "actualArguments": [
+                "story_events",
+                "script_library"
+              ]
+            }
+          },
+          {
+            "name": "instantiate_script",
+            "goalInvocation": {
+              "goalReference": "Script Instantiation",
+              "type": "task",
+              "actualArguments": [
+                "matched_script",
+                "story_entities"
+              ]
+            }
+          },
+          {
+            "name": "fill_gaps",
+            "goalInvocation": {
+              "goalReference": "gap_filling",
+              "type": "task",
+              "actualArguments": [
+                "instantiated_script",
+                "story_events"
+              ]
+            }
+          },
+          {
+            "name": "generate_expectations",
+            "goalInvocation": {
+              "goalReference": "Expectation Generation and Monitoring",
+              "type": "task",
+              "actualArguments": [
+                "instantiated_script",
+                "current_scene"
+              ]
+            }
+          },
+          {
+            "name": "make_inferences",
+            "goalInvocation": {
+              "goalReference": "Script understanding",
+              "type": "task",
+              "actualArguments": [
+                "complete_story",
+                "instantiated_script"
+              ]
+            }
+          },
+          {
+            "name": "understanding_failed",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "parse_story",
+            "targetState": "match_script",
+            "dataCondition": "story_events != null"
+          },
+          {
+            "sourceState": "parse_story",
+            "targetState": "understanding_failed",
+            "dataCondition": "story_events == null"
+          },
+          {
+            "sourceState": "match_script",
+            "targetState": "instantiate_script",
+            "dataCondition": "script.matched == true"
+          },
+          {
+            "sourceState": "match_script",
+            "targetState": "understanding_failed",
+            "dataCondition": "script.matched == false"
+          },
+          {
+            "sourceState": "instantiate_script",
+            "targetState": "fill_gaps",
+            "dataCondition": "instantiated_script != null && story_events != null"
+          },
+          {
+            "sourceState": "instantiate_script",
+            "targetState": "understanding_failed",
+            "dataCondition": "instantiated_script == null || story_events == null"
+          },
+          {
+            "sourceState": "fill_gaps",
+            "targetState": "generate_expectations",
+            "dataCondition": "missing_information filled"
+          },
+          {
+            "sourceState": "fill_gaps",
+            "targetState": "understanding_failed",
+            "dataCondition": "missing_information not filled"
+          },
+          {
+            "sourceState": "generate_expectations",
+            "targetState": "make_inferences",
+            "dataCondition": "complete_story == true"
+          },
+          {
+            "sourceState": "generate_expectations",
+            "targetState": "understanding_failed",
+            "dataCondition": "complete_story == false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "script_construction",
+      "description": "Method for constructing new scripts from observed sequences of events and existing knowledge structures",
+      "inputParameters": [
+        "event_sequences",
+        "existing_scripts",
+        "domain_knowledge"
+      ],
+      "outputParameters": [
+        "new_script"
+      ],
+      "requires": "event_sequences contain causally coherent patterns, existing_scripts provide structural templates, domain_knowledge includes relevant concepts",
+      "provides": "new script with all six components",
+      "organizer": {
+        "startState": "collect_observations",
+        "successState": "script_assembled",
+        "failureState": "construction_failed",
+        "states": [
+          {
+            "name": "collect_observations",
+            "goalInvocation": {
+              "goalReference": "observation",
+              "type": "task",
+              "actualArguments": [
+                "event_sequences",
+                "context_information"
+              ]
+            }
+          },
+          {
+            "name": "extract_patterns",
+            "goalInvocation": {
+              "goalReference": "pattern_extraction",
+              "type": "task",
+              "actualArguments": [
+                "collected_sequences"
+              ]
+            }
+          },
+          {
+            "name": "identify_components",
+            "goalInvocation": {
+              "goalReference": "component_identification",
+              "type": "task",
+              "actualArguments": [
+                "extracted_patterns",
+                "existing_scripts"
+              ]
+            }
+          },
+          {
+            "name": "identify_entry_conditions",
+            "goalInvocation": {
+              "goalReference": "entry_condition_identification",
+              "type": "task",
+              "actualArguments": [
+                "extracted_patterns"
+              ]
+            }
+          },
+          {
+            "name": "identify_results",
+            "goalInvocation": {
+              "goalReference": "result_identification",
+              "type": "task",
+              "actualArguments": [
+                "extracted_patterns"
+              ]
+            }
+          },
+          {
+            "name": "identify_props_roles",
+            "goalInvocation": {
+              "goalReference": "props_roles_identification",
+              "type": "task",
+              "actualArguments": [
+                "extracted_patterns"
+              ]
+            }
+          },
+          {
+            "name": "identify_tracks",
+            "goalInvocation": {
+              "goalReference": "track_identification",
+              "type": "task",
+              "actualArguments": [
+                "collected_sequences",
+                "existing_scripts"
+              ]
+            }
+          },
+          {
+            "name": "construct_scenes",
+            "goalInvocation": {
+              "goalReference": "scene_construction",
+              "type": "task",
+              "actualArguments": [
+                "extracted_patterns",
+                "domain_knowledge"
+              ]
+            }
+          },
+          {
+            "name": "assemble_script",
+            "goalInvocation": {
+              "goalReference": "Script Construction and Learning",
+              "type": "task",
+              "actualArguments": [
+                "entry_conditions",
+                "results",
+                "props",
+                "roles",
+                "tracks",
+                "scenes"
+              ]
+            }
+          },
+          {
+            "name": "construction_failed",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "collect_observations",
+            "targetState": "extract_patterns",
+            "dataCondition": "sufficient event sequences collected"
+          },
+          {
+            "sourceState": "collect_observations",
+            "targetState": "construction_failed",
+            "dataCondition": "insufficient observations"
+          },
+          {
+            "sourceState": "extract_patterns",
+            "targetState": "identify_components",
+            "dataCondition": "patterns.extracted == true"
+          },
+          {
+            "sourceState": "extract_patterns",
+            "targetState": "construction_failed",
+            "dataCondition": "patterns.extracted == false"
+          },
+          {
+            "sourceState": "identify_components",
+            "targetState": "identify_entry_conditions",
+            "dataCondition": "component structure identified"
+          },
+          {
+            "sourceState": "identify_components",
+            "targetState": "construction_failed",
+            "dataCondition": "component structure not identified"
+          },
+          {
+            "sourceState": "identify_entry_conditions",
+            "targetState": "identify_results",
+            "dataCondition": "entry conditions identified"
+          },
+          {
+            "sourceState": "identify_entry_conditions",
+            "targetState": "construction_failed",
+            "dataCondition": "entry conditions not identified"
+          },
+          {
+            "sourceState": "identify_results",
+            "targetState": "identify_props_roles",
+            "dataCondition": "results identified"
+          },
+          {
+            "sourceState": "identify_results",
+            "targetState": "construction_failed",
+            "dataCondition": "results not identified"
+          },
+          {
+            "sourceState": "identify_props_roles",
+            "targetState": "identify_tracks",
+            "dataCondition": "props and roles identified"
+          },
+          {
+            "sourceState": "identify_props_roles",
+            "targetState": "construction_failed",
+            "dataCondition": "props and roles not identified"
+          },
+          {
+            "sourceState": "identify_tracks",
+            "targetState": "construct_scenes",
+            "dataCondition": "tracks identified"
+          },
+          {
+            "sourceState": "identify_tracks",
+            "targetState": "construction_failed",
+            "dataCondition": "tracks not identified"
+          },
+          {
+            "sourceState": "construct_scenes",
+            "targetState": "assemble_script",
+            "dataCondition": "scenes constructed"
+          },
+          {
+            "sourceState": "construct_scenes",
+            "targetState": "construction_failed",
+            "dataCondition": "scenes not constructed"
+          }
+        ]
+      }
+    }
+  ]
+}

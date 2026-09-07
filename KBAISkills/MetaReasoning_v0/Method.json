@@ -1,0 +1,303 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "MetaReasoningSolution",
+      "description": "Solve a reasoning or learning problem using meta-reasoning processes",
+      "inputParameters": ["Problem/: problem"],
+      "outputParameters": ["Resolution"],
+      "requires": "Problem != null",
+      "provides": "Resolution != null",
+      "organizer": {
+        "startState": "S0",
+        "successState": "S5",
+        "failureState": "Fail",
+        "states": [
+          { "name": "S0", "goalInvocation": { "goalReference": "DetectIssue", "type": "operation", "actualArguments": ["Problem"] } },
+          { "name": "S1", "goalInvocation": { "goalReference": "ClassifyIssue", "type": "task", "actualArguments": ["S0"] } },
+          { "name": "S2", "goalInvocation": { "goalReference": "SpawnMetaGoal", "type": "task", "actualArguments": ["S1"] } },
+          { "name": "S3", "goalInvocation": { "goalReference": "SelectStrategy", "type": "task", "actualArguments": ["S2"] } },
+          { "name": "S4", "goalInvocation": { "goalReference": "IntegrateStrategies", "type": "task", "actualArguments": ["S3", "S2"] } },
+          { "name": "S5", "goalInvocation": { "goalReference": "FinalizeResolution", "type": "operation", "actualArguments": ["Resolution"] } },
+          { "name": "Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "S0", "targetState": "S1", "dataCondition": "IssueDetected(S0.Issue) && S0.Issue != null" },
+          { "sourceState": "S0", "targetState": "Fail", "dataCondition": "S0.Issue == null || IssueDetected(S0.Issue) == false" },
+          { "sourceState": "S1", "targetState": "S2", "dataCondition": "S1.IssueType in {'Error','Gap'} && ClassificationValid(S1.IssueType)" },
+          { "sourceState": "S1", "targetState": "Fail", "dataCondition": "S1.IssueType == null || ClassificationValid(S1.IssueType) == false" },
+          { "sourceState": "S2", "targetState": "S3", "dataCondition": "S2.MetaGoal != null && MetaGoalFormed(S2.MetaGoal)" },
+          { "sourceState": "S2", "targetState": "Fail", "dataCondition": "S2.MetaGoal == null || MetaGoalFormed(S2.MetaGoal) == false" },
+          { "sourceState": "S3", "targetState": "S4", "dataCondition": "S3.ChosenStrategy != null && StrategyApplicable(S3.ChosenStrategy, S2.MetaGoal)"},
+          { "sourceState": "S3", "targetState": "Fail", "dataCondition":  "S3.ChosenStrategy == null || StrategyApplicable(S3.ChosenStrategy, S2.MetaGoal) == false" },
+          { "sourceState": "S4", "targetState": "S5", "dataCondition": "ResolutionGenerated(S4.Resolution) && S4.Resolution != null" },
+          { "sourceState": "S4", "targetState": "Fail", "dataCondition": "S4.Resolution == null || ResolutionGenerated(S4.Resolution) == false" }
+        ]
+      }
+    },
+    {
+      "name": "ClassifyIssueSolution",
+      "description": "Classify the detected issue into {Error, Gap}.",
+      "inputParameters": ["Issue: issue"],
+      "outputParameters": ["IssueType: type"],
+      "requires": "Issue != null",
+      "provides": "IssueType != null",
+      "organizer": {
+        "startState": "C0",
+        "successState": "Success",
+        "failureState": "CFail",
+
+        "states": [
+          { "name": "C0", "goalInvocation": { "goalReference": "InspectIssue", "type": "operation", "actualArguments": ["Issue"] } },
+          { "name": "C1", "goalInvocation": { "goalReference": "CheckErrorFeatures", "type": "operation", "actualArguments": ["Issue"] } },
+          { "name": "C2", "goalInvocation": { "goalReference": "CheckGapFeatures", "type": "operation", "actualArguments": ["Issue"] } },
+          { "name": "C3", "goalInvocation": { "goalReference": "AssignIssueType", "type": "operation", "actualArguments": ["Issue"] } },
+          { "name": "CFail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] }  }
+        ],
+        "transitions": [
+          { "sourceState": "C0", "targetState": "C1", "dataCondition": "IssueParsed(Issue) == true" },
+          { "sourceState": "C0", "targetState": "CFail", "dataCondition": "IssueParsed(Issue) == false" },
+          { "sourceState": "C1", "targetState": "C3", "dataCondition": "ErrorEvidence(Issue) == true" },
+          { "sourceState": "C1", "targetState": "C2", "dataCondition": "ErrorEvidence(Issue) == false" },
+          { "sourceState": "C1", "targetState": "CFail", "dataCondition": "ErrorCheckFailed(Issue) == true" },
+          { "sourceState": "C2", "targetState": "C3", "dataCondition": "GapEvidence(Issue) == true" },
+          { "sourceState": "C2", "targetState": "CFail", "dataCondition": "GapEvidence(Issue) == false" },
+          { "sourceState": "C3", "targetState": "Success", "dataCondition": "IssueTypeAssigned(C3.IssueType) == true" }
+        ]
+      }
+    },
+    {
+      "name": "SpawnMetaGoalSolution",
+      "description": "Create an appropriate meta-level goal based on the classified issue type.",
+      "inputParameters": ["IssueType: type"],
+      "outputParameters": ["MetaGoal: goal"],
+      "requires": "IssueType in {'Error','Gap'}",
+      "provides": "MetaGoal != null",
+      "organizer": {
+        "startState": "M0",
+        "successState": "MSuccess",
+        "failureState": "MFail",
+        "states": [
+          { "name": "M0", "goalInvocation": { "goalReference": "InspectIssueType", "type": "operation", "actualArguments": ["IssueType"] } },
+          { "name": "M1", "goalInvocation": { "goalReference": "GenerateErrorGoal", "type": "operation", "actualArguments": ["IssueType"] } },
+          { "name": "M2", "goalInvocation": { "goalReference": "GenerateGapGoal", "type": "operation", "actualArguments": ["IssueType"] } },
+          { "name": "M3", "goalInvocation": { "goalReference": "FinalizeMetaGoal", "type": "operation", "actualArguments": ["IssueType"] } },
+          { "name": "MFail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] }  }
+        ],
+        "transitions": [
+          { "sourceState": "M0", "targetState": "M1", "dataCondition": "IssueType == 'Error'" },
+          { "sourceState": "M0", "targetState": "M2", "dataCondition": "IssueType == 'Gap'" },
+          { "sourceState": "M0", "targetState": "MFail", "dataCondition": "IssueType not in {'Error','Gap'}" },
+          { "sourceState": "M1", "targetState": "M3", "dataCondition": "ErrorGoalGenerated(M1.Goal) == true" },
+          { "sourceState": "M1", "targetState": "MFail", "dataCondition": "ErrorGoalGenerated(M1.Goal) == false" },
+          { "sourceState": "M2", "targetState": "M3", "dataCondition": "GapGoalGenerated(M2.Goal) == true" },
+          { "sourceState": "M2", "targetState": "MFail", "dataCondition": "GapGoalGenerated(M2.Goal) == false" },
+          { "sourceState": "M3", "targetState": "MSuccess", "dataCondition": "MetaGoalCreated(M3.MetaGoal) == true" }
+        ]
+      }
+    },
+    {
+      "name": "SelectStrategySolution",
+      "description": "Select the most appropriate reasoning strategy to satisfy the meta-goal.",
+      "inputParameters": ["MetaGoal: goal"],
+      "outputParameters": ["ChosenStrategy: strategy"],
+      "requires": "MetaGoal != null",
+      "provides": "ChosenStrategy != null",
+      "organizer": {
+        "startState": "SS0",
+        "successState": "SSSuccess",
+        "failureState": "SSFail",
+        "states": [
+          { "name": "SS0", "goalInvocation": { "goalReference": "EnumerateCandidateStrategies", "type": "operation", "actualArguments": ["MetaGoal"] } },
+          { "name": "SS1", "goalInvocation": { "goalReference": "EvaluateStrategyCriteria", "type": "operation", "actualArguments": ["MetaGoal"] } },
+          { "name": "SS2", "goalInvocation": { "goalReference": "ChooseBestStrategy", "type": "operation", "actualArguments": ["MetaGoal"] } },
+          { "name": "SS3", "goalInvocation": { "goalReference": "ConfirmStrategySelection", "type": "operation", "actualArguments": ["MetaGoal"] } },
+          { "name": "SSFail" }
+        ],
+        "transitions": [
+          { "sourceState": "SS0", "targetState": "SS1", "dataCondition": "CandidateStrategiesListed(SS0.Strategies) == true" },
+          { "sourceState": "SS0", "targetState": "SSFail", "dataCondition": "CandidateStrategiesListed(SS0.Strategies) == false" },
+          { "sourceState": "SS1", "targetState": "SS2", "dataCondition": "CriteriaEvaluated(SS1.Evaluations) == true" },
+          { "sourceState": "SS1", "targetState": "SSFail", "dataCondition": "CriteriaEvaluated(SS1.Evaluations) == false" },
+          { "sourceState": "SS2", "targetState": "SS3", "dataCondition": "BestStrategyChosen(SS2.ChosenStrategy) == true" },
+          { "sourceState": "SS2", "targetState": "SSFail", "dataCondition": "BestStrategyChosen(SS2.ChosenStrategy) == false" },
+          { "sourceState": "SS3", "targetState": "SSSuccess", "dataCondition": "StrategySelectionConfirmed(SS3.Confirmed) == true" }
+          ]
+        }
+      },
+    {
+      "name": "IntegrateStrategiesSolution",
+      "description": "Apply the selected strategy; if progress stalls, integrate or switch strategies to achieve the meta-goal.",
+      "inputParameters": ["ChosenStrategy: strategy", "MetaGoal: goal"],
+      "outputParameters": ["Resolution: result"],
+      "requires": "ChosenStrategy != null && MetaGoal != null",
+      "provides": "Resolution != null",
+      "organizer": {
+        "startState": "IS0",
+        "successState": "ISSuccess",
+        "failureState": "ISFail",
+        "states": [
+          { "name": "IS0", "goalInvocation": { "goalReference": "ApplyPrimaryStrategy", "type": "operation", "actualArguments": ["ChosenStrategy", "MetaGoal"] } },
+          { "name": "IS1", "goalInvocation": { "goalReference": "DetectProgressOrStall", "type": "operation", "actualArguments": ["ChosenStrategy"] } },
+          { "name": "IS2", "goalInvocation": { "goalReference": "ShiftOrIntegrateStrategy", "type": "operation", "actualArguments": ["ChosenStrategy", "MetaGoal"] } },
+          { "name": "IS3", "goalInvocation": { "goalReference": "ProduceResolution", "type": "operation", "actualArguments": ["ChosenStrategy", "MetaGoal"] } },
+          { "name": "ISFail" }
+        ],
+        "transitions": [
+          { "sourceState": "IS0", "targetState": "IS1", "dataCondition": "StrategyApplied(IS0.ProgressData) == true" },
+          { "sourceState": "IS0", "targetState": "ISFail", "dataCondition": "StrategyApplied(IS0.ProgressData) == false" },
+          { "sourceState": "IS1", "targetState": "IS3", "dataCondition": "ProgressDetected(IS1.Status) == true" },
+          { "sourceState": "IS1", "targetState": "IS2", "dataCondition": "StallDetected(IS1.Status) == true" },
+          { "sourceState": "IS1", "targetState": "ISFail", "dataCondition": "StatusIndeterminate(IS1.Status) == true" },
+          { "sourceState": "IS2", "targetState": "IS3", "dataCondition": "StrategyShiftedOrIntegrated(IS2.Result) == true" },
+          { "sourceState": "IS2", "targetState": "ISFail", "dataCondition": "StrategyShiftedOrIntegrated(IS2.Result) == false" },
+          { "sourceState": "IS3", "targetState": "ISSuccess", "dataCondition": "ResolutionProduced(IS3.Resolution) == true" }
+        ]
+      }
+    },
+    {
+      "name": "DetectIssue",
+      "description": "Analyzes the problem to detect errors or gaps in knowledge, reasoning, or learning.",
+      "inputParameters": ["Problem: problem"],
+      "outputParameters": ["Issue: issue"],
+      "requires": "Problem != null",
+      "provides": "Issue != null"
+    },
+    {
+      "name": "InspectIssue",
+      "description": "Reads the Issue object and extracts diagnostic features.",
+      "inputParameters": ["Issue: issue"],
+      "outputParameters": ["Features: featureSet"],
+      "requires": "Issue != null",
+      "provides": "Features != null"
+    },
+    {
+      "name": "CheckErrorFeatures",
+      "description": "Identifies whether the issue has properties characteristic of errors like inconsistency, incorrect inference, or faulty explanation.",
+      "inputParameters": ["Issue: issue"],
+      "outputParameters": ["ErrorEvidence: boolean"],
+      "requires": "Issue != null",
+      "provides": "ErrorEvidence in {true, false}"
+    },
+    {
+      "name": "CheckGapFeatures",
+      "description": "Checks whether the issue is caused by missing knowledge or missing reasoning links.",
+      "inputParameters": ["Issue: issue"],
+      "outputParameters": ["GapEvidence: boolean"],
+      "requires": "Issue != null",
+      "provides": "GapEvidence in {true, false}"
+    },
+    {
+      "name": "AssignIssueType",
+      "description": "Classifies the issue as either an Error or a Gap.",
+      "inputParameters": ["Issue: issue"],
+      "outputParameters": ["IssueType: type"],
+      "requires": "Issue != null",
+      "provides": "IssueType in {'Error', 'Gap'}"
+    },
+    {
+      "name": "InspectIssueType",
+      "description": "Analyzes the IssueType to determine required meta-level actions.",
+      "inputParameters": ["IssueType: type"],
+      "outputParameters": ["Interpretation: info"],
+      "requires": "IssueType in {'Error','Gap'}",
+      "provides": "Interpretation != null"
+    },
+    {
+      "name": "GenerateErrorGoal",
+      "description": "Creates a meta-goal to repair incorrect reasoning or incorrect knowledge.",
+      "inputParameters": ["IssueType: type"],
+      "outputParameters": ["MetaGoal: goal"],
+      "requires": "IssueType == 'Error'",
+      "provides": "MetaGoal.type == 'Repair'"
+    },
+    {
+      "name": "GenerateGapGoal",
+      "description": "Creates a meta-goal to acquire missing knowledge or construct missing reasoning links.",
+      "inputParameters": ["IssueType: type"],
+      "outputParameters": ["MetaGoal: goal"],
+      "requires": "IssueType == 'Gap'",
+      "provides": "MetaGoal.type == 'Acquire'"
+    },
+    {
+      "name": "FinalizeMetaGoal",
+      "description": "Finalizes and validates the generated meta-goal.",
+      "inputParameters": ["IssueType: type"],
+      "outputParameters": ["MetaGoal: goal"],
+      "requires": "IssueType in {'Error','Gap'}",
+      "provides": "MetaGoal != null"
+    },
+    {
+      "name": "EnumerateCandidateStrategies",
+      "description": "Lists all reasoning strategies that could address the meta-goal.",
+      "inputParameters": ["MetaGoal: goal"],
+      "outputParameters": ["Strategies: strategySet"],
+      "requires": "MetaGoal != null",
+      "provides": "Strategies != null"
+    },
+    {
+      "name": "EvaluateStrategyCriteria",
+      "description": "Evaluates each candidate strategy using criteria such as applicability, efficiency, and solution quality.",
+      "inputParameters": ["MetaGoal: goal"],
+      "outputParameters": ["Evaluations: evaluationSet"],
+      "requires": "MetaGoal != null",
+      "provides": "Evaluations != null"
+    },
+        {
+      "name": "ChooseBestStrategy",
+      "description": "Selects the best strategy based on evaluation results.",
+      "inputParameters": ["MetaGoal: goal"],
+      "outputParameters": ["ChosenStrategy: strategy"],
+      "requires": "MetaGoal != null",
+      "provides": "ChosenStrategy != null"
+    },
+       {
+      "name": "ConfirmStrategySelection",
+      "description": "Verifies and formalizes the selected strategy.",
+      "inputParameters": ["MetaGoal: goal"],
+      "outputParameters": ["Confirmed: boolean"],
+      "requires": "MetaGoal != null",
+      "provides": "Confirmed == true"
+    },
+    {
+      "name": "ApplyPrimaryStrategy",
+      "description": "Executes the primary reasoning strategy to attempt meta-goal progress.",
+      "inputParameters": ["ChosenStrategy: strategy", "MetaGoal: goal"],
+      "outputParameters": ["ProgressData: data"],
+      "requires": "ChosenStrategy != null",
+      "provides": "ProgressData != null"
+    },
+    {
+      "name": "DetectProgressOrStall",
+      "description": "Detects whether the primary strategy is making progress or has reached a cul-de-sac.",
+      "inputParameters": ["ChosenStrategy: strategy"],
+      "outputParameters": ["Status: status"],
+      "requires": "ChosenStrategy != null",
+      "provides": "Status in {'Progress','Stall'}"
+    },
+    {
+      "name": "ShiftOrIntegrateStrategy",
+      "description": "Switches to or integrates another strategy to overcome a stall.",
+      "inputParameters": ["ChosenStrategy: strategy", "MetaGoal: goal"],
+      "outputParameters": ["Result: result"],
+      "requires": "ChosenStrategy != null",
+      "provides": "Result != null"
+    },
+    {
+      "name": "ProduceResolution",
+      "description": "Generates the final resolution after strategies have been applied or integrated.",
+      "inputParameters": ["ChosenStrategy: strategy", "MetaGoal: goal"],
+      "outputParameters": ["Resolution: result"],
+      "requires": "ChosenStrategy != null && MetaGoal != null",
+      "provides": "Resolution != null"
+    },
+    {
+      "name": "FinalizeResolution",
+      "description": "Validates and outputs the final resolution after strategies have been applied or integrated.",
+      "inputParameters": ["Resolution: result"],
+      "outputParameters": ["Resolution': result"],
+      "requires": "Resolution != null",
+      "provides": "Resolution' == Resolution"
+    }
+  ]
+}

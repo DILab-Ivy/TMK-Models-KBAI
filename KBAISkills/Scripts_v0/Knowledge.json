@@ -1,0 +1,281 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "Script",
+      "description": "A knowledge representation for capturing causally coherent set of events with six main components: entry conditions, results, props, roles, tracks, and scenes",
+      "properties": [
+        {"name": "entry_conditions", "type": "object"},
+        {"name": "results", "type": "object"},
+        {"name":"props", "type": "list"},
+        {"name":"roles", "type": "list"},
+        {"name":"track", "type":  "list"},
+        {"name":"scenes", "type":  "list"}
+      ]
+    },
+    {
+      "name": "Entry Conditions",
+      "description": "The conditions necessary to execute a script, representing prerequisites that must be satisfied before the script can be invoked",
+      "properties": [
+        {"name": "agent_state","type": "object - required states of participating agents (e.g., hungry, has_money)"},
+        {"name":"environmental_state","type": "object - required environmental conditions"},
+        {"name":"resource_availability","type": "list - required objects or resources that must be present"},
+        {"name":"satisfaction_requirement","type": "boolean - all conditions must be true for script activation"}
+      ]
+    },
+    {
+      "name": "Result",
+      "description": "The conditions that will become true after the script has occurred and taken place, representing the expected outcomes",
+      "properties": [
+        {"name":"agent_state_changes","type": "object - how agent states are modified (e.g., no_longer_hungry, less_money)"},
+        {"name":"environmental_changes","type": "object - modifications to the environment"},
+        {"name":"resource_transfers","type": "list - movement or consumption of objects"},
+        {"name":"satisfaction_states","type": "object - final satisfaction or completion states"}
+      ]
+    },
+    {
+      "name": "Props",
+      "description": "Objects involved in the execution of the script",
+      "properties": [
+        {"name":"object_type","type": "string - category of object"},
+        {"name":"function","type": "string - purpose or use of the object"},
+        {"name":"location","type": "string - where the object is typically found"}
+      ]
+    },
+    {
+      "name": "Roles",
+      "description": "Agents involved in the execution of the script",
+      "properties": [
+        {"name":"agent_type","type": "string - category of agent (customer, waiter, cook, etc.)"},
+        {"name":"responsibilities","type": "list - expected behaviors and duties"},
+        {"name":"capabilities","type": "list - abilities and skills of the role"}
+      ]
+    },
+    {
+      "name": "Track",
+      "description": "Variations or subclasses of a particular script representing different specializations",
+      "properties": [
+        {"name":"script_type","type": "string - type of script this track belongs to"},
+        {"name":"specific_conditions","type": "object - conditions specific to this track variation"},
+        {"name":"specialized_events","type": "list - events unique to this track"}
+      ]
+    },
+    {
+      "name": "Scenes",
+      "description": "The sequence of events that occur during script execution",
+      "properties": [
+        {"name":"event_sequence","type": "ordered_list - temporal ordering of events within the scene"},
+        {"name":"participants","type": "list - agents involved in the scene"},
+        {"name":"actions","type": "list - actions performed in the scene"},
+        {"name":"preconditions","type": "object - conditions required before scene execution"},
+        {"name":"postconditions","type": "object - conditions that result from scene execution"}
+      ]
+    },
+    {
+      "name": "Event",
+      "description": "Observable actions or state changes in the world",
+      "properties": [
+        {"name":"actor","type": "string - agent performing the action"},
+        {"name":"action","type": "string - action being performed"},
+        {"name":"object","type": "string - object being acted upon"},
+        {"name":"preconditions","type": "object - conditions required before event"},
+        {"name":"postconditions","type": "object - conditions resulting from event"}
+      ]
+    },
+    {
+      "name": "Story Understanding",
+      "description": "The application of scripts to comprehend narratives by filling in gaps and making coherent connections between events",
+      "properties": [
+        {"name":"narrative_comprehension","type": "process - understanding story structure and meaning"},
+        {"name":"gap_filling","type": "process - inferring missing information using script knowledge"},
+        {"name":"causal_reasoning","type": "process - connecting events through cause-effect relationships"}
+      ]
+    },
+
+    {
+      "name": "Expectation Generation",
+      "description": "The cognitive process by which scripts help generate predictions about what will happen in familiar situations",
+      "properties": [{
+        "prediction_mechanism": "process - how scripts generate expectations about future events",
+        "default_assumptions": "list - typical expectations derived from script knowledge",
+        "violation_detection": "process - recognition when expectations are not met",
+        "emotional_responses": "list - reactions when expectations are violated"
+      }]
+    },
+    {
+      "name": "Script-based Reasoning",
+      "description": "The process of using script knowledge to understand situations and make inferences",
+      "properties": [{
+        "situation_classification": "process - determining which script applies to a situation",
+        "script_instantiation": "process - filling in specific values for script variables",
+        "inference_generation": "process - deriving conclusions from script knowledge"
+      }]
+    }
+  ],
+
+  "Instances": [{
+      "concept": "Script", "name": "Restaurant Script",
+      "description": "A specific instance of a script representing the stereotypical sequence of events when dining at a restaurant",
+      "values": {
+        "entry_conditions": {"S_is_hungry": true, "S_has_money": true},
+        "results": {"S_has_less_money": true, "S_not_hungry": true, "S_is_pleased": true, "O_has_more_money": true},
+        "props": "[tables, menu, check, money, food, place]",
+        "roles": {"S": "customer", "W": "waiter", "C": "cook", "M": "cashier", "O": "owner"},
+        "tracks": "[coffeehouse, fast_food, casual_dining, formal_dining]",
+        "scenes": "[entering, ordering, eating, paying, leaving]"
+      }
+    },
+    {
+      "name": "EnteringScene",
+      "concept": "Scene",
+      "values": {
+          "events": [
+            "customer moves to restaurant",
+            "customer sees table",
+            "customer decides to sit",
+            "customer moves to table",
+            "customer sits down",
+            "waiter sees customer",
+            "waiter moves to customer",
+            "waiter moves menu to customer"
+          ],
+          "name": "entering"
+      }
+    },
+    {
+      "name": "CustomerMovesToRestaurant",
+      "concept": "PrimitiveAction",
+      "values": {
+          "agent": "customer",
+          "action_type": "move",
+          "object": "self",
+          "destination": "restaurant"
+        }
+      }
+  ],
+
+  "Assertions": [
+    {
+      "name": "S",
+      "description": "Abbreviation for customer",
+      "equivalentTo": "customer"
+    },
+    {
+      "name": "W",
+      "description": "Abbreviation for waiter",
+      "equivalentTo": "waiter"
+    },
+    {
+      "name": "C",
+      "description": "Abbreviation for cook",
+      "equivalentTo": "cook"
+    },
+    {
+      "name": "M",
+      "description": "Abbreviation for cashier",
+      "equivalentTo": "cashier"
+    },
+    {
+      "name": "O",
+      "description": "Abbreviation for owner",
+      "equivalentTo": "owner"
+    },
+    {
+      "name": "prim",
+      "description": "Abbreviation for primitive action",
+      "equivalentTo": "PrimitiveAction"
+    }
+
+  ],
+
+
+  "Relations": [
+    {
+      "name": "contains",
+      "description": "A script contains multiple scenes",
+      "domain": "Script",
+      "range": "Scene"
+    },
+    {
+      "name": "has_track",
+      "description": "A script has multiple tracks representing variations",
+      "domain": "Script",
+      "range": "Track"
+    },
+    {
+      "name": "involves_role",
+      "description": "A script involves specific roles/agents",
+      "domain": "Script",
+      "range": "Role"
+    },
+    {
+      "name": "uses_prop",
+      "description": "A script uses specific props/objects",
+      "domain": "Script",
+      "range": "Prop"
+    },
+    {
+      "name": "precedes",
+      "description": "One event precedes another in a sequence",
+      "domain": "Event",
+      "range": "Event"
+    },
+    {
+      "name": "causes",
+      "description": "One event causally leads to another",
+      "domain": "Event",
+      "range": "Event"
+    },
+    {
+      "name": "instantiates",
+      "description": "A specific story instantiates a general script",
+      "domain": "Story",
+      "range": "Script"
+    },
+    {
+      "name": "help an agent learn",
+      "domain": "semantic networks",
+      "range": "script"
+    },
+    {
+      "name": "help an agent learn",
+      "domain": "frames",
+      "range": "script"
+    },
+    {
+      "name": "help an agent learn",
+      "domain": "incremental concept learning",
+      "range": "script"
+    },
+    {
+      "name": "help an agent learn",
+      "domain": "planning",
+      "range": "script"
+    },
+    {
+      "name": "help an agent learn",
+      "domain": "commonsense reasoning",
+      "range": "script"
+    },
+    {
+      "name": "help an agent use",
+      "domain": "problem reduction",
+      "range": "script"
+    },
+    {
+      "name": "help an agent use",
+      "domain": "classification",
+      "range": "script"
+    },
+    {
+      "name": "help an agent use",
+      "domain": "logic",
+      "range": "script"
+    },
+    {
+      "name": "help an agent use",
+      "domain": "understanding",
+      "range": "script"
+    }
+  ]
+}

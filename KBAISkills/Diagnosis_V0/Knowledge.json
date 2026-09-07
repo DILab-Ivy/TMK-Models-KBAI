@@ -1,0 +1,227 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "symptom"
+    },
+    {
+      "name": "disease",
+      "properties": [
+        {
+          "name": "causesSymptoms",
+          "type": "[symptom]"
+        }
+      ]
+    },
+    {
+      "name": "configuration",
+      "properties": [
+        {
+          "name": "observedSymptoms",
+          "type": "[symptom]"
+        },
+        {
+          "name": "candidateHypotheses",
+          "type": "[disease]"
+        },
+        {
+          "name": "finalHypotheses",
+          "type": "[disease]"
+        }
+      ]
+    },
+    {
+      "name": "knowledgeBase",
+      "properties": [
+        {
+          "name": "diseases",
+          "type": "[disease]"
+        }
+      ]
+    }
+  ],
+  "Instances": [
+    {
+      "concept": "symptom",
+      "name": "elevatedA"
+    },
+    {
+      "concept": "symptom",
+      "name": "reducedB"
+    },
+    {
+      "concept": "symptom",
+      "name": "elevatedC"
+    },
+    {
+      "concept": "symptom",
+      "name": "reducedC"
+    },
+    {
+      "concept": "symptom",
+      "name": "reducedD"
+    },
+    {
+      "concept": "symptom",
+      "name": "normalE"
+    },
+    {
+      "concept": "symptom",
+      "name": "elevatedF"
+    },
+    {
+      "concept": "disease",
+      "name": "alphaitis",
+      "values": {
+        "causesSymptoms": [
+          "elevatedA",
+          "reducedC",
+          "elevatedF"
+        ]
+      }
+    },
+    {
+      "concept": "disease",
+      "name": "betatosis",
+      "values": {
+        "causesSymptoms": [
+          "reducedB",
+          "elevatedC",
+          "reducedD"
+        ]
+      }
+    },
+    {
+      "concept": "disease",
+      "name": "gammopathy",
+      "values": {
+        "causesSymptoms": [
+          "elevatedA",
+          "reducedD",
+          "normalE"
+        ]
+      }
+    },
+    {
+      "concept": "disease",
+      "name": "deltosis",
+      "values": {
+        "causesSymptoms": [
+          "elevatedA",
+          "reducedB",
+          "elevatedC",
+          "reducedD",
+          "normalE",
+          "elevatedF"
+        ]
+      }
+    },
+    {
+      "concept": "disease",
+      "name": "epsilonoma",
+      "values": {
+        "causesSymptoms": [
+          "reducedB",
+          "reducedD",
+          "elevatedF"
+        ]
+      }
+    },
+    {
+      "concept": "disease",
+      "name": "zetapraxia",
+      "values": {
+        "causesSymptoms": [
+          "elevatedA",
+          "reducedB",
+          "reducedD"
+        ]
+      }
+    },
+    {
+      "concept": "disease",
+      "name": "etitis",
+      "values": {
+        "causesSymptoms": [
+          "reducedC",
+          "normalE",
+          "elevatedF"
+        ]
+      }
+    },
+    {
+      "concept": "configuration",
+      "name": "initialConfiguration",
+      "values": {
+        "observedSymptoms": [
+          "elevatedA",
+          "reducedB",
+          "elevatedC",
+          "reducedD",
+          "normalE",
+          "elevatedF"
+        ],
+        "candidateHypotheses": [],
+        "finalHypotheses": []
+      }
+    },
+    {
+      "concept": "configuration",
+      "name": "finalConfiguration",
+      "values": {
+        "observedSymptoms": [
+          "elevatedA",
+          "reducedB",
+          "elevatedC",
+          "reducedD",
+          "normalE",
+          "elevatedF"
+        ],
+        "candidateHypotheses": [],
+        "finalHypotheses": [
+          "deltosis"
+        ]
+      }
+    },
+    {
+      "concept": "knowledgeBase",
+      "name": "faultKnowledgeBase",
+      "values": {
+        "diseases": [
+          "alphaitis",
+          "betatosis",
+          "gammopathy",
+          "deltosis",
+          "epsilonoma",
+          "zetapraxia",
+          "etitis"
+        ]
+      }
+    }
+  ],
+  "Relations": [
+    {
+      "name": "explains",
+      "domain": "disease",
+      "range": "[symptom]"
+    },
+    {
+      "name": "covers",
+      "description": "Indicates that a set of hypotheses fully explains all observed symptoms, aiming for maximum coverage.",
+      "domain": "[disease]",
+      "range": "[symptom]"
+    },
+    {
+      "name": "isParsimonious",
+      "description": "Indicates whether a set of hypotheses is minimal, preferring the smallest number of cardinalities.",
+      "range": "BOOLEAN"
+    }
+  ],
+  "Assertions": [
+    {
+      "name": "goodDiagnosis",
+      "description": "Evaluates if a configuration has a good diagnosis.",
+      "equivalentTo": "covers(finalHypotheses, observedSymptoms) && isParsimonious(finalHypotheses)"
+    }
+  ]
+}

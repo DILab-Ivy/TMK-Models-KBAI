@@ -1,0 +1,121 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "FindOutFoodAllergiesConditions",
+      "description": "Determine the food allergy condition using version space learning.",
+      "inputParameters": ["examples: Set of Example"],
+      "outputParameters": ["allergyCondition: Condition"],
+      "given": "examples != {}",
+      "makes": "allergyCondition != null",
+      "means": [
+        {
+          "mechanismReference": "VersionSpaceLearning",
+          "actualArguments": ["examples"]
+        }
+      ]
+    },
+    {
+      "name": "ProcessExample",
+      "description": "Processes an example from the given set of examples.",
+      "inputParameters": ["examples: Set of Example"],
+      "outputParameters": ["currentExample: Example"],
+      "given": "examples != {}",
+      "makes": "examples.length -= 1",
+      "means": [
+        {
+          "mechanismReference": "ProcessExampleMechanism",
+          "actualArguments": ["examples"]
+        }
+      ]
+    },
+    {
+      "name": "InitializeModel",
+      "description": "Initializes the specific and general boundaries of the version space based on the first positive example.",
+      "inputParameters": ["example: Example"],
+      "outputParameters": ["specificModel: SpecificModels", "generalModels: GeneralModels"],
+      "given": "example != null",
+      "makes": "specificModels != null && generalModels != null",
+      "means": [
+        {
+          "mechanismReference": "InitializeModelMechanism",
+          "actualArguments": ["example"]
+        }
+      ]
+    },
+    {
+      "name": "GeneralizeSpecific",
+      "description": "Generalizes the specific models of the version space based on a positive example.",
+      "inputParameters": ["specificModel: SpecificModels", "example: Example"],
+      "outputParameters": ["specificModel: SpecificModels"],
+      "given": "example.isPositive == true && specificModels != null",
+      "makes": "specificModels.includes(example) == true",
+      "means": [
+        {
+          "mechanismReference": "GeneralizeSpecificMechanism",
+          "actualArguments": ["specificModels", "example"]
+        }
+      ]
+    },
+    {
+      "name": "SpecializeGeneral",
+      "description": "Specializes the general models of the version space based on a negative example.",
+      "inputParameters": ["generalModels: GeneralModels", "example: Example"],
+      "outputParameters": ["generalModels: GeneralModels"],
+      "given": "example.isPositive != true && generalModels != null",
+      "makes": "general.includes(example) != true",
+      "means": [
+        {
+          "mechanismReference": "SpecializeGeneralMechanism",
+          "actualArguments": ["generalModels", "example"]
+        }
+      ]
+    },
+    {
+      "name": "PruneInconsistent",
+      "description": "Prunes inconsistent models from the version space based on the current example, also remove redundant models that are consumed by other models",
+      "inputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels", "example: Example"],
+      "outputParameters": ["specificModel: SpecificModels", "generalModels: GeneralModels"],
+      "given": "example != null && generalModels != null && && specificModels != null",
+      "makes": "InconsistenciesRemoved ==true && SubsumedModelsRemoved == true",
+      "means": [
+        {
+          "mechanismReference": "PruneInconsistentMechanism",
+          "actualArguments": ["specificModels", "generalModels", "example"]
+        }
+      ]
+    },
+    {
+      "name": "CheckConvergence",
+      "description": "Checks whether the specific and general models of the version space have converged.",
+      "inputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels"],
+      "outputParameters": ["modelConverged: BOOLEAN"],
+      "given": "specificModels != null && generalModels != null",
+      "makes": "modelConverged != null",
+      "means": [
+        {
+          "mechanismReference": "CheckConvergenceMechanism",
+          "actualArguments": ["specificModels", "generalModels"]
+        }
+      ]
+    },
+    {
+      "name": "FailureGoal",
+      "description": "Represents a failure state in the task execution.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "false",
+      "means": []
+    },
+    {
+      "name": "ExtractCondition",
+      "description": "Represents the extracted condition satisfies all examples and is a final success state.",
+      "inputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels"],
+      "outputParameters": ["allergyCondition: Condition"],
+      "given": "modelConverged == true",
+      "makes": "allergyCondition != null",
+      "means": []
+    }
+  ]
+}

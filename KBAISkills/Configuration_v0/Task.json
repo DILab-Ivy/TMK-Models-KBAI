@@ -1,0 +1,39 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "configure basement layout",
+      "description": "Design a basement layout that satisfies all given spatial and dimensional constraints.",
+      "inputs": [
+        "basement dimensions",
+        "room requirements",
+        "constraint set"
+      ],
+      "outputs": "basement layout with dimensions for each room",
+      "given-condition": [
+        "basement dimensions are provided",
+        "room requirements are provided",
+        "constraint set is not empty"
+      ],
+      "post-condition": "the layout meets meets all spatial and dimensional constraints",
+      "method": "solve using configuration"
+    },
+    {
+      "name": "configure chair specification",
+      "description": "Assemble a chair that meets all given cost, mass, and material constraints.",
+      "inputs": [
+        "chair part specifications",
+        "material cost table",
+        "constraint set"
+      ],
+      "outputs": "chair specification with validated part details",
+      "given-condition": [
+        "chair parts and their attributes are provided",
+        "material cost table is available",
+        "constraint set is not empty"
+      ],
+      "post-condition": "chair meets all cost, mass, and material constraints",
+      "method": "solve using configuration"
+    }
+  ]
+}

@@ -1,0 +1,220 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "VisuospatialReasoning",
+      "description": "Reason with visuospatial knowledge by retrieving visuospatial content, encoding it, and producing a consistent solution.",
+      "inputParameters": ["problemContext"],
+      "outputParameters": ["visuoSpatialSolution"],
+      "given": "Problem has visuospatial content defined",
+      "makes": "problem solution",
+      "means": [
+        {
+          "mechanismReference": "VisuospatialReasoningSolution",
+          "actualArguments": ["problemContext", "visuoSpatialSolution"]
+        }
+      ]
+    },
+    {
+      "name": "RetrieveVisuoSpatialContent",
+      "description": "Retrieve visuospatial content required for reasoning by collecting visual and spatial components and assembling them.",
+      "inputParameters": ["problemContext"],
+      "outputParameters": ["rawVisuoSpatialContent"],
+      "given": "Problem has visuospatial content defined",
+      "makes": "rawVisuoSpatialContent containing visual and spatial parts",
+      "means": [
+        {
+          "mechanismReference": "RetrieveVisuoSpatialContentSolution",
+          "actualArguments": ["problemContext", "rawVisuoSpatialContent"]
+        }
+      ]
+    },
+    {
+      "name": "EncodeVisuoSpatialContentAndSolve",
+      "description": "Encode retrieved visuospatial content into a usable internal form by selecting an appropriate representation mode and solving using that mode.",
+      "inputParameters": ["rawVisuoSpatialContent"],
+      "outputParameters": ["visuoSpatialSolution"],
+      "given": "rawVisuoSpatialContent != null",
+      "makes": "visuoSpatialSolution != null",
+      "means": [
+        {
+          "mechanismReference": "EncodeVisuoSpatialContentAndSolveSolution",
+          "actualArguments": ["rawVisuoSpatialContent", "visuoSpatialSolution"]
+        }
+      ]
+    },
+    {
+      "name": "SolveUsingPropositionalRepresentation",
+      "description": "Construct a propositional representation of the visuospatial content, derive a causal pattern, and apply that causal pattern to produce a solution.",
+      "inputParameters": ["rawVisuoSpatialContent", "problemContext"],
+      "outputParameters": ["visuoSpatialSolution"],
+      "given": "rawVisuoSpatialContent != null",
+      "makes": "visuoSpatialSolution != null && consistent(visuoSpatialSolution, problemContext)",
+      "means": [
+        {
+          "mechanismReference": "SolveUsingPropositionalRepresentationSolution",
+          "actualArguments": ["rawVisuoSpatialContent", "problemContext", "visuoSpatialSolution"]
+        }
+      ]
+    },
+    {
+      "name": "SolveUsingAnalogicalRepresentation",
+      "description": "Solve a visuospatial problem using analogical structures: construct an analogical representation, map it onto the target problem, and produce a solution.",
+      "inputParameters": ["rawVisuoSpatialContent", "problemContext"],
+      "outputParameters": ["visuoSpatialSolution"],
+      "given": "rawVisuoSpatialContent != null",
+      "makes": "visuoSpatialSolution != null && consistent(visuoSpatialSolution, problemContext)",
+      "means": [
+        {
+          "mechanismReference": "SolveUsingAnalogicalRepresentationSolution",
+          "actualArguments": ["rawVisuoSpatialContent", "problemContext", "visuoSpatialSolution"]
+        }
+      ]
+    },
+    {
+      "name": "SystemThinking",
+      "description": "Construct a Structure-Behavior-Function (SBF) model for a system by modeling visible structure, invisible behavior/function, and their multilevel interaction.",
+      "inputParameters": ["System"],
+      "outputParameters": ["SBFModel"],
+      "given": "System != null",
+      "makes": "SBFModel != null",
+      "means": [
+        {
+          "mechanismReference": "StructureBehaviorFunctionModelingSolution",
+          "actualArguments": ["System", "SBFModel"]
+        }
+      ]
+    },
+    {
+      "name": "RepresentInvisibleBehaviorAndFunction",
+      "description": "Infer and align the invisible behavior and function of a system with its structure.",
+      "inputParameters": ["StructureModel", "System"],
+      "outputParameters": ["FunctionModel", "BehaviorModel"],
+      "given": "StructureModel != null",
+      "makes": "FunctionModel != null && BehaviorModel != null && SBF models aligned",
+      "means": [
+        {
+          "mechanismReference": "RepresentInvisibleBehaviorAndFunctionSolution",
+          "actualArguments": ["StructureModel", "System", "FunctionModel", "BehaviorModel"]
+        }
+      ]
+    },
+    {
+      "name": "DesignThinking",
+      "description": "Perform design thinking: analyze the system using systems thinking, generate a creative design that satisfies the goal under constraints, and learn from that design.",
+      "inputParameters": ["DesignGoal", "CurrentSystemModel", "Constraints"],
+      "outputParameters": ["ProposedDesign"],
+      "given": "DesignGoal != null && CurrentSystemModel != null && Constraints != null",
+      "makes": "ProposedDesign satisfies Design Goal",
+      "means": [
+        {
+          "mechanismReference": "DesignThinkingSolution",
+          "actualArguments": ["DesignGoal", "CurrentSystemModel", "Constraints", "ProposedDesign"]
+        }
+      ]
+    },
+    {
+      "name": "GenerateCreativeDesign",
+      "description": "Generate a new design for the goal by retrieving or replicating prior design patterns and transforming them to satisfy new constraints.",
+      "inputParameters": ["DesignGoal", "SystemInsights", "Constraints"],
+      "outputParameters": ["ProposedDesign"],
+      "given": "SystemInsights != null && Constraints != null && DesignGoal != null",
+      "makes": "ProposedDesign addresses DesignGoal",
+      "means": [
+        {
+          "mechanismReference": "GenerateCreativeDesignSolution",
+          "actualArguments": ["DesignGoal", "SystemInsights", "Constraints", "ProposedDesign"]
+        }
+      ]
+    },
+    {
+      "name": "SolveDunckerRadiationWithVisuospatialReasoning",
+      "description": "Solve the Duncker radiation problem (doctor and tumor) by transferring the visuospatial structure of the fortress/army story. The goal is to propose a treatment plan that converges multiple weaker beams on the tumor from different directions.",
+      "inputParameters": ["fortressScene: rawVisuoSpatialContent", "medicalScene: problemContext"],
+      "outputParameters": ["treatmentPlan: visuoSpatialSolution"],
+      "given": "fortressScene encodes central target with multiple approach paths AND medicalScene encodes tumor and body layout",
+      "makes": "treatmentPlan decomposes a single damaging beam into multiple weak beams arriving simultaneously from multiple directions",
+      "means": [
+        {
+          "mechanismReference": "VisuospatialReasoningSolution",
+          "actualArguments": ["medicalScene", "treatmentPlan"]
+        }
+      ]
+    },
+    {
+      "name": "ExplainPistonCrankSystemVisuospatially",
+      "description": "Interpret the piston–cylinder and crankshaft engineering diagram as visuospatial knowledge to explain how linear piston motion becomes rotational crank motion.",
+      "inputParameters": ["mechanicalDiagram: rawVisuoSpatialContent", "questionContext: problemContext"],
+      "outputParameters": ["mechanismExplanation: visuoSpatialSolution"],
+      "given": "mechanicalDiagram shows piston, rod, and crank geometry and linkages",
+      "makes": "mechanismExplanation maps linear translation in the piston to rotational motion in the crank via mapped correspondences of connected parts",
+      "means": [
+        {
+          "mechanismReference": "VisuospatialReasoningSolution",
+          "actualArguments": ["questionContext", "mechanismExplanation"]
+        }
+      ]
+    },
+    {
+      "name": "SolveRavensWithVisuospatialReasoning",
+      "description": "Solve a Raven's Progressive Matrices item by representing panels as visuospatial structures and mapping structural transformations rather than relying purely on propositional symbolic rules.",
+      "inputParameters": ["matrixPanels: rawVisuoSpatialContent", "matrixQuestion: problemContext"],
+      "outputParameters": ["chosenAnswer: visuoSpatialSolution"],
+      "given": "matrixPanels encode shapes and spatial transforms across rows/columns",
+      "makes": "chosenAnswer matches the panel whose structure best satisfies the discovered visuospatial transformation pattern",
+      "means": [
+        {
+          "mechanismReference": "VisuospatialReasoningSolution",
+          "actualArguments": ["matrixQuestion", "chosenAnswer"]
+        }
+      ]
+    },
+    {
+      "name": "ModelFlashlightWithSBF",
+      "description": "Produce an SBF model for a basic flashlight: identify visible structure (battery, switch, bulb), the invisible behavior (current flows when switch is pressed), and the function (produce light).",
+      "inputParameters": ["flashlightSystem: System"],
+      "outputParameters": ["flashlightSBF: SBFModel"],
+      "given": "flashlightSystem != null and components identifiable",
+      "makes": "flashlightSBF links structure (battery/switch/bulb) to behavior (current flow) to function (emit light)",
+      "means": [
+        {
+          "mechanismReference": "StructureBehaviorFunctionModelingSolution",
+          "actualArguments": ["flashlightSystem", "flashlightSBF"]
+        }
+      ]
+    },
+    {
+      "name": "Design20LumenFlashlight",
+      "description": "Design a flashlight circuit that produces 20 lumens by using design thinking: reason about the current flashlight's SBF model, identify functional gap (10 → 20 lumens), and produce a higher-output design (e.g., higher voltage using two batteries in series).",
+      "inputParameters": ["DesignGoal: lumenTarget", "CurrentSystemModel: flashlightSBF", "Constraints: resourceLimits"],
+      "outputParameters": ["ProposedDesign: flashlightDesign"],
+      "given": "DesignGoal specifies brightness increase beyond current output and CurrentSystemModel encodes the 10-lumen circuit",
+      "makes": "ProposedDesign increases available voltage or cascades behavior to meet lumenTarget under resourceLimits",
+      "means": [
+        {
+          "mechanismReference": "DesignThinkingSolution",
+          "actualArguments": ["DesignGoal", "CurrentSystemModel", "Constraints", "ProposedDesign"]
+        }
+      ]
+    },
+    {
+      "name": "FailureGoal",
+      "description": "Represents a failure state in the task execution.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "false",
+      "means": []
+    },
+    {
+      "name": "SuccessGoal",
+      "description": "Represents a success state in the task execution.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "true",
+      "means": []
+    }
+  ]
+}
+

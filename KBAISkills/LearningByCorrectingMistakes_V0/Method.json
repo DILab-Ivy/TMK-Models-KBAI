@@ -1,0 +1,452 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "CorrectionSolution",
+      "description": "FSM to manage correction process from decision analysis to fixed explanation.",
+      "inputParameters": [
+        "initialConfiguration: configuration",
+        "kb: knowledgeBase"
+      ],
+      "outputParameters": [
+        "finalConfiguration: configuration"
+      ],
+      "requires": "!isEmpty(initialConfiguration.observedDecision) && isValid(kb)",
+      "provides": "goodCorrection(finalConfiguration)",
+      "organizer": {
+        "startState": "S0_Generate",
+        "successState": "S3_Complete",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "S0_Generate",
+            "goalInvocation": {
+              "goalReference": "GenerateExplanation",
+              "type": "task",
+              "actualArguments": [
+                "initialConfiguration"
+              ]
+            }
+          },
+          {
+            "name": "S1_Isolate",
+            "goalInvocation": {
+              "goalReference": "IsolateMistake",
+              "type": "task",
+              "actualArguments": [
+                "S0_Generate.explanation",
+                "kb"
+              ]
+            }
+          },
+          {
+            "name": "S2_Correct",
+            "goalInvocation": {
+              "goalReference": "CorrectExplanation",
+              "type": "task",
+              "actualArguments": [
+                "S1_Isolate.mistake"
+              ]
+            }
+          },
+          {
+            "name": "S3_Complete",
+            "goalInvocation": {
+              "goalReference": "CorrectionComplete",
+              "type": "task",
+              "actualArguments": [
+                "S2_Correct.correctedExplanation"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "CorrectionFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "S0_Generate",
+            "targetState": "S1_Isolate",
+            "dataCondition": "!isEmpty(S0_Generate.explanation)"
+          },
+          {
+            "sourceState": "S0_Generate",
+            "targetState": "Fail",
+            "dataCondition": "isEmpty(S0_Generate.explanation)"
+          },
+          {
+            "sourceState": "S1_Isolate",
+            "targetState": "S2_Correct",
+            "dataCondition": "!isEmpty(S1_Isolate.mistake)"
+          },
+          {
+            "sourceState": "S1_Isolate",
+            "targetState": "Fail",
+            "dataCondition": "isEmpty(S1_Isolate.mistake)"
+          },
+          {
+            "sourceState": "S2_Correct",
+            "targetState": "S3_Complete",
+            "dataCondition": "goodCorrection(S2_Correct.correctedExplanation)"
+          },
+          {
+            "sourceState": "S2_Correct",
+            "targetState": "Fail",
+            "dataCondition": "!goodCorrection(S2_Correct.correctedExplanation)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GenerateExplanationMechanism",
+      "description": "Mechanism to generate explanation for decision.",
+      "inputParameters": [
+        "config: configuration"
+      ],
+      "outputParameters": [
+        "explanation: explanation"
+      ],
+      "requires": "!isEmpty(config.observedDecision)",
+      "provides": "!isEmpty(explanation)",
+      "organizer": {
+        "startState": "GE_S0",
+        "successState": "GE_Done",
+        "failureState": "GE_Fail",
+        "states": [
+          {
+            "name": "GE_S0",
+            "goalInvocation": {
+              "goalReference": "BuildExplanation",
+              "type": "operation",
+              "actualArguments": [
+                "config"
+              ]
+            }
+          },
+          {
+            "name": "GE_S1",
+            "goalInvocation": {
+              "goalReference": "ValidateExplanation",
+              "type": "operation",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "GE_Done",
+            "goalInvocation": {
+              "goalReference": "OutputExplanation",
+              "type": "operation",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "GE_Fail",
+            "goalInvocation": {
+              "goalReference": "CorrectionFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "GE_S0",
+            "targetState": "GE_S1",
+            "dataCondition": "!isEmpty(GE_S0)"
+          },
+          {
+            "sourceState": "GE_S0",
+            "targetState": "GE_Fail",
+            "dataCondition": "isEmpty(GE_S0)"
+          },
+          {
+            "sourceState": "GE_S1",
+            "targetState": "GE_Done",
+            "dataCondition": "!isEmpty(GE_S1)"
+          },
+          {
+            "sourceState": "GE_S1",
+            "targetState": "GE_Fail",
+            "dataCondition": "isEmpty(GE_S1)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IsolateMistakeMechanism",
+      "description": "Mechanism to isolate mistake in explanation.",
+      "inputParameters": [
+        "explanation: explanation",
+        "kb: knowledgeBase"
+      ],
+      "outputParameters": [
+        "mistake: mistake"
+      ],
+      "requires": "!isEmpty(explanation)",
+      "provides": "isolatesMistake(explanation, mistake)",
+      "organizer": {
+        "startState": "IM_S0",
+        "successState": "IM_Done",
+        "failureState": "IM_Fail",
+        "states": [
+          {
+            "name": "IM_S0",
+            "goalInvocation": {
+              "goalReference": "AnalyzeExplanation",
+              "type": "operation",
+              "actualArguments": [
+                "explanation",
+                "kb"
+              ]
+            }
+          },
+          {
+            "name": "IM_S1",
+            "goalInvocation": {
+              "goalReference": "IdentifyFault",
+              "type": "operation",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "IM_Done",
+            "goalInvocation": {
+              "goalReference": "OutputMistake",
+              "type": "operation",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "IM_Fail",
+            "goalInvocation": {
+              "goalReference": "CorrectionFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "IM_S0",
+            "targetState": "IM_S1",
+            "dataCondition": "!isEmpty(IM_S0)"
+          },
+          {
+            "sourceState": "IM_S0",
+            "targetState": "IM_Fail",
+            "dataCondition": "isEmpty(IM_S0)"
+          },
+          {
+            "sourceState": "IM_S1",
+            "targetState": "IM_Done",
+            "dataCondition": "!isEmpty(IM_S1)"
+          },
+          {
+            "sourceState": "IM_S1",
+            "targetState": "IM_Fail",
+            "dataCondition": "isEmpty(IM_S1)"
+          },
+          {
+            "sourceState": "IM_Done",
+            "targetState": "IM_Fail",
+            "dataCondition": "isEmpty(IM_Done)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CorrectExplanationMechanism",
+      "description": "Mechanism to correct faulty explanation.",
+      "inputParameters": [
+        "mistake: mistake"
+      ],
+      "outputParameters": [
+        "correctedExplanation: explanation"
+      ],
+      "requires": "!isEmpty(mistake)",
+      "provides": "corrects(correctedExplanation, mistake.faultyExplanation)",
+      "organizer": {
+        "startState": "CE_S0",
+        "successState": "CE_Done",
+        "failureState": "CE_Fail",
+        "states": [
+          {
+            "name": "CE_S0",
+            "goalInvocation": {
+              "goalReference": "RepairFault",
+              "type": "operation",
+              "actualArguments": [
+                "mistake"
+              ]
+            }
+          },
+          {
+            "name": "CE_S1",
+            "goalInvocation": {
+              "goalReference": "VerifyCorrection",
+              "type": "operation",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "CE_Done",
+            "goalInvocation": {
+              "goalReference": "OutputCorrectedExplanation",
+              "type": "operation",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "CE_Fail",
+            "goalInvocation": {
+              "goalReference": "CorrectionFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "CE_S0",
+            "targetState": "CE_S1",
+            "dataCondition": "!isEmpty(CE_S0)"
+          },
+          {
+            "sourceState": "CE_S0",
+            "targetState": "CE_Fail",
+            "dataCondition": "isEmpty(CE_S0)"
+          },
+          {
+            "sourceState": "CE_S1",
+            "targetState": "CE_Done",
+            "dataCondition": "!isEmpty(CE_S1)"
+          },
+          {
+            "sourceState": "CE_S1",
+            "targetState": "CE_Fail",
+            "dataCondition": "isEmpty(CE_S1)"
+          },
+          {
+            "sourceState": "CE_Done",
+            "targetState": "CE_Fail",
+            "dataCondition": "isEmpty(CE_Done)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BuildExplanation",
+      "description": "Operation to build explanation from decision.",
+      "inputParameters": [
+        "config: configuration"
+      ],
+      "outputParameters": [
+        "explanation: explanation"
+      ],
+      "requires": "!isEmpty(config.observedDecision)",
+      "provides": "!isEmpty(explanation)"
+    },
+    {
+      "name": "ValidateExplanation",
+      "description": "Operation to validate built explanation.",
+      "inputParameters": [
+        "builtExplanation: explanation"
+      ],
+      "outputParameters": [
+        "validatedExplanation: explanation"
+      ],
+      "requires": "!isEmpty(builtExplanation)",
+      "provides": "!isEmpty(validatedExplanation)"
+    },
+    {
+      "name": "OutputExplanation",
+      "description": "Operation to output validated explanation.",
+      "inputParameters": [
+        "validatedExplanation: explanation"
+      ],
+      "outputParameters": [
+        "finalExplanation: explanation"
+      ],
+      "requires": "!isEmpty(validatedExplanation)",
+      "provides": "!isEmpty(finalExplanation)"
+    },
+    {
+      "name": "AnalyzeExplanation",
+      "description": "Operation to analyze explanation for faults.",
+      "inputParameters": [
+        "explanation: explanation",
+        "kb: knowledgeBase"
+      ],
+      "outputParameters": [
+        "analyzed: explanation"
+      ],
+      "requires": "!isEmpty(explanation)",
+      "provides": "!isEmpty(analyzed)"
+    },
+    {
+      "name": "IdentifyFault",
+      "description": "Operation to identify fault in analyzed explanation.",
+      "inputParameters": [
+        "analyzed: explanation"
+      ],
+      "outputParameters": [
+        "mistake: mistake"
+      ],
+      "requires": "!isEmpty(analyzed)",
+      "provides": "!isEmpty(mistake)"
+    },
+    {
+      "name": "OutputMistake",
+      "description": "Operation to output identified mistake.",
+      "inputParameters": [
+        "mistake: mistake"
+      ],
+      "outputParameters": [
+        "finalMistake: mistake"
+      ],
+      "requires": "!isEmpty(mistake)",
+      "provides": "!isEmpty(finalMistake)"
+    },
+    {
+      "name": "RepairFault",
+      "description": "Operation to repair fault in explanation.",
+      "inputParameters": [
+        "mistake: mistake"
+      ],
+      "outputParameters": [
+        "repaired: explanation"
+      ],
+      "requires": "!isEmpty(mistake)",
+      "provides": "!isEmpty(repaired)"
+    },
+    {
+      "name": "VerifyCorrection",
+      "description": "Operation to verify repaired explanation.",
+      "inputParameters": [
+        "repaired: explanation"
+      ],
+      "outputParameters": [
+        "verified: explanation"
+      ],
+      "requires": "!isEmpty(repaired)",
+      "provides": "!isEmpty(verified)"
+    },
+    {
+      "name": "OutputCorrectedExplanation",
+      "description": "Operation to output verified correction.",
+      "inputParameters": [
+        "verified: explanation"
+      ],
+      "outputParameters": [
+        "correctedExplanation: explanation"
+      ],
+      "requires": "!isEmpty(verified)",
+      "provides": "!isEmpty(correctedExplanation)"
+    }
+  ]
+}

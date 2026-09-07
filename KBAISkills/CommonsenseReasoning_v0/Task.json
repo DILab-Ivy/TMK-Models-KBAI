@@ -1,0 +1,162 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "MapSentenceToFrame_Task",
+      "description": "Create a typed frame instance and paraphrase from an input sentence using an ontology and language tools.",
+      "inputs": [
+        "s: Sentence",
+        "ont: Ontology"
+      ],
+      "outputs": [
+        "fi: FrameInstance",
+        "p: Paraphrase"
+      ],
+      "post-condition": "exists fi, p (paraphrasesAs(fi, p) and p.text != \"\")",
+      "method": "MapSentenceToFrame",
+      "given-condition": "s.text != \"\" and ont.version != \"\""
+    },
+    {
+      "name": "MakeCommonsenseInference_Task",
+      "description": "Given a frame instance and ontology, compute an inference judgement.",
+      "inputs": [
+        "fi: FrameInstance",
+        "ont: Ontology"
+      ],
+      "outputs": [
+        "j: Judgement"
+      ],
+      "post-condition": "exists j (judges(fi, j) and 0.0 <= j.confidence <= 1.0)",
+      "method": "MakeCommonsenseInference",
+      "given-condition": "isType(FrameInstance, fi) and isType(Ontology, ont)"
+    },
+    {
+      "name": "CommonsenseReasoning_Skill",
+      "description": "End-to-end pipeline: map sentence to frame then evaluate commonsense inference.",
+      "inputs": [
+        "s: Sentence",
+        "ont: Ontology"
+      ],
+      "outputs": [
+        "fi: FrameInstance",
+        "p: Paraphrase",
+        "j: Judgement"
+      ],
+      "post-condition": "exists fi, p, j (paraphrasesAs(fi, p) and judges(fi, j))",
+      "method": [
+        "MapSentenceToFrame",
+        "MakeCommonsenseInference"
+      ],
+      "given-condition": "s.text != \"\" and ont.version != \"\""
+    },
+    {
+      "name": "commonsense inference",
+      "description": "Perform defeasible evaluation on a frame to yield a judgement and entailed sentences.",
+      "inputs": [
+        "fi: FrameInstance",
+        "ont: Ontology"
+      ],
+      "outputs": [
+        "j: Judgement",
+        "entailments: [Sentence]"
+      ],
+      "given-condition": "isType(FrameInstance, fi)",
+      "post-condition": "exists j (0.0 <= j.confidence <= 1.0)",
+      "method": "MakeCommonsenseInference"
+    },
+    {
+      "name": "frame representation mapping",
+      "description": "Map a sentence to a frame with filled roles; allow translation for implied actions.",
+      "inputs": [
+        "s: Sentence",
+        "ont: Ontology",
+        "context"
+      ],
+      "outputs": [
+        "fi: FrameInstance",
+        "p: Paraphrase"
+      ],
+      "given-condition": "s.text != \"\" and ont.version != \"\"",
+      "post-condition": "exists fi, p (mapsToFrame(s, fi.frame) and p.text != \"\")",
+      "method": "MapSentenceToFrame"
+    },
+    {
+      "name": "end-to-end commonsense reasoning",
+      "description": "End-to-end pipeline from sentence to inference with examples from KBAI course content.",
+      "inputs": [
+        "s: Sentence",
+        "ont: Ontology"
+      ],
+      "outputs": [
+        "fi: FrameInstance",
+        "p: Paraphrase",
+        "j: Judgement",
+        "entailments: [Sentence]"
+      ],
+      "given-condition": "s.text != \"\" and ont.version != \"\"",
+      "post-condition": "exists fi, p, j (mapsToFrame(s, fi.frame) and p.text != \"\" and j.status in {\"entailed\",\"plausible\",\"unknown\",\"contradictory\"})",
+      "method": [
+        "MapSentenceToFrame",
+        "MakeCommonsenseInference"
+      ],
+      "examples": [
+        {
+          "sentence": "'Ashok ate a frog.'",
+          "primitive": "ingest",
+          "notes": "synonymy with 'devoured/consumed/ingested'"
+        },
+        {
+          "sentence": "'Bob shot Bill.'",
+          "translation": "'Bob propelled a bullet into Bill.'",
+          "primitive": "propel",
+          "alt": "photograph sense via 'take a picture'"
+        },
+        {
+          "sentence": "'John fertilized the field.'",
+          "translation": "'John put fertilizer on the field.'",
+          "primitive": "move-object"
+        },
+        {
+          "sentence": "'Susan comforted Jing.'",
+          "primitive": "do",
+          "stateChange": "Jing.mood \u2192 happy"
+        },
+        {
+          "sentence": "'Maria told Ben to throw the ball.'",
+          "primitives": [
+            "speak",
+            "propel"
+          ],
+          "link": "resultsIn"
+        }
+      ]
+    },
+    {
+      "name": "SafetyValidationGoal",
+      "description": "Declarative goal to validate world state meets safety constraints for commonsense reasoning outputs.",
+      "inputs": [
+        "fi: FrameInstance",
+        "ont: Ontology"
+      ],
+      "outputs": [
+        "ok: BOOLEAN"
+      ],
+      "given-condition": "isType(FrameInstance, fi) and isType(Ontology, ont)",
+      "post-condition": "ok == true  # All safety constraints satisfied (typing, role completeness, non-contradiction)",
+      "method": "MakeCommonsenseInference"
+    },
+    {
+      "name": "FailureGoal",
+      "description": "Declarative failure goal to register a mechanism failure and surface diagnostics.",
+      "inputs": [
+        "context"
+      ],
+      "outputs": [
+        "recordedFailure: BOOLEAN"
+      ],
+      "given-condition": "true",
+      "post-condition": "recordedFailure == true",
+      "method": []
+    }
+  ]
+}

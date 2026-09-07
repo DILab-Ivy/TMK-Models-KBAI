@@ -1,0 +1,141 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "configuration",
+      "description": "The process of arranging components or parameters to meet a set of constraints and goals by selecting and sizing parts, ensuring compatibility, and validating against requirements."
+    },
+    {
+      "name": "constraint satisfaction",
+      "description": "A process in which a solution must meet all specified constraints (e.g. cost limits, size and material requirements, etc.)."
+    },
+    {
+      "name": "constraint type",
+      "description": "The category of a requirement, such as dimensional, cost, mass, or material constraint.",
+      "enum": ["dimensional", "cost", "mass", "material"]
+    },
+    {
+      "name": "hierarchical configuration",
+      "description": "Organising configuration tasks from high (system)-level down to detailed low-level component specifications."
+    },
+    {
+      "name": "causal reasoning",
+      "description": "Understanding the effect of changing one parameter on the other parts of the configuration."
+    },
+    {
+      "name": "teleological reasoning",
+      "description": "Designing with the end goal in mind, ensuring that each decision contributes to the intended purpose of the system."
+    },
+    {
+      "name": "basement",
+      "description": "The lowest storey/level of a building, wholly or partially underground. A structure with defined length, width, and height, subdivided into rooms that must meet area and dimension constraints."
+    },
+    {
+      "name": "chair",
+      "description": "A piece of furniture composed of parts such as legs, seat, arms, and back, each with material, size, mass, and cost attributes."
+    },
+    {
+      "name": "material",
+      "description": "The substance from which a component is made, affecting cost, mass, and durability.",
+      "enum": ["plastic", "wood", "metal", "N/A"]
+    },
+    {
+      "name": "component",
+      "description": "A part of a larger configuration, such as a room in a basement or a leg in a chair."
+    }
+  ],
+
+  "instances": [
+    {
+      "name": "example_basement",
+      "concept": "basement",
+      "properties": [
+        {
+          "length": 44,
+          "width": 30,
+          "height": 8,
+          "util-closet-length": 10,
+          "util-closet-width": 10,
+          "stairwell-length": 10,
+          "stairwell-width": 10,
+          "bathroom-length": 20,
+          "bathroom-width": 10,
+          "rooms": [
+            {
+              "name": "room1",
+              "length": "20",
+              "width": "23"
+            },
+            {
+              "name": "room2",
+              "length": "20",
+              "width": "23"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "example_chair-1",
+      "concept": "chair",
+      "properties": [
+        {
+          "total_mass": "160g",
+          "total_cost": "<= $16.00",
+          "legs": {
+            "count": 4,
+            "size": "10g",
+            "material": "metal",
+            "cost": "$4.00"
+          },
+          "seat": {
+            "size": "100g",
+            "material": "metal",
+            "cost": "$10"
+          },
+          "arms": {
+            "size": "0g",
+            "material": "N/A",
+            "cost": "$0.00"
+          },
+          "back": {
+            "size": "20g",
+            "material": "metal",
+            "cost": "$2.00"
+          }
+        }
+      ]
+    },
+    {
+      "name": "example_chair-2",
+      "concept": "chair",
+      "properties": [
+        {
+          "total_mass": "180g",
+          "total_cost": "<= $16.00",
+          "legs": {
+            "count": 4,
+            "size": "10g",
+            "material": "metal",
+            "cost": "$4.00"
+          },
+          "seat": {
+            "size": "100g",
+            "material": "metal",
+            "cost": "$10"
+          },
+          "arms": {
+            "size": "0g",
+            "material": "N/A",
+            "cost": "$0.00"
+          },
+          "back": {
+            "size": "40g",
+            "material": "wood",
+            "cost": "$2.00"
+          }
+        }
+      ]
+    }
+  ]
+}

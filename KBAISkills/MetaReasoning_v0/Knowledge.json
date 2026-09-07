@@ -1,0 +1,79 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    { "name": "MetaReasoning", "description": "Thinking about thinking; reasoning about one's own knowledge, reasoning, and learning." },
+    { "name": "Problem", "description": "A situation the agent is trying to solve or explain." },
+    { "name": "Issue", "description": "A detected difficulty in solving the problem, such as an error or a gap." },
+    { "name": "IssueType", "description": "The classification of an issue as an Error or a Gap." },
+
+    { "name": "Error", "description": "A case where existing knowledge, reasoning, or learning is incorrect." },
+    { "name": "KnowledgeError", "superConcept": ["Error"], "description": "An error caused by incorrect or inconsistent knowledge." },
+    { "name": "ReasoningError", "superConcept": ["Error"], "description": "An error caused by a faulty inference or reasoning step." },
+    { "name": "LearningError", "superConcept": ["Error"], "description": "An error caused by an incorrect learned explanation or concept." },
+
+    { "name": "Gap", "description": "A missing piece of knowledge or reasoning that prevents progress on the problem." },
+    { "name": "KnowledgeGap", "superConcept": ["Gap"], "description": "Missing knowledge that links two parts of an explanation." },
+    { "name": "ReasoningGap", "superConcept": ["Gap"], "description": "A missing inference step that would connect known facts." },
+
+    { "name": "MetaGoal", "description": "A goal at the meta-level to fix an error or fill a gap." },
+    { "name": "RepairGoal", "superConcept": ["MetaGoal"], "description": "A meta-goal to repair incorrect knowledge or reasoning." },
+    { "name": "AcquireGoal", "superConcept": ["MetaGoal"], "description": "A meta-goal to acquire missing knowledge or construct missing links." },
+
+    { "name": "Strategy", "description": "A method or procedure for reasoning about a problem or meta-goal." },
+    { "name": "CaseBasedReasoning", "superConcept": ["Strategy"], "description": "Solving new problems by retrieving and adapting past cases." },
+    { "name": "MeansEndsAnalysis", "superConcept": ["Strategy"], "description": "Reducing the difference between current and goal states by selecting operators." },
+    { "name": "ProblemReduction", "superConcept": ["Strategy"], "description": "Decomposing a complex goal into simpler, more independent subgoals." },
+    { "name": "ConstraintPropagation", "superConcept": ["Strategy"], "description": "Using constraints to restrict the space of possible solutions." },
+    { "name": "GenerateAndTest", "superConcept": ["Strategy"], "description": "Generating candidate solutions and testing them with a heuristic or evaluation function." },
+
+    { "name": "StrategySelection", "description": "The process of choosing which strategy to use for a given meta-goal." },
+    { "name": "StrategyIntegration", "description": "The process of switching between or combining multiple strategies during problem solving." },
+
+    { "name": "StrategyCriteria", "description": "Criteria used to select a strategy, such as knowledge requirements, computational efficiency, and solution quality." },
+    { "name": "Status", "description": "The progress state of a strategy, such as Progress or Stall." },
+    { "name": "Resolution", "description": "The final result produced by meta-reasoning: repaired knowledge, new knowledge, or a successful plan." },
+
+    { "name": "Cases", "description": "Stored prior problems and solutions used by case-based reasoning." },
+    { "name": "Constraints", "description": "Relations or restrictions among variables used by constraint propagation." },
+
+    { "name": "MR", "description": "Abbreviation for MetaReasoning", "equivalentTo": "MetaReasoning" }
+  ],
+
+  "relations": [
+    { "name": "hasIssueType", "description": "Relates an Issue to its IssueType (Error or Gap)." },
+    { "name": "hasErrorIn", "description": "Relates an Error to the component it occurs in (knowledge, reasoning, or learning)." },
+    { "name": "spawns", "description": "Relates an Issue or Gap to the MetaGoal it generates." },
+    { "name": "requiresKnowledge", "description": "Relates a Strategy to the knowledge structures it needs." },
+    { "name": "applicableTo", "description": "Relates a Strategy to the kind of MetaGoal it can address." },
+    { "name": "integratesWith", "description": "Relates a Strategy to another Strategy that can be combined with it." },
+    { "name": "improves", "description": "Relates a Strategy or MetaGoal to the Resolution it helps to produce." },
+    { "name": "usesStrategy", "description": "Relates MetaReasoning or MetaGoal to the Strategy chosen." }
+  ],
+
+  "assertions": [
+    { "subject": "Issue", "relation": "hasIssueType", "object": "IssueType" },
+
+    { "subject": "KnowledgeError", "relation": "hasErrorIn", "object": "knowledge" },
+    { "subject": "ReasoningError", "relation": "hasErrorIn", "object": "reasoning" },
+    { "subject": "LearningError", "relation": "hasErrorIn", "object": "learning" },
+
+    { "subject": "Gap", "relation": "spawns", "object": "AcquireGoal" },
+    { "subject": "Error", "relation": "spawns", "object": "RepairGoal" },
+
+    { "subject": "CaseBasedReasoning", "relation": "requiresKnowledge", "object": "Cases" },
+    { "subject": "ConstraintPropagation", "relation": "requiresKnowledge", "object": "Constraints" },
+
+    { "subject": "RepairGoal", "relation": "applicableTo", "object": "CaseBasedReasoning" },
+    { "subject": "RepairGoal", "relation": "applicableTo", "object": "MeansEndsAnalysis" },
+    { "subject": "AcquireGoal", "relation": "applicableTo", "object": "ConstraintPropagation" },
+    { "subject": "AcquireGoal", "relation": "applicableTo", "object": "GenerateAndTest" },
+
+    { "subject": "MeansEndsAnalysis", "relation": "integratesWith", "object": "ProblemReduction" },
+
+    { "subject": "MetaReasoning", "relation": "usesStrategy", "object": "StrategySelection" },
+    { "subject": "MetaReasoning", "relation": "usesStrategy", "object": "StrategyIntegration" },
+
+    { "subject": "StrategySelection", "relation": "improves", "object": "Resolution" },
+    { "subject": "StrategyIntegration", "relation": "improves", "object": "Resolution" }
+  ]
+}

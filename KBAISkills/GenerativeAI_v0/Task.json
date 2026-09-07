@@ -1,0 +1,19 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "TODO",
+      "description": "This JSON is empty. As of drafting this (Oct 2025), there are no skill-based tasks in the lesson. Please refer to Knowledge.json for the lesson content.",
+      "inputParameters": [""],
+      "outputParameters": [""],
+      "given": "",
+      "makes": "",
+      "means": [
+        {
+          "mechanismReference": "",
+          "actualArguments": [""]
+        }
+      ]
+    }
+  ]
+}

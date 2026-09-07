@@ -1,0 +1,35 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "apply constraint propagation to recognise valid configurations",
+      "description": "Assign values/labels to variables in a problem space satisfying all given constraints.",
+      "inputs": [
+        "variables sequence",
+        "constraints set"
+      ],
+      "outputs": "variables assigned values consistent with all constraints",
+      "given-condition": [
+        "variables sequence is not empty",
+        "constraints set is defined"
+      ],
+      "post-condition": "all variables have values satisfying every applicable constraint",
+      "method": "solve using constraint propagation"
+    },
+    {
+      "name": "label geometric or linguistic elements based on constraints",
+      "description": "Determine the correct label for each element using constraint rules and eliminating inconsistent possibilities.",
+      "inputs": [
+        "elements sequence",
+        "constraints set"
+      ],
+      "outputs": "labeled elements consistent with constraints",
+      "given-condition": [
+        "elements sequence is not empty",
+        "constraints set is defined"
+      ],
+      "post-condition": "all elements are labelled in accordance with the constraints",
+      "method": "solve using constraint propagation"
+    }
+  ]
+}

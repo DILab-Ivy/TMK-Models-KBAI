@@ -1,0 +1,357 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "DumbGenerateAndTest",
+      "description": "Generate and test method using dumb generator and dumb tester - generates all possible solutions and tests only for clearly illegal states",
+      "inputParameters": [
+        "initialState",
+        "goalState",
+        "constraints"
+      ],
+      "outputParameters": [
+        "solutionPath",
+        "failure"
+      ],
+      "requires": "DumbGenerator, DumbTester, problem specification",
+      "provides": "Valid path from initial to goal state or failure",
+      "organizer": {
+        "startState": "Initialize",
+        "successState": "SuccessTerminate",
+        "failureState": "FailureTerminate",
+        "states": [
+          {
+            "name": "Initialize",
+            "goalInvocation": {
+              "goalReference": "setInitialState",
+              "type": "operation",
+              "actualArguments": [
+                "initialState"
+              ]
+            }
+          },
+          {
+            "name": "Generate",
+            "goalInvocation": {
+              "goalReference": "generateSuccessors",
+              "type": "operation",
+              "actualArguments": [
+                "currentState"
+              ]
+            }
+          },
+          {
+            "name": "Test",
+            "goalInvocation": {
+              "goalReference": "testLegality",
+              "type": "operation",
+              "actualArguments": [
+                "successorStates",
+                "constraints"
+              ]
+            }
+          },
+          {
+            "name": "CheckGoal",
+            "goalInvocation": {
+              "goalReference": "checkGoalState",
+              "type": "operation",
+              "actualArguments": [
+                "legalStates",
+                "goalState"
+              ]
+            }
+          },
+          {
+            "name": "Update",
+            "goalInvocation": {
+              "goalReference": "selectNextState",
+              "type": "operation",
+              "actualArguments": [
+                "legalStates"
+              ]
+            }
+          },
+          {
+            "name": "SuccessTerminate",
+            "goalInvocation": {
+              "goalReference": "returnSolution",
+              "type": "operation",
+              "actualArguments": [
+                "goalFound",
+                "solutionPath"
+              ]
+            }
+          },
+          {
+          "name": "FailureTerminate",
+          "goalInvocation": {
+            "goalReference": "returnFailure",
+            "type": "operation",
+            "actualArguments": [
+              ""
+              ]
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "Initialize",
+            "targetState": "Generate",
+            "dataCondition": "initialState != {}"
+          },
+          {
+            "sourceState": "Initialize",
+            "targetState": "Fail",
+            "dataCondition": "initialState == {}"
+          },
+          {
+            "sourceState": "Generate",
+            "targetState": "Test",
+            "dataCondition": "currentState != {} && successorStates != {}"
+          },
+          {
+            "sourceState": "Generate",
+            "targetState": "Fail",
+            "dataCondition": "currentState == {} || successorStates == {}"
+          },
+          {
+            "sourceState": "Test",
+            "targetState": "CheckGoal",
+            "dataCondition": "successorStates != {} && constraints != {}"
+          },
+          {
+            "sourceState": "Test",
+            "targetState": "CheckGoal",
+            "dataCondition": "successorStates == {} || constraints == {}"
+          },
+          {
+            "sourceState": "CheckGoal",
+            "targetState": "Update",
+            "dataCondition": "goalFound == false && legalStates != {}"
+          },
+          {
+          "sourceState": "CheckGoal",
+          "targetState": "SuccessTerminate",
+          "dataCondition": "goalFound == true"
+          },
+          {
+          "sourceState": "CheckGoal",
+          "targetState": "FailureTerminate",
+          "dataCondition": "goalFound == false && legalStates == {}"
+          },
+          {
+            "sourceState": "CheckGoal",
+            "targetState": "Fail",
+            "dataCondition": "goalStates == {}"
+          },
+          {
+            "sourceState": "Update",
+            "targetState": "Generate",
+            "dataCondition": "legalStates != {}"
+          },
+          {
+            "sourceState": "Update",
+            "targetState": "Fail",
+            "dataCondition": "legalStates == {}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CheckGoal",
+      "description": "Determine whether any candidate state satisfies the specified goal state.",
+      "inputParameters": [
+        "candidateStates",
+        "goalState"
+      ],
+      "outputParameters": [
+        "goalFound",
+        "matchingState"
+      ],
+      "requires": "candidateStates != {} && goalState != {}",
+      "provides": "goalFound == true || goalFound == false"
+    },
+    {
+      "name": "SmartGenerateAndTest",
+      "description": "Generate and test method using smart generator and smart tester - generates only productive solutions and applies sophisticated testing including repetition detection and complex filtering",
+      "inputParameters": [
+        "initialState",
+        "goalState",
+        "constraints"
+      ],
+      "outputParameters": [
+        "solutionPath",
+        "failure"
+      ],
+      "requires": "SmartGenerator, SmartTester, problem specification, domain knowledge",
+      "provides": "Valid path from initial to goal state or failure",
+      "organizer": {
+        "startState": "Initialize",
+        "successState": "SuccessTerminate",
+        "failureState": "FailureTerminate",
+        "states": [
+          {
+            "name": "Initialize",
+            "goalInvocation": {
+              "goalReference": "setInitialStateAndVisited",
+              "type": "operation",
+              "actualArguments": [
+                "initialState"
+              ]
+            }
+          },
+          {
+            "name": "Generate",
+            "goalInvocation": {
+              "goalReference": "generateSuccessors",
+              "type": "operation",
+              "actualArguments": [
+                "currentState",
+                "visitedStates"
+              ]
+            }
+          },
+          {
+            "name": "Test",
+            "goalInvocation": {
+              "goalReference": "pruneStates",
+              "type": "operation",
+              "actualArguments": [
+                "successorStates",
+                "constraints",
+                "visitedStates"
+              ]
+            }
+          },
+          {
+            "name": "Merge",
+            "goalInvocation": {
+              "goalReference": "mergeIdenticalStates",
+              "type": "operation",
+              "actualArguments": [
+                "filteredStates"
+              ]
+            }
+          },
+          {
+            "name": "CheckGoal",
+            "goalInvocation": {
+              "goalReference": "checkGoalState",
+              "type": "operation",
+              "actualArguments": [
+                "legalStates",
+                "goalState"
+              ]
+            }
+          },
+          {
+            "name": "Update",
+            "goalInvocation": {
+              "goalReference": "updateVisitedAndSelectNext",
+              "type": "operation",
+              "actualArguments": [
+                "currentState",
+                "legalStates",
+                "visitedStates"
+              ]
+            }
+          },
+          {
+            "name": "SuccessTerminate",
+            "goalInvocation": {
+              "goalReference": "returnSolution",
+              "type": "operation",
+              "actualArguments": [
+                "goalFound",
+                "solutionPath"
+              ]
+            }
+          },
+          {
+          "name": "FailureTerminate",
+          "goalInvocation": {
+            "goalReference": "returnFailure",
+            "type": "operation",
+            "actualArguments": [
+              ""
+              ]
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "Initialize",
+            "targetState": "Generate",
+            "dataCondition": "initialState != {}"
+          },
+          {
+            "sourceState": "Initialize",
+            "targetState": "Fail",
+            "dataCondition": "initialState == {}"
+          },
+          {
+            "sourceState": "Generate",
+            "targetState": "Test",
+            "dataCondition": "currentState != {} && successorStates != {}"
+          },
+          {
+            "sourceState": "Generate",
+            "targetState": "Fail",
+            "dataCondition": "currentState == {} || successorStates == {}"
+          },
+          {
+            "sourceState": "Test",
+            "targetState": "Merge",
+            "dataCondition": "successorStates != {} && constraints != {}"
+          },
+          {
+            "sourceState": "Test",
+            "targetState": "Fail",
+            "dataCondition": "successorStates == {} || constraints == {}"
+          },
+          {
+            "sourceState": "Merge",
+            "targetState": "CheckGoal",
+            "dataCondition": "filteredStates != {}"
+          },
+          {
+            "sourceState": "Merge",
+            "targetState": "Fail",
+            "dataCondition": "filteredStates == {}"
+          },
+          {
+            "sourceState": "CheckGoal",
+            "targetState": "Update",
+            "dataCondition": "goalFound == false && legalStates != {}"
+          },
+          {
+          "sourceState": "CheckGoal",
+          "targetState": "SuccessTerminate",
+          "dataCondition": "goalFound == true"
+          },
+          {
+          "sourceState": "CheckGoal",
+          "targetState": "FailureTerminate",
+          "dataCondition": "goalFound == false && legalStates == {}"
+          },
+          {
+            "sourceState": "CheckGoal",
+            "targetState": "Fail",
+            "dataCondition": "goalStates == {}"
+          },
+          {
+            "sourceState": "Update",
+            "targetState": "Generate",
+            "dataCondition": "visitedStates != {} && currentState != {}"
+          },
+          {
+            "sourceState": "Update",
+            "targetState": "Fail",
+            "dataCondition": "visitedStates == {} || currentState == {}"
+          }
+        ]
+      }
+    }
+  ]
+}

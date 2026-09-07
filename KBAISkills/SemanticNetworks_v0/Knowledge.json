@@ -1,0 +1,122 @@
+{
+  "model": "Knowledge",
+
+  "concepts": [
+    { "name": "passenger" },
+    { "name": "guard", "superConcept": ["passenger"] },
+    { "name": "prisoner", "superConcept": ["passenger"] },
+    { "name": "bank" },
+    { "name": "boat", "properties": [
+      { "name": "position", "type": "bank" },
+      { "name": "occupancy", "type": "INTEGER" }
+    ] },
+    { "name": "pair", "properties": [
+      { "name": "guardCount", "type": "INTEGER" },
+      { "name": "prisonerCount", "type": "INTEGER" }
+    ] },
+    { "name": "configuration", "properties": [
+      { "name": "leftBank", "type": "pair" },
+      { "name": "rightBank", "type": "pair" }
+    ] },
+
+    { "name": "figure", "description": "An RPM panel: either a matrix cell or a candidate option." },
+    { "name": "cell", "superConcept": ["figure"] },
+    { "name": "candidate", "superConcept": ["figure"] },
+    { "name": "object", "description": "A shape within a figure." },
+    { "name": "relation", "description": "Labeled relation between two objects."},
+    { "name": "transformation", "description": "Operator(s) mapping objects/relations between two figures."},
+    { "name": "semanticNetwork", "description": "A knowledge representation consisting lexicon, structure and semantics.", "properties": [
+      { "name": "lexicon", "description": "the vocabulary of the presentation language." },
+      { "name": "structure", "description": "how the words of that vocabulary can be composed together into complex representations" },
+      { "name": "semantics", "description": "how the representation allows us to draw inferences so that we can reason" }
+    ]},
+    { "name": "weight", "description": "Weights assigned to transformations for similarity computation."},
+    { "name": "similarityScore", "description": "Score for a candidate."},
+    { "name": "answer", "description": "Selected candidate as final answer.", "superConcept": ["candidate"] }
+  ],
+
+
+  "Instances": [
+    { "concept": "guard", "name": "guard1" },
+    { "concept": "guard", "name": "guard2" },
+    { "concept": "guard", "name": "guard3" },
+    { "concept": "prisoner", "name": "prisoner1" },
+    { "concept": "prisoner", "name": "prisoner2" },
+    { "concept": "prisoner", "name": "prisoner3" },
+    { "concept": "bank", "name": "leftBank" },
+    { "concept": "bank", "name": "rightBank" },
+    { "concept": "boat", "name": "boat1", "values": { "position": "rightBank", "occupancy": 0 } },
+    { "concept": "configuration", "name": "initialConfiguration", "values": {
+      "leftBank": { "guardCount": 0, "prisonerCount": 0 },
+      "rightBank": { "guardCount": 3, "prisonerCount": 3 }
+    }},
+    { "concept": "configuration", "name": "finalConfiguration", "values": {
+      "leftBank": { "guardCount": 3, "prisonerCount": 3 },
+      "rightBank": { "guardCount": 0, "prisonerCount": 0 }
+    }},
+
+    { "concept": "relation", "name": "Inside"},
+    { "concept": "relation", "name": "Above"},
+    { "concept": "transformation", "name": "Unchanged"},
+    { "concept": "transformation", "name": "Rotate"},
+    { "concept": "transformation", "name": "Scale"},
+    { "concept": "transformation", "name": "Reflect"},
+    { "concept": "transformation", "name": "Delete"},
+    { "concept": "transformation", "name": "ShapeChanged"},
+    { "concept": "transformation", "name": "Expanded"}
+  ],
+
+  "Relations": [
+    { "name": "carries", "domain": "boat", "range": "passenger" },
+    { "name": "contains",            "domain": "figure",          "range": "object" },
+    { "name": "represented_as",      "domain": "figure",          "range": "semanticNetwork" },
+    { "name": "has_node",            "domain": "semanticNetwork", "range": "object" },
+    { "name": "has_edge",            "domain": "semanticNetwork", "range": "relation" },
+    { "name": "corresponds_to",      "domain": "object",          "range": "object" },
+    { "name": "has_transformation",  "domain": "figure",          "range": "figure" }
+  ],
+
+  "Assertions": [
+    {
+      "name": "safe",
+      "description": "Evaluates if a configuration is valid or legal based on guard-to-prisoner rules on both banks.",
+      "equivalentTo": "SafeConfiguration(config)"
+    },
+    {
+      "name": "MGAP",
+      "description": "Abbreviation for MoveGuardAndPrisonerMechanism",
+      "equivalentTo": "MoveGuardAndPrisonerMechanism"
+    },
+    {
+      "name": "RG",
+      "description": "Abbreviation for ReturnGuardMechanism",
+      "equivalentTo": "ReturnGuardMechanism"
+    },
+    {
+      "name": "RP",
+      "description": "Abbreviation for ReturnPrisonerMechanism",
+      "equivalentTo": "ReturnPrisonerMechanism"
+    },
+    {
+      "name": "MTP",
+      "description": "Abbreviation for MoveTwoPrisonersMechanism",
+      "equivalentTo": "MoveTwoPrisonersMechanism"
+    },
+    {
+      "name": "MTG",
+      "description": "Abbreviation for MoveTwoGuardsMechanism",
+      "equivalentTo": "MoveTwoGuardsMechanism"
+    },
+    {
+      "name": "RGAP",
+      "description": "Abbreviation for ReturnGuardAndPrisonerMechanism",
+      "equivalentTo": "ReturnGuardAndPrisonerMechanism"
+    },
+    { "name": "RFS",  "description": "Abbreviation for RepresentFiguresSolution",            "equivalentTo": "RepresentFiguresSolution" },
+    { "name": "RMTS", "description": "Abbreviation for RepresentMatrixTransformsSolution",  "equivalentTo": "RepresentMatrixTransformsSolution" },
+    { "name": "RCTS", "description": "Abbreviation for RepresentCandidateTransformsSolution","equivalentTo": "RepresentCandidateTransformsSolution" },
+    { "name": "CTPS", "description": "Abbreviation for CompareTransformPatternsSolution",   "equivalentTo": "CompareTransformPatternsSolution" },
+    { "name": "SAS",  "description": "Abbreviation for SelectAnswerSolution",               "equivalentTo": "SelectAnswerSolution" },
+    { "name": "SN",  "description": "Abbreviation for Semantic Networks"}
+  ]
+}

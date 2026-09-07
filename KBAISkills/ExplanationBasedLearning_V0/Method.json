@@ -1,0 +1,530 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "EBLMechanism",
+      "description": "Finite State Machine for Explanation-Based Learning to classify an object against a target concept.",
+      "inputParameters": [
+        "unfamiliarObject: object",
+        "targetConcept: concept",
+        "conceptSpace: concept_space"
+      ],
+      "outputParameters": [
+        "classification: boolean"
+      ],
+      "requires": "valid(unfamiliarObject) && defined(targetConcept) && complete(conceptSpace)",
+      "provides": "proven(classification)",
+      "organizer": {
+        "startState": "EBL_S0",
+        "successState": "EBL_S4",
+        "failureState": "EBL_Fail",
+        "states": [
+          {
+            "name": "EBL_S0",
+            "goalInvocation": {
+              "goalReference": "IdentifyRequiredFeatures",
+              "type": "task",
+              "actualArguments": [
+                "targetConcept"
+              ]
+            }
+          },
+          {
+            "name": "EBL_S1",
+            "goalInvocation": {
+              "goalReference": "AbstractCausalRelationships",
+              "type": "task",
+              "actualArguments": [
+                "conceptSpace"
+              ]
+            }
+          },
+          {
+            "name": "EBL_S2",
+            "goalInvocation": {
+              "goalReference": "TransferKnowledge",
+              "type": "task",
+              "actualArguments": [
+                "unfamiliarObject",
+                "EBL_S0",
+                "EBL_S1"
+              ]
+            }
+          },
+          {
+            "name": "EBL_S3",
+            "goalInvocation": {
+              "goalReference": "AggregateProof",
+              "type": "task",
+              "actualArguments": [
+                "EBL_S2"
+              ]
+            }
+          },
+          {
+            "name": "EBL_S4",
+            "goalInvocation": {
+              "goalReference": "ValidClassification",
+              "type": "task",
+              "actualArguments": [
+                "EBL_S3"
+              ]
+            }
+          },
+          {
+            "name": "EBL_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "EBL_S0",
+            "targetState": "EBL_S1",
+            "dataCondition": "complete(EBL_S0) && complete(EBL_S1)"
+          },
+          {
+            "sourceState": "EBL_S0",
+            "targetState": "EBL_Fail",
+            "dataCondition": "NOT complete(EBL_S0) || NOT complete(EBL_S1)"
+          },
+          {
+            "sourceState": "EBL_S1",
+            "targetState": "EBL_S2",
+            "dataCondition": "generalized(EBL_S1) && verified(EBL_S2)"
+          },
+          {
+            "sourceState": "EBL_S1",
+            "targetState": "EBL_Fail",
+            "dataCondition": "NOT generalized(EBL_S1) || NOT verified(EBL_S2)"
+          },
+          {
+            "sourceState": "EBL_S2",
+            "targetState": "EBL_S3",
+            "dataCondition": "verified(EBL_S2) && proven(EBL_S3)"
+          },
+          {
+            "sourceState": "EBL_S2",
+            "targetState": "EBL_Fail",
+            "dataCondition": "NOT verified(EBL_S2) || NOT proven(EBL_S3)"
+          },
+          {
+            "sourceState": "EBL_S3",
+            "targetState": "EBL_S4",
+            "dataCondition": "proven(EBL_S3) && proven(EBL_S4)"
+          },
+          {
+            "sourceState": "EBL_S3",
+            "targetState": "EBL_Fail",
+            "dataCondition": "NOT proven(EBL_S3) || NOT proven(EBL_S4)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IdentifyFeaturesMechanism",
+      "description": "Mechanism to identify required features for the target concept.",
+      "inputParameters": [
+        "targetConcept: concept"
+      ],
+      "outputParameters": [
+        "requiredFeatures: list<feature>"
+      ],
+      "requires": "defined(targetConcept)",
+      "provides": "complete(requiredFeatures)",
+      "organizer": {
+        "startState": "IF_S0",
+        "successState": "IF_S1",
+        "failureState": "IF_Fail",
+        "states": [
+          {
+            "name": "IF_S0",
+            "goalInvocation": {
+              "goalReference": "RetrieveConceptProperties",
+              "type": "operation",
+              "actualArguments": [
+                "targetConcept"
+              ]
+            }
+          },
+          {
+            "name": "IF_S1",
+            "goalInvocation": {
+              "goalReference": "ListRequiredFeatures",
+              "type": "operation",
+              "actualArguments": [
+                "IF_S0"
+              ]
+            }
+          },
+          {
+            "name": "IF_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "IF_S0",
+            "targetState": "IF_S1",
+            "dataCondition": "retrieved(IF_S0) && complete(IF_S1)"
+          },
+          {
+            "sourceState": "IF_S0",
+            "targetState": "IF_Fail",
+            "dataCondition": "NOT retrieved(IF_S0) || NOT complete(IF_S1)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AbstractRelationshipsMechanism",
+      "description": "Mechanism to abstract causal relationships from concept space.",
+      "inputParameters": [
+        "conceptSpace: concept_space"
+      ],
+      "outputParameters": [
+        "abstractedRelationships: list<relationship>"
+      ],
+      "requires": "complete(conceptSpace)",
+      "provides": "generalized(abstractedRelationships)",
+      "organizer": {
+        "startState": "AR_S0",
+        "successState": "AR_S2",
+        "failureState": "AR_Fail",
+        "states": [
+          {
+            "name": "AR_S0",
+            "goalInvocation": {
+              "goalReference": "RetrieveRelatedConcepts",
+              "type": "operation",
+              "actualArguments": [
+                "conceptSpace"
+              ]
+            }
+          },
+          {
+            "name": "AR_S1",
+            "goalInvocation": {
+              "goalReference": "ExtractImplications",
+              "type": "operation",
+              "actualArguments": [
+                "AR_S0"
+              ]
+            }
+          },
+          {
+            "name": "AR_S2",
+            "goalInvocation": {
+              "goalReference": "AbstractRelationships",
+              "type": "operation",
+              "actualArguments": [
+                "AR_S1"
+              ]
+            }
+          },
+          {
+            "name": "AR_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "AR_S0",
+            "targetState": "AR_S1",
+            "dataCondition": "retrieved(AR_S0) && extracted(AR_S1)"
+          },
+          {
+            "sourceState": "AR_S0",
+            "targetState": "AR_Fail",
+            "dataCondition": "NOT retrieved(AR_S0) || NOT extracted(AR_S1)"
+          },
+          {
+            "sourceState": "AR_S1",
+            "targetState": "AR_S2",
+            "dataCondition": "extracted(AR_S1) && generalized(AR_S2)"
+          },
+          {
+            "sourceState": "AR_S1",
+            "targetState": "AR_Fail",
+            "dataCondition": "NOT extracted(AR_S1) || NOT generalized(AR_S2)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TransferMechanism",
+      "description": "Mechanism to transfer knowledge and verify features.",
+      "inputParameters": [
+        "unfamiliarObject: object",
+        "requiredFeatures: list<feature>",
+        "abstractedRelationships: list<relationship>"
+      ],
+      "outputParameters": [
+        "featureProofs: list<proof_status>"
+      ],
+      "requires": "valid(unfamiliarObject) && complete(requiredFeatures) && generalized(abstractedRelationships)",
+      "provides": "verified(featureProofs)",
+      "organizer": {
+        "startState": "TM_S0",
+        "successState": "TM_S2",
+        "failureState": "TM_Fail",
+        "states": [
+          {
+            "name": "TM_S0",
+            "goalInvocation": {
+              "goalReference": "MatchObjectProperties",
+              "type": "operation",
+              "actualArguments": [
+                "unfamiliarObject",
+                "requiredFeatures"
+              ]
+            }
+          },
+          {
+            "name": "TM_S1",
+            "goalInvocation": {
+              "goalReference": "ApplyRelationships",
+              "type": "operation",
+              "actualArguments": [
+                "TM_S0",
+                "abstractedRelationships"
+              ]
+            }
+          },
+          {
+            "name": "TM_S2",
+            "goalInvocation": {
+              "goalReference": "VerifyProofs",
+              "type": "operation",
+              "actualArguments": [
+                "TM_S1"
+              ]
+            }
+          },
+          {
+            "name": "TM_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "TM_S0",
+            "targetState": "TM_S1",
+            "dataCondition": "matched(TM_S0) && applied(TM_S1)"
+          },
+          {
+            "sourceState": "TM_S0",
+            "targetState": "TM_Fail",
+            "dataCondition": "NOT matched(TM_S0) || NOT applied(TM_S1)"
+          },
+          {
+            "sourceState": "TM_S1",
+            "targetState": "TM_S2",
+            "dataCondition": "applied(TM_S1) && verified(TM_S2)"
+          },
+          {
+            "sourceState": "TM_S1",
+            "targetState": "TM_Fail",
+            "dataCondition": "NOT applied(TM_S1) || NOT verified(TM_S2)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AggregateMechanism",
+      "description": "Mechanism to aggregate proofs for final classification.",
+      "inputParameters": [
+        "featureProofs: list<proof_status>"
+      ],
+      "outputParameters": [
+        "classification: boolean"
+      ],
+      "requires": "verified(featureProofs)",
+      "provides": "proven(classification)",
+      "organizer": {
+        "startState": "AM_S0",
+        "successState": "AM_S1",
+        "failureState": "AM_Fail",
+        "states": [
+          {
+            "name": "AM_S0",
+            "goalInvocation": {
+              "goalReference": "CombineProofs",
+              "type": "operation",
+              "actualArguments": [
+                "featureProofs"
+              ]
+            }
+          },
+          {
+            "name": "AM_S1",
+            "goalInvocation": {
+              "goalReference": "DetermineClassification",
+              "type": "operation",
+              "actualArguments": [
+                "AM_S0"
+              ]
+            }
+          },
+          {
+            "name": "AM_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "AM_S0",
+            "targetState": "AM_S1",
+            "dataCondition": "combined(AM_S0) && proven(AM_S1)"
+          },
+          {
+            "sourceState": "AM_S0",
+            "targetState": "AM_Fail",
+            "dataCondition": "NOT combined(AM_S0) || NOT proven(AM_S1)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RetrieveConceptProperties",
+      "description": "Retrieves properties of the target concept from knowledge.",
+      "inputParameters": [
+        "targetConcept: concept"
+      ],
+      "outputParameters": [
+        "properties: list<property>"
+      ],
+      "requires": "defined(targetConcept)",
+      "provides": "retrieved(properties)"
+    },
+    {
+      "name": "ListRequiredFeatures",
+      "description": "Lists required features based on retrieved properties.",
+      "inputParameters": [
+        "properties: list<property>"
+      ],
+      "outputParameters": [
+        "requiredFeatures: list<feature>"
+      ],
+      "requires": "retrieved(properties)",
+      "provides": "complete(requiredFeatures)"
+    },
+    {
+      "name": "RetrieveRelatedConcepts",
+      "description": "Retrieves related concepts from concept space.",
+      "inputParameters": [
+        "conceptSpace: concept_space"
+      ],
+      "outputParameters": [
+        "relatedConcepts: list<concept>"
+      ],
+      "requires": "complete(conceptSpace)",
+      "provides": "retrieved(relatedConcepts)"
+    },
+    {
+      "name": "ExtractImplications",
+      "description": "Extracts implicative relationships from related concepts.",
+      "inputParameters": [
+        "relatedConcepts: list<concept>"
+      ],
+      "outputParameters": [
+        "implications: list<implication>"
+      ],
+      "requires": "retrieved(relatedConcepts)",
+      "provides": "extracted(implications)"
+    },
+    {
+      "name": "AbstractRelationships",
+      "description": "Generalizes extracted implications into abstracted relationships.",
+      "inputParameters": [
+        "implications: list<implication>"
+      ],
+      "outputParameters": [
+        "abstractedRelationships: list<relationship>"
+      ],
+      "requires": "extracted(implications)",
+      "provides": "generalized(abstractedRelationships)"
+    },
+    {
+      "name": "MatchObjectProperties",
+      "description": "Matches unfamiliar object's properties to required features.",
+      "inputParameters": [
+        "unfamiliarObject: object",
+        "requiredFeatures: list<feature>"
+      ],
+      "outputParameters": [
+        "matches: list<match>"
+      ],
+      "requires": "valid(unfamiliarObject) && complete(requiredFeatures)",
+      "provides": "matched(matches)"
+    },
+    {
+      "name": "ApplyRelationships",
+      "description": "Applies abstracted relationships to matches.",
+      "inputParameters": [
+        "matches: list<match>",
+        "abstractedRelationships: list<relationship>"
+      ],
+      "outputParameters": [
+        "appliedProofs: list<proof>"
+      ],
+      "requires": "matched(matches) && generalized(abstractedRelationships)",
+      "provides": "applied(appliedProofs)"
+    },
+    {
+      "name": "VerifyProofs",
+      "description": "Verifies the applied proofs for each feature.",
+      "inputParameters": [
+        "appliedProofs: list<proof>"
+      ],
+      "outputParameters": [
+        "featureProofs: list<proof_status>"
+      ],
+      "requires": "applied(appliedProofs)",
+      "provides": "verified(featureProofs)"
+    },
+    {
+      "name": "CombineProofs",
+      "description": "Combines individual feature proofs.",
+      "inputParameters": [
+        "featureProofs: list<proof_status>"
+      ],
+      "outputParameters": [
+        "combinedProof: proof"
+      ],
+      "requires": "verified(featureProofs)",
+      "provides": "combined(combinedProof)"
+    },
+    {
+      "name": "DetermineClassification",
+      "description": "Determines final classification based on combined proof.",
+      "inputParameters": [
+        "combinedProof: proof"
+      ],
+      "outputParameters": [
+        "classification: boolean"
+      ],
+      "requires": "combined(combinedProof)",
+      "provides": "proven(classification)"
+    }
+  ]
+}

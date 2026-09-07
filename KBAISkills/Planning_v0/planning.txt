@@ -1,0 +1,81 @@
+Skill: Planning
+Skill Description: Planning is the process of creating a sequence of actions to achieve a specific goal. In this problem, the robot must plan the sequence of operations needed to paint both the ladder and the ceiling, ensuring that it follows the constraints imposed by the environment.
+
+Problem: Robot Painting Problem
+
+Problem Description: The Robot Painting Problem involves a robot that needs to paint a ladder and a ceiling. The robot can move between the floor and the ladder. The ladder can be either dry or wet, and the ceiling can be either dry or painted. The primary objective of the Robot Painting Problem is to select a series of legal moves to go from an initial state where the robot is on the floor, the ladder is dry, and the ceiling is dry, to a goal state where both the ladder and the ceiling are painted.
+
+Nouns: robot, ladder, ceiling, floor, state, moves, goal state
+
+Verb phrases: paint ladder, paint ceiling, move to ladder, move off ladder
+
+Stative verbs: on the floor, on the ladder, dry, wet, painted
+
+Knowledge
+Concepts and Instances:
+
+robot description:
+
+Concept(robot);
+Instance(robot, robot1);
+ladder description:
+
+Concept(ladder);
+Instance(ladder, ladder1, state: Dry);
+ceiling description:
+
+Concept(ceiling);
+Instance(ceiling, ceiling1, state: Dry);
+floor description:
+
+Concept(floor);
+Instance(floor, floor1);
+state description:
+
+Concept(State);
+Instance(State, initialState, robot_position: on(robot, floor), ladder_state: Dry, ceiling_state: Dry);
+Instance(State, goalState, robot_position: on(robot, floor), ladder_state: Painted, ceiling_state: Painted);
+goal description:
+
+Concept(Goal, SuperConcept(State));
+Instance(goalState, goalState);
+Relations and Triples:
+
+robot position description:
+
+Relation(on, robot, floor);
+Relation(on, robot, ladder);
+painting description:
+
+Relation(Painted, ladder, robot);
+Relation(Painted, ceiling, robot);
+initial state description:
+
+on(robot1, floor1);
+ladder1.state = "Dry";
+ceiling1.state = "Dry";
+goal state description:
+
+on(robot1, floor1);
+ladder1.state = "Painted";
+ceiling1.state = "Painted";
+Methods
+generate subgoals description:
+
+Iteratively generate subgoals based on current state and goal state.
+create plans for subgoals description:
+
+Create plans for each subgoal.
+compare plans to detect conflicts description:
+
+Compare each plan to detect and resolve conflicts.
+order plans to resolve conflicts description:
+
+Order plans by selecting operations that provide end state conditions meeting the goal state and working backward.
+execute ordered plans description:
+
+Execute the ordered plans to achieve the goal state.
+Tasks
+solve using planning description:
+
+Solves the robot painting problem by generating subgoals, creating plans for each subgoal, comparing plans to detect conflicts, and ordering plans to achieve the goal state without conflicts. The task involves extracting the initial state, defining the goal state, and then executing the sequence of operations to move from the initial state to the goal state.

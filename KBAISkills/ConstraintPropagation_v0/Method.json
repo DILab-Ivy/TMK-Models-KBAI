@@ -1,0 +1,218 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "solve using constraint propagation",
+      "description": "Iteratively reduce the possible values of variables by enforcing constraints until a consistent assignment is found.",
+      "inputParameters": [
+        "variables: sequence of variables/elements",
+        "constraints: set of constraints"
+      ],
+      "outputParameters": [
+        "assignments: variables/elements with consistent assignments"
+      ],
+      "requires": "initial variables/elements and defined constraints",
+      "provides": "fully or partially assigned variables consistent with constraints",
+      
+      "organiser": {
+        "startState": "CP_InitializeDomains",
+        "successState": "CP_Validated",
+        "failureState": "CP_Fail",
+        
+        "states": [
+          {
+            "name": "CP_InitializeDomains",
+            "goalInvocation": {
+              "goalReference": "InitializeDomains",
+              "type": "operation",
+              "actualArguments": [
+                "variables",
+                "constraints",
+                "domains"
+              ]
+            }
+          },
+          {
+            "name": "CP_ApplyConstraints",
+            "goalInvocation": {
+              "goalReference": "ApplyConstraints",
+              "type": "operation",
+              "actualArguments": [
+                "domains",
+                "constraints",
+                "reducedDomains"
+              ]
+            }
+          },
+          {
+            "name": "CP_CheckConsistency",
+            "goalInvocation": {
+              "goalReference": "CheckConsistency",
+              "type": "operation",
+              "actualArguments": [
+                "reducedDomains",
+                "consistent"
+              ]
+            }
+          },
+          {
+            "name": "CP_AssignFinalValues",
+            "goalInvocation": {
+              "goalReference": "AssignFinalValues",
+              "type": "operation",
+              "actualArguments": [
+                "reducedDomains",
+                "assignments"
+              ]
+            }
+          },
+          {
+            "name": "CP_ValidateSolution",
+            "goalInvocation": {
+              "goalReference": "ValidateSolution",
+              "type": "operation",
+              "actualArguments": [
+                "assignments",
+                "valid"
+              ]
+            }
+          },
+          {
+            "name": "CP_Validated",
+            "goalInvocation": {
+              "goalReference": "ConstraintPropagationSuccess",
+              "type": "task",
+              "actualArguments": [
+                "assignments"
+              ]
+            }
+          },
+          {
+            "name": "CP_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        
+        "transitions": [
+          {
+            "sourceState": "CP_InitializeDomains",
+            "targetState": "CP_ApplyConstraints",
+            "dataCondition": "domains != null"
+          },
+          {
+            "sourceState": "CP_InitializeDomains",
+            "targetState": "CP_Fail",
+            "dataCondition": "domains == null"
+          },
+          {
+            "sourceState": "CP_ApplyConstraints",
+            "targetState": "CP_CheckConsistency",
+            "dataCondition": "reducedDomains != null"
+          },
+          {
+            "sourceState": "CP_ApplyConstraints",
+            "targetState": "CP_Fail",
+            "dataCondition": "reducedDomains == null"
+          },
+          {
+            "sourceState": "CP_CheckConsistency",
+            "targetState": "CP_AssignFinalValues",
+            "dataCondition": "consistent"
+          },
+          {
+            "sourceState": "CP_CheckConsistency",
+            "targetState": "CP_Fail",
+            "dataCondition": "not consistent"
+          },
+          {
+            "sourceState": "CP_AssignFinalValues",
+            "targetState": "CP_ValidateSolution",
+            "dataCondition": "assignments != null"
+          },
+          {
+            "sourceState": "CP_AssignFinalValues",
+            "targetState": "CP_Fail",
+            "dataCondition": "assignments == null"
+          },
+          {
+            "sourceState": "CP_ValidateSolution",
+            "targetState": "CP_Validated",
+            "dataCondition": "valid"
+          },
+          {
+            "sourceState": "CP_ValidateSolution",
+            "targetState": "CP_Fail",
+            "dataCondition": "not valid"
+          }
+        ]
+      }
+    },
+
+    {
+      "name": "InitializeDomains",
+      "description": "Initialises domains for variables based on constraints.",
+      "inputParameters": [
+        "variables: sequence of variables/elements",
+        "constraints: set of constraints"
+      ],
+      "outputParameters": [
+        "domains: initial domains for variables"
+      ],
+      "requires": "!isEmpty(variables) && !isEmpty(constraints)",
+      "provides": "domains != null"
+    },
+    {
+      "name": "ApplyConstraints",
+      "description": "Applies constraints and reduce variable domains.",
+      "inputParameters": [
+        "domains: current domains of variables",
+        "constraints: set of constraints"
+      ],
+      "outputParameters": [
+        "reducedDomains: domains after constraint propagation"
+      ],
+      "requires": "!isEmpty(domains) && !isEmpty(constraints)",
+      "provides": "reducedDomains != null"
+    },
+    {
+      "name": "CheckConsistency",
+      "description": "Checks consistency of reduced domains.",
+      "inputParameters": [
+        "reducedDomains: domains after applying constraints"
+      ],
+      "outputParameters": [
+        "consistent: boolean indicating if domains are consistent"
+      ],
+      "requires": "!isEmpty(reducedDomains)",
+      "provides": "consistent || !consistent"
+    },
+    {
+      "name": "AssignFinalValues",
+      "description": "Assigns final values to variables from reduced domains.",
+      "inputParameters": [
+        "reducedDomains: domains after consistency check"
+      ],
+      "outputParameters": [
+        "assignments: variables/elements with consistent assignments"
+      ],
+      "requires": "!isEmpty(reducedDomains)",
+      "provides": "assignments != null"
+    },
+    {
+      "name": "ValidateSolution",
+      "description": "Validates the final assignments against constraints.",
+      "inputParameters": [
+        "assignments: variables/elements with consistent assignments"
+      ],
+      "outputParameters": [
+        "valid: boolean indicating if assignments satisfy all constraints"
+      ],
+      "requires": "!isEmpty(assignments)",
+      "provides": "valid || !valid"
+    }
+  ]
+}

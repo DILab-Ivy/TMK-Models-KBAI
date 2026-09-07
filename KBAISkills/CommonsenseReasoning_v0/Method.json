@@ -1,0 +1,1552 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "MapSentenceToFrame",
+      "description": "Map a natural-language sentence to a typed frame representation and paraphrase.",
+      "inputs": [
+        "s: Sentence",
+        "ont: Ontology",
+        "parser: TextParser",
+        "lex: FrameLexicon",
+        "checker: SemanticChecker",
+        "paraphraser: Paraphraser"
+      ],
+      "outputs": [
+        "fi: FrameInstance",
+        "p: Paraphrase"
+      ],
+      "requires": [
+        "s.text != \"\"",
+        "ont.version != \"\""
+      ],
+      "provides": [
+        "isType(FrameInstance, fi)",
+        "isType(Paraphrase, p)"
+      ],
+      "operations": [
+        {
+          "name": "retrieveOntology",
+          "inputs": [
+            "ont: Ontology"
+          ],
+          "requires": [
+            "ont.version != \"\""
+          ],
+          "provides": [
+            "true"
+          ]
+        },
+        {
+          "name": "parseSentence",
+          "inputs": [
+            "parser: TextParser",
+            "s: Sentence"
+          ],
+          "outputs": [
+            "tokens: Set<Token>",
+            "deps: Set<Dependency>"
+          ],
+          "requires": [
+            "isType(TextParser, parser)",
+            "isType(Sentence, s)"
+          ],
+          "provides": [
+            "Count(tokens) > 0"
+          ]
+        },
+        {
+          "name": "identifyMainVerb",
+          "inputs": [
+            "tokens: Set<Token>"
+          ],
+          "outputs": [
+            "verb: Token"
+          ],
+          "requires": [
+            "Count(tokens) > 0"
+          ],
+          "provides": [
+            "verb.pos == \"VERB\""
+          ]
+        },
+        {
+          "name": "mapVerbToFrame",
+          "inputs": [
+            "lex: FrameLexicon",
+            "verb: Token"
+          ],
+          "outputs": [
+            "candidateFrames: Set<Frame>"
+          ],
+          "requires": [
+            "isType(FrameLexicon, lex)",
+            "isType(Token, verb)"
+          ],
+          "provides": [
+            "Count(candidateFrames) >= 1"
+          ]
+        },
+        {
+          "name": "selectFrame",
+          "inputs": [
+            "candidateFrames: Set<Frame>",
+            "s: Sentence"
+          ],
+          "outputs": [
+            "frame: Frame"
+          ],
+          "requires": [
+            "Count(candidateFrames) >= 1"
+          ],
+          "provides": [
+            "isType(Frame, frame)"
+          ]
+        },
+        {
+          "name": "fillFrameSlots",
+          "inputs": [
+            "frame: Frame",
+            "s: Sentence",
+            "deps: Set<Dependency>"
+          ],
+          "outputs": [
+            "fi: FrameInstance"
+          ],
+          "requires": [
+            "isType(Frame, frame)"
+          ],
+          "provides": [
+            "isType(FrameInstance, fi)"
+          ]
+        },
+        {
+          "name": "checkSemanticConstraints",
+          "inputs": [
+            "checker: SemanticChecker",
+            "fi: FrameInstance"
+          ],
+          "outputs": [
+            "ok: BOOLEAN",
+            "violations: Set<STRING>"
+          ],
+          "requires": [
+            "isType(FrameInstance, fi)"
+          ],
+          "provides": [
+            "ok == true or Count(violations) >= 1"
+          ]
+        },
+        {
+          "name": "paraphrase",
+          "inputs": [
+            "paraphraser: Paraphraser",
+            "fi: FrameInstance"
+          ],
+          "outputs": [
+            "p: Paraphrase"
+          ],
+          "requires": [
+            "isType(FrameInstance, fi)"
+          ],
+          "provides": [
+            "isType(Paraphrase, p) and p.text != \"\""
+          ]
+        },
+        {
+          "name": "translateSentence",
+          "mechanismReference": "Manual_Method.translate_sentence",
+          "inputs": [
+            "s: Sentence"
+          ],
+          "outputs": [
+            "s2: Sentence"
+          ],
+          "requires": [
+            "true"
+          ],
+          "provides": [
+            "s2.text != \"\""
+          ]
+        },
+        {
+          "name": "evaluateAndRefine",
+          "mechanismReference": "Manual_Method.evaluate_and_refine_step",
+          "inputs": [
+            "fi: FrameInstance",
+            "s: Sentence"
+          ],
+          "outputs": [
+            "refined: BOOLEAN"
+          ],
+          "requires": [
+            "isType(FrameInstance, fi)"
+          ],
+          "provides": [
+            "refined in {true,false}"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Start",
+          "Parsed",
+          "VerbIdentified",
+          "FrameChosen",
+          "SlotsFilled",
+          "Checked",
+          "Paraphrased",
+          "Success",
+          "Fail"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "ont.version != \"\"",
+              "action": "retrieveOntology",
+              "to": "Parsed"
+            },
+            {
+              "guard": "else",
+              "action": "finalize",
+              "to": "Fail"
+            }
+          ],
+          "Parsed": [
+            {
+              "guard": "verb.pos == \"VERB\"",
+              "action": "identifyMainVerb",
+              "to": "VerbIdentified"
+            },
+            {
+              "guard": "else",
+              "action": "finalize",
+              "to": "Fail"
+            }
+          ],
+          "VerbIdentified": [
+            {
+              "guard": "candidate != null",
+              "action": "mapVerbToFrame",
+              "to": "FrameChosen"
+            },
+            {
+              "guard": "candidate == null",
+              "action": "translateSentence",
+              "to": "Parsed"
+            },
+            {
+              "guard": "else",
+              "action": "finalize",
+              "to": "Fail"
+            }
+          ],
+          "FrameChosen": [
+            {
+              "guard": "isType(FrameInstance, fi)",
+              "action": "fillFrameSlots",
+              "to": "SlotsFilled"
+            },
+            {
+              "guard": "else",
+              "action": "finalize",
+              "to": "Fail"
+            }
+          ],
+          "SlotsFilled": [
+            {
+              "guard": "true",
+              "action": "evaluateAndRefine",
+              "to": "Checked"
+            },
+            {
+              "guard": "else",
+              "action": "finalize",
+              "to": "Fail"
+            }
+          ],
+          "Checked": [
+            {
+              "guard": "p.text != \"\"",
+              "action": "paraphrase",
+              "to": "Paraphrased"
+            },
+            {
+              "guard": "else",
+              "action": "finalize",
+              "to": "Fail"
+            }
+          ],
+          "Paraphrased": [
+            {
+              "guard": "true",
+              "action": "finalize",
+              "to": "Success"
+            },
+            {
+              "guard": "else",
+              "action": "finalize",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "assertions": [
+        {
+          "name": "WellTypedFI",
+          "logic": "isType(FrameInstance, fi) -> forall(slot in fi.assignments) isType(slot.role, Role)"
+        },
+        {
+          "name": "ParaphraseNonEmpty",
+          "logic": "isType(Paraphrase, p) -> p.text != \"\""
+        },
+        {
+          "name": "JudgementRange",
+          "logic": "isType(Judgement, j) -> 0.0 <= j.confidence <= 1.0"
+        }
+      ],
+      "stateInvocations": {
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    },
+    {
+      "name": "MakeCommonsenseInference",
+      "description": "Evaluate a frame instance against the ontology to produce a judgement (entailed/plausible/unknown/contradictory).",
+      "inputs": [
+        "fi: FrameInstance",
+        "ont: Ontology"
+      ],
+      "outputs": [
+        "j: Judgement"
+      ],
+      "requires": [
+        "isType(FrameInstance, fi)",
+        "isType(Ontology, ont)"
+      ],
+      "provides": [
+        "isType(Judgement, j)",
+        "j.status in {\"entailed\",\"plausible\",\"unknown\",\"contradictory\"}"
+      ],
+      "operations": [
+        {
+          "name": "evaluateCommonsense",
+          "inputs": [
+            "fi: FrameInstance",
+            "ont: Ontology"
+          ],
+          "outputs": [
+            "j: Judgement"
+          ],
+          "requires": [
+            "isType(FrameInstance, fi)",
+            "isType(Ontology, ont)"
+          ],
+          "provides": [
+            "isType(Judgement, j)"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Start",
+          "Evaluated",
+          "Success",
+          "Fail"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "isType(Judgement, j)",
+              "action": "evaluateCommonsense",
+              "to": "Evaluated"
+            },
+            {
+              "guard": "else",
+              "action": "finalize",
+              "to": "Fail"
+            }
+          ],
+          "Evaluated": [
+            {
+              "guard": "j.status in {\"entailed\",\"plausible\",\"contradictory\"}",
+              "action": "finalize",
+              "to": "Success"
+            },
+            {
+              "guard": "j.status == \"unknown\"",
+              "action": "finalize",
+              "to": "Success"
+            },
+            {
+              "guard": "else",
+              "action": "finalize",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "assertions": [
+        {
+          "name": "WellTypedFI",
+          "logic": "isType(FrameInstance, fi) -> forall(slot in fi.assignments) isType(slot.role, Role)"
+        },
+        {
+          "name": "ParaphraseNonEmpty",
+          "logic": "isType(Paraphrase, p) -> p.text != \"\""
+        },
+        {
+          "name": "JudgementRange",
+          "logic": "isType(Judgement, j) -> 0.0 <= j.confidence <= 1.0"
+        }
+      ],
+      "stateInvocations": {
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    }
+  ],
+  "mechanisms": [
+    {
+      "name": "identifyMainVerb",
+      "description": "Mechanism for action 'identifyMainVerb'.",
+      "inputs": [
+        "context"
+      ],
+      "outputs": [
+        "op_success: BOOLEAN"
+      ],
+      "operations": [
+        {
+          "name": "identifyMainVerb_op",
+          "inputs": [
+            "context"
+          ],
+          "outputs": [
+            "op_success: BOOLEAN"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Success",
+          "Fail",
+          "Do",
+          "Start"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "true",
+              "action": "identifyMainVerb_op",
+              "to": "Do"
+            },
+            {
+              "guard": "dataCondition: ok == true",
+              "action": "identifyMainVerb_op",
+              "to": "Success"
+            },
+            {
+              "guard": "dataCondition: ok == false",
+              "action": "identifyMainVerb_op",
+              "to": "Fail"
+            }
+          ],
+          "Do": [
+            {
+              "guard": "op_success == true",
+              "action": "identifyMainVerb_op",
+              "to": "Success"
+            },
+            {
+              "guard": "op_success == false",
+              "action": "identifyMainVerb_op",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "stateInvocations": {
+        "Do": {
+          "operation": "identifyMainVerb_op"
+        },
+        "Start": {
+          "operation": "identifyMainVerb_op"
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        },
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    },
+    {
+      "name": "mapVerbToFrame",
+      "description": "Mechanism for action 'mapVerbToFrame'.",
+      "inputs": [
+        "context"
+      ],
+      "outputs": [
+        "op_success: BOOLEAN"
+      ],
+      "operations": [
+        {
+          "name": "mapVerbToFrame_op",
+          "inputs": [
+            "context"
+          ],
+          "outputs": [
+            "op_success: BOOLEAN"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Success",
+          "Fail",
+          "Do",
+          "Start"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "true",
+              "action": "mapVerbToFrame_op",
+              "to": "Do"
+            },
+            {
+              "guard": "dataCondition: ok == true",
+              "action": "mapVerbToFrame_op",
+              "to": "Success"
+            },
+            {
+              "guard": "dataCondition: ok == false",
+              "action": "mapVerbToFrame_op",
+              "to": "Fail"
+            }
+          ],
+          "Do": [
+            {
+              "guard": "op_success == true",
+              "action": "mapVerbToFrame_op",
+              "to": "Success"
+            },
+            {
+              "guard": "op_success == false",
+              "action": "mapVerbToFrame_op",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "stateInvocations": {
+        "Do": {
+          "operation": "mapVerbToFrame_op"
+        },
+        "Start": {
+          "operation": "mapVerbToFrame_op"
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        },
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    },
+    {
+      "name": "translateSentence",
+      "description": "Mechanism for action 'translateSentence'.",
+      "inputs": [
+        "context"
+      ],
+      "outputs": [
+        "op_success: BOOLEAN"
+      ],
+      "operations": [
+        {
+          "name": "translateSentence_op",
+          "inputs": [
+            "context"
+          ],
+          "outputs": [
+            "op_success: BOOLEAN"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Success",
+          "Fail",
+          "Do",
+          "Start"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "true",
+              "action": "translateSentence_op",
+              "to": "Do"
+            },
+            {
+              "guard": "dataCondition: ok == true",
+              "action": "translateSentence_op",
+              "to": "Success"
+            },
+            {
+              "guard": "dataCondition: ok == false",
+              "action": "translateSentence_op",
+              "to": "Fail"
+            }
+          ],
+          "Do": [
+            {
+              "guard": "op_success == true",
+              "action": "translateSentence_op",
+              "to": "Success"
+            },
+            {
+              "guard": "op_success == false",
+              "action": "translateSentence_op",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "stateInvocations": {
+        "Do": {
+          "operation": "translateSentence_op"
+        },
+        "Start": {
+          "operation": "translateSentence_op"
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        },
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    },
+    {
+      "name": "retrieveOntology",
+      "description": "Mechanism for action 'retrieveOntology'.",
+      "inputs": [
+        "context"
+      ],
+      "outputs": [
+        "op_success: BOOLEAN"
+      ],
+      "operations": [
+        {
+          "name": "retrieveOntology_op",
+          "inputs": [
+            "context"
+          ],
+          "outputs": [
+            "op_success: BOOLEAN"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Success",
+          "Fail",
+          "Do",
+          "Start"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "true",
+              "action": "retrieveOntology_op",
+              "to": "Do"
+            },
+            {
+              "guard": "dataCondition: ok == true",
+              "action": "retrieveOntology_op",
+              "to": "Success"
+            },
+            {
+              "guard": "dataCondition: ok == false",
+              "action": "retrieveOntology_op",
+              "to": "Fail"
+            }
+          ],
+          "Do": [
+            {
+              "guard": "op_success == true",
+              "action": "retrieveOntology_op",
+              "to": "Success"
+            },
+            {
+              "guard": "op_success == false",
+              "action": "retrieveOntology_op",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "stateInvocations": {
+        "Do": {
+          "operation": "retrieveOntology_op"
+        },
+        "Start": {
+          "operation": "retrieveOntology_op"
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        },
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    },
+    {
+      "name": "evaluateAndRefine",
+      "description": "Mechanism for action 'evaluateAndRefine'.",
+      "inputs": [
+        "context"
+      ],
+      "outputs": [
+        "op_success: BOOLEAN"
+      ],
+      "operations": [
+        {
+          "name": "evaluateAndRefine_op",
+          "inputs": [
+            "context"
+          ],
+          "outputs": [
+            "op_success: BOOLEAN"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Success",
+          "Fail",
+          "Do",
+          "Start"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "true",
+              "action": "evaluateAndRefine_op",
+              "to": "Do"
+            },
+            {
+              "guard": "dataCondition: ok == true",
+              "action": "evaluateAndRefine_op",
+              "to": "Success"
+            },
+            {
+              "guard": "dataCondition: ok == false",
+              "action": "evaluateAndRefine_op",
+              "to": "Fail"
+            }
+          ],
+          "Do": [
+            {
+              "guard": "op_success == true",
+              "action": "evaluateAndRefine_op",
+              "to": "Success"
+            },
+            {
+              "guard": "op_success == false",
+              "action": "evaluateAndRefine_op",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "stateInvocations": {
+        "Do": {
+          "operation": "evaluateAndRefine_op"
+        },
+        "Start": {
+          "operation": "evaluateAndRefine_op"
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        },
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    },
+    {
+      "name": "fillFrameSlots",
+      "description": "Mechanism for action 'fillFrameSlots'.",
+      "inputs": [
+        "context"
+      ],
+      "outputs": [
+        "op_success: BOOLEAN"
+      ],
+      "operations": [
+        {
+          "name": "fillFrameSlots_op",
+          "inputs": [
+            "context"
+          ],
+          "outputs": [
+            "op_success: BOOLEAN"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Success",
+          "Fail",
+          "Do",
+          "Start"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "true",
+              "action": "fillFrameSlots_op",
+              "to": "Do"
+            },
+            {
+              "guard": "dataCondition: ok == true",
+              "action": "fillFrameSlots_op",
+              "to": "Success"
+            },
+            {
+              "guard": "dataCondition: ok == false",
+              "action": "fillFrameSlots_op",
+              "to": "Fail"
+            }
+          ],
+          "Do": [
+            {
+              "guard": "op_success == true",
+              "action": "fillFrameSlots_op",
+              "to": "Success"
+            },
+            {
+              "guard": "op_success == false",
+              "action": "fillFrameSlots_op",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "stateInvocations": {
+        "Do": {
+          "operation": "fillFrameSlots_op"
+        },
+        "Start": {
+          "operation": "fillFrameSlots_op"
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        },
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    },
+    {
+      "name": "paraphrase",
+      "description": "Mechanism for action 'paraphrase'.",
+      "inputs": [
+        "context"
+      ],
+      "outputs": [
+        "op_success: BOOLEAN"
+      ],
+      "operations": [
+        {
+          "name": "paraphrase_op",
+          "inputs": [
+            "context"
+          ],
+          "outputs": [
+            "op_success: BOOLEAN"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Success",
+          "Fail",
+          "Do",
+          "Start"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "true",
+              "action": "paraphrase_op",
+              "to": "Do"
+            },
+            {
+              "guard": "dataCondition: ok == true",
+              "action": "paraphrase_op",
+              "to": "Success"
+            },
+            {
+              "guard": "dataCondition: ok == false",
+              "action": "paraphrase_op",
+              "to": "Fail"
+            }
+          ],
+          "Do": [
+            {
+              "guard": "op_success == true",
+              "action": "paraphrase_op",
+              "to": "Success"
+            },
+            {
+              "guard": "op_success == false",
+              "action": "paraphrase_op",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "stateInvocations": {
+        "Do": {
+          "operation": "paraphrase_op"
+        },
+        "Start": {
+          "operation": "paraphrase_op"
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        },
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    },
+    {
+      "name": "finalize",
+      "description": "Finalize step to complete the method stage.",
+      "inputs": [
+        "context"
+      ],
+      "outputs": [
+        "ok: BOOLEAN"
+      ],
+      "operations": [
+        {
+          "name": "do_finalize",
+          "inputs": [
+            "context"
+          ],
+          "outputs": [
+            "ok: BOOLEAN"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Success",
+          "Fail",
+          "Do",
+          "Start"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "true",
+              "action": "do_finalize",
+              "to": "Do"
+            },
+            {
+              "guard": "dataCondition: ok == true",
+              "action": "do_finalize",
+              "to": "Success"
+            },
+            {
+              "guard": "dataCondition: ok == false",
+              "action": "do_finalize",
+              "to": "Fail"
+            }
+          ],
+          "Do": [
+            {
+              "guard": "op_success == true",
+              "action": "do_finalize",
+              "to": "Success"
+            },
+            {
+              "guard": "op_success == false",
+              "action": "do_finalize",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "stateInvocations": {
+        "Do": {
+          "operation": "do_finalize"
+        },
+        "Start": {
+          "operation": "do_finalize"
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        },
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    },
+    {
+      "name": "evaluateCommonsense",
+      "description": "Mechanism for action 'evaluateCommonsense'.",
+      "inputs": [
+        "context"
+      ],
+      "outputs": [
+        "op_success: BOOLEAN"
+      ],
+      "operations": [
+        {
+          "name": "evaluateCommonsense_op",
+          "inputs": [
+            "context"
+          ],
+          "outputs": [
+            "op_success: BOOLEAN"
+          ]
+        }
+      ],
+      "fsm": {
+        "states": [
+          "Success",
+          "Fail",
+          "Do",
+          "Start"
+        ],
+        "start": "Start",
+        "success": "Success",
+        "failure": "Fail",
+        "transitions": {
+          "Start": [
+            {
+              "guard": "true",
+              "action": "evaluateCommonsense_op",
+              "to": "Do"
+            },
+            {
+              "guard": "dataCondition: ok == true",
+              "action": "evaluateCommonsense_op",
+              "to": "Success"
+            },
+            {
+              "guard": "dataCondition: ok == false",
+              "action": "evaluateCommonsense_op",
+              "to": "Fail"
+            }
+          ],
+          "Do": [
+            {
+              "guard": "op_success == true",
+              "action": "evaluateCommonsense_op",
+              "to": "Success"
+            },
+            {
+              "guard": "op_success == false",
+              "action": "evaluateCommonsense_op",
+              "to": "Fail"
+            }
+          ]
+        }
+      },
+      "stateInvocations": {
+        "Do": {
+          "operation": "evaluateCommonsense_op"
+        },
+        "Start": {
+          "operation": "evaluateCommonsense_op"
+        },
+        "Fail": {
+          "goalInvocation": {
+            "task": "FailureGoal",
+            "inputs": [
+              "context"
+            ],
+            "type": "Task"
+          }
+        },
+        "Success": {
+          "goalInvocation": {
+            "task": "SafetyValidationGoal",
+            "inputs": [
+              "fi: FrameInstance",
+              "ont: Ontology"
+            ],
+            "type": "Task"
+          }
+        }
+      }
+    },
+    {
+      "name": "RetrieveOntologyOp",
+      "description": "Atomic operation for RetrieveOntologyOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "ont: Ontology"
+      ],
+      "outputParameters": [
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "ont.version != \"\""
+      ],
+      "provides": [
+        "ok == true"
+      ]
+    },
+    {
+      "name": "IdentifyMainVerbOp",
+      "description": "Atomic operation for IdentifyMainVerbOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "s: Sentence",
+        "lex: Lexicon"
+      ],
+      "outputParameters": [
+        "verb: Token",
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "s.text != \"\""
+      ],
+      "provides": [
+        "ok == true and verb.pos == \"VERB\""
+      ]
+    },
+    {
+      "name": "MapVerbToFrameOp",
+      "description": "Atomic operation for MapVerbToFrameOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "verb: Token",
+        "ont: Ontology"
+      ],
+      "outputParameters": [
+        "candidateFrames: Set<Frame>",
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "verb != null",
+        "ont.version != \"\""
+      ],
+      "provides": [
+        "ok == true and Count(candidateFrames) >= 1"
+      ]
+    },
+    {
+      "name": "TranslateSentenceOp",
+      "description": "Atomic operation for TranslateSentenceOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "s: Sentence"
+      ],
+      "outputParameters": [
+        "s2: Sentence",
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "s.text != \"\""
+      ],
+      "provides": [
+        "ok == true and s2.text != \"\""
+      ]
+    },
+    {
+      "name": "FillFrameSlotsOp",
+      "description": "Atomic operation for FillFrameSlotsOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "candidate: Frame",
+        "s: Sentence"
+      ],
+      "outputParameters": [
+        "fi: FrameInstance",
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "candidate != null",
+        "s.text != \"\""
+      ],
+      "provides": [
+        "ok == true and isType(FrameInstance, fi)"
+      ]
+    },
+    {
+      "name": "EvaluateAndRefineOp",
+      "description": "Atomic operation for EvaluateAndRefineOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "fi: FrameInstance",
+        "s: Sentence"
+      ],
+      "outputParameters": [
+        "refined: BOOLEAN",
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "isType(FrameInstance, fi)"
+      ],
+      "provides": [
+        "ok == true and refined in {true,false}"
+      ]
+    },
+    {
+      "name": "ParaphraseOp",
+      "description": "Atomic operation for ParaphraseOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "fi: FrameInstance",
+        "paraphraser: Paraphraser"
+      ],
+      "outputParameters": [
+        "p: Paraphrase",
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "isType(FrameInstance, fi)"
+      ],
+      "provides": [
+        "ok == true and p.text != \"\""
+      ]
+    },
+    {
+      "name": "DeriveImpliedActionsOp",
+      "description": "Atomic operation for DeriveImpliedActionsOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "fi: FrameInstance",
+        "ont: Ontology"
+      ],
+      "outputParameters": [
+        "derived: [Frame]",
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "isType(FrameInstance, fi)",
+        "ont.version != \"\""
+      ],
+      "provides": [
+        "ok == true"
+      ]
+    },
+    {
+      "name": "EvaluateCommonsenseOp",
+      "description": "Atomic operation for EvaluateCommonsenseOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "fi: FrameInstance",
+        "ont: Ontology"
+      ],
+      "outputParameters": [
+        "j: Judgement",
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "isType(FrameInstance, fi)",
+        "ont.version != \"\""
+      ],
+      "provides": [
+        "ok == true and j.status in {\"entailed\",\"plausible\",\"unknown\",\"contradictory\"}"
+      ]
+    },
+    {
+      "name": "GenerateEntailedSentencesOp",
+      "description": "Atomic operation for GenerateEntailedSentencesOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "fi: FrameInstance",
+        "ont: Ontology"
+      ],
+      "outputParameters": [
+        "entailments: [Sentence]",
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "isType(FrameInstance, fi)",
+        "ont.version != \"\""
+      ],
+      "provides": [
+        "ok == true"
+      ]
+    },
+    {
+      "name": "FinalizeOp",
+      "description": "Atomic operation for FinalizeOp (no organizer).",
+      "isAtomic": true,
+      "inputParameters": [
+        "context"
+      ],
+      "outputParameters": [
+        "ok: BOOLEAN"
+      ],
+      "requires": [
+        "true"
+      ],
+      "provides": [
+        "ok == true"
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "name": "safe(fi, ont)",
+      "logic": "safe(fi, ont)  <->  (roles_well_typed(fi) \u2227 role_completeness(fi) \u2227 not_contradictory(fi, ont))",
+      "mapsTo": {
+        "task": "SafetyValidationGoal"
+      },
+      "description": "Skill-level safety predicate over a FrameInstance under an Ontology."
+    },
+    {
+      "name": "roles_well_typed(fi)",
+      "logic": "roles_well_typed(fi)  <->  \u2200 slot \u2208 fi.assignments : isType(slot.role, Role) \u2227 conformsType(slot.filler, slot.role.expectedType)",
+      "mapsTo": {
+        "mechanism": "fillFrameSlots"
+      },
+      "description": "All role fillers match their expected concept types."
+    },
+    {
+      "name": "role_completeness(fi)",
+      "logic": "role_completeness(fi)  <->  RequiredRoles(fi.frame) \u2286 {slot.role | slot \u2208 fi.assignments}",
+      "mapsTo": {
+        "mechanism": "fillFrameSlots"
+      },
+      "description": "All required frame roles are present."
+    },
+    {
+      "name": "not_contradictory(fi, ont)",
+      "logic": "not_contradictory(fi, ont)  <->  MakeCommonsenseInference(fi, ont).j.status \u2260 \"contradictory\"",
+      "mapsTo": {
+        "method": "MakeCommonsenseInference"
+      },
+      "description": "Inferred judgement is not contradictory under the ontology."
+    },
+    {
+      "name": "paraphrase_ok(p)",
+      "logic": "paraphrase_ok(p)  <->  (isType(Paraphrase, p) \u2227 p.text \u2260 \"\")",
+      "mapsTo": {
+        "mechanism": "paraphrase"
+      },
+      "description": "Paraphrase exists and is non-empty."
+    },
+    {
+      "name": "frame_selection_consistent(verb, frame)",
+      "logic": "frame_selection_consistent(verb, frame)  <->  frame \u2208 LexicalCandidates(verb) \u2228 TranslateThenMap(verb)",
+      "mapsTo": {
+        "mechanism": "mapVerbToFrame"
+      },
+      "description": "Chosen frame is licensed by lexicon or via translation-then-map fallback."
+    },
+    {
+      "name": "ambiguity_resolved(s, fi)",
+      "logic": "ambiguity_resolved(s, fi)  <->  (UniqueSense(fi.frame) \u2228 ContextProvidesDisambiguation(s, fi))",
+      "mapsTo": {
+        "mechanism": "evaluateAndRefine"
+      },
+      "description": "Either only one sense is viable or context refinements disambiguate."
+    },
+    {
+      "name": "entailed_sentences(fi, ont, S)",
+      "logic": "entailed_sentences(fi, ont, S)  <->  S = GenerateEntailedSentencesOp(fi, ont)",
+      "mapsTo": {
+        "mechanism": "GenerateEntailedSentencesOp"
+      },
+      "description": "Set S is the result of surface realizing entailments."
+    },
+    {
+      "name": "j_ok(j)",
+      "logic": "j_ok(j)  <->  (j.status \u2208 {\"entailed\",\"plausible\",\"unknown\",\"contradictory\"} \u2227 0.0 \u2264 j.confidence \u2264 1.0)",
+      "mapsTo": {
+        "mechanism": "EvaluateCommonsenseOp"
+      },
+      "description": "Judgement has a valid label and confidence range."
+    },
+    {
+      "name": "tokens_present(tokens)",
+      "logic": "tokens_present(tokens)  <->  Count(tokens) > 0",
+      "mapsTo": {
+        "mechanism": "identifyMainVerb"
+      },
+      "description": "Parser produced at least one token."
+    }
+  ]
+}

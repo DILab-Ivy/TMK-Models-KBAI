@@ -1,0 +1,353 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "Object",
+      "description": "An entity with structural and functional properties."
+    },
+    {
+      "name": "Agent",
+      "description": "An autonomous entity that reasons and learns."
+    },
+    {
+      "name": "Concept",
+      "superConcept": [
+        "KnowledgeUnit"
+      ],
+      "description": "A defined unit of knowledge representing ideas or objects.",
+      "properties": [
+        {
+          "name": "features",
+          "type": "list<feature>"
+        }
+      ]
+    },
+    {
+      "name": "ConceptSpace",
+      "description": "A mapping of concepts and their relationships."
+    },
+    {
+      "name": "Relationship",
+      "description": "Connections between concepts.",
+      "properties": [
+        {
+          "name": "type",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "Predicate",
+      "description": "A function mapping to true/false."
+    },
+    {
+      "name": "ImplicativeRelationship",
+      "superConcept": [
+        "Relationship"
+      ],
+      "description": "One statement implies another."
+    },
+    {
+      "name": "Conjunction",
+      "description": "All statements must be true."
+    },
+    {
+      "name": "Literal",
+      "description": "An atomic formula."
+    },
+    {
+      "name": "Explanation",
+      "description": "A causal chain justifying a property."
+    },
+    {
+      "name": "Abstraction",
+      "description": "Generalizing knowledge."
+    },
+    {
+      "name": "Transfer",
+      "description": "Applying knowledge to new situations."
+    }
+  ],
+  "Instances": [
+    {
+      "concept": "Predicate",
+      "name": "hasBottom"
+    },
+    {
+      "concept": "Predicate",
+      "name": "isFlat"
+    },
+    {
+      "concept": "Predicate",
+      "name": "hasConcavity"
+    },
+    {
+      "concept": "Predicate",
+      "name": "isLight"
+    },
+    {
+      "concept": "Predicate",
+      "name": "hasHandle"
+    },
+    {
+      "concept": "Predicate",
+      "name": "hasDecoration"
+    },
+    {
+      "concept": "Predicate",
+      "name": "madeOfPorcelain"
+    },
+    {
+      "concept": "Predicate",
+      "name": "isStable"
+    },
+    {
+      "concept": "Predicate",
+      "name": "isHeavy"
+    },
+    {
+      "concept": "Predicate",
+      "name": "isLiftable"
+    },
+    {
+      "concept": "Predicate",
+      "name": "isUseful"
+    },
+    {
+      "concept": "Predicate",
+      "name": "isPortable"
+    },
+    {
+      "concept": "Predicate",
+      "name": "carriesLiquids"
+    },
+    {
+      "concept": "Predicate",
+      "name": "enablesDrinking"
+    },
+    {
+      "concept": "Predicate",
+      "name": "isPretty"
+    },
+    {
+      "concept": "Predicate",
+      "name": "protectsAgainstHeat"
+    },
+    {
+      "concept": "Predicate",
+      "name": "limitsHeatTransfer"
+    },
+    {
+      "concept": "Predicate",
+      "name": "hasThickSides"
+    },
+    {
+      "concept": "Predicate",
+      "name": "madeOfClay"
+    },
+    {
+      "concept": "Predicate",
+      "name": "shapedLikeOval"
+    },
+    {
+      "concept": "Predicate",
+      "name": "madeOfWood"
+    },
+    {
+      "concept": "Predicate",
+      "name": "isLong"
+    },
+    {
+      "concept": "Predicate",
+      "name": "madeOfCloth"
+    },
+    {
+      "concept": "Object",
+      "name": "Cup",
+      "values": {
+        "features": [
+          "isStable",
+          "enablesDrinking"
+        ]
+      }
+    },
+    {
+      "concept": "Object",
+      "name": "Brick",
+      "values": {
+        "features": [
+          "isStable",
+          "hasBottom",
+          "isFlat",
+          "isHeavy"
+        ]
+      }
+    },
+    {
+      "concept": "Object",
+      "name": "Glass",
+      "values": {
+        "features": [
+          "enablesDrinking",
+          "carriesLiquids",
+          "isLiftable"
+        ]
+      }
+    },
+    {
+      "concept": "Object",
+      "name": "Briefcase",
+      "values": {
+        "features": [
+          "hasHandle",
+          "isLight",
+          "isLiftable",
+          "isPortable",
+          "isUseful"
+        ]
+      }
+    },
+    {
+      "concept": "Object",
+      "name": "Bowl",
+      "values": {
+        "features": [
+          "hasConcavity",
+          "carriesLiquids"
+        ]
+      }
+    },
+    {
+      "concept": "Object",
+      "name": "Mug",
+      "values": {
+        "features": [
+          "isStable",
+          "enablesDrinking",
+          "protectsAgainstHeat"
+        ]
+      }
+    },
+    {
+      "concept": "Object",
+      "name": "Pot",
+      "values": {
+        "features": [
+          "carriesLiquids",
+          "hasConcavity",
+          "limitsHeatTransfer",
+          "hasThickSides",
+          "madeOfClay"
+        ]
+      }
+    },
+    {
+      "concept": "Object",
+      "name": "ServingPlate",
+      "values": {
+        "features": [
+          "protectsAgainstHeat",
+          "madeOfClay",
+          "shapedLikeOval"
+        ]
+      }
+    },
+    {
+      "concept": "Object",
+      "name": "WoodenSpoon",
+      "values": {
+        "features": [
+          "isLong",
+          "madeOfWood",
+          "hasHandle",
+          "protectsAgainstHeat"
+        ]
+      }
+    },
+    {
+      "concept": "Object",
+      "name": "OvenMitt",
+      "values": {
+        "features": [
+          "madeOfCloth",
+          "limitsHeatTransfer",
+          "protectsAgainstHeat"
+        ]
+      }
+    },
+    {
+      "concept": "Object",
+      "name": "BakingDish",
+      "values": {
+        "features": [
+          "hasHandle",
+          "madeOfPorcelain",
+          "protectsAgainstHeat"
+        ]
+      }
+    },
+    {
+      "concept": "ConceptSpace",
+      "name": "HouseholdObjectsSpace",
+      "values": {
+        "concepts": [
+          "Cup",
+          "Mug",
+          "Brick",
+          "Glass",
+          "Briefcase",
+          "Bowl",
+          "Pot",
+          "ServingPlate",
+          "WoodenSpoon",
+          "OvenMitt",
+          "BakingDish"
+        ]
+      }
+    }
+  ],
+  "Relations": [
+    {
+      "name": "implies",
+      "domain": "Predicate|Literal",
+      "range": "Predicate|Literal"
+    },
+    {
+      "name": "partOf",
+      "domain": "Object",
+      "range": "ConceptSpace"
+    }
+  ],
+  "Assertions": [
+    {
+      "name": "valid",
+      "description": "Evaluates if an object or configuration is valid.",
+      "equivalentTo": "ValidClassification(classification)"
+    },
+    {
+      "name": "complete",
+      "description": "Checks if a list or space is complete.",
+      "equivalentTo": "all_elements_defined"
+    },
+    {
+      "name": "generalized",
+      "description": "Checks if relationships are abstracted.",
+      "equivalentTo": "abstraction_applied"
+    },
+    {
+      "name": "verified",
+      "description": "Checks if proofs are verified.",
+      "equivalentTo": "all_proofs_checked"
+    },
+    {
+      "name": "proven",
+      "description": "Final proof status.",
+      "equivalentTo": "aggregation_complete"
+    },
+    {
+      "name": "EBL",
+      "description": "Abbreviation for Explanation-Based Learning Mechanism",
+      "equivalentTo": "EBLMechanism"
+    }
+  ]
+}

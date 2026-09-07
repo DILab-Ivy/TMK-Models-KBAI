@@ -1,0 +1,109 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "CorrectMistake",
+      "description": "Correct reasoning by identifying and fixing mistakes in explanations.",
+      "inputParameters": [
+        "initialConfiguration: configuration",
+        "reasoningKnowledgeBase: knowledgeBase"
+      ],
+      "outputParameters": [
+        "finalConfiguration: configuration"
+      ],
+      "given": "!isEmpty(initialConfiguration.observedDecision) && isValid(reasoningKnowledgeBase)",
+      "makes": "goodCorrection(finalConfiguration)",
+      "means": [
+        {
+          "mechanismReference": "CorrectionSolution",
+          "actualArguments": [
+            "initialConfiguration",
+            "reasoningKnowledgeBase"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GenerateExplanation",
+      "description": "Generate explanation for observed decision.",
+      "inputParameters": [
+        "config: configuration"
+      ],
+      "outputParameters": [
+        "explanation: explanation"
+      ],
+      "given": "!isEmpty(config.observedDecision)",
+      "makes": "!isEmpty(explanation)",
+      "means": [
+        {
+          "mechanismReference": "GenerateExplanationMechanism",
+          "actualArguments": [
+            "config"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IsolateMistake",
+      "description": "Isolate mistake using explanation and knowledge base.",
+      "inputParameters": [
+        "explanation: explanation",
+        "kb: knowledgeBase"
+      ],
+      "outputParameters": [
+        "mistake: mistake"
+      ],
+      "given": "!isEmpty(explanation)",
+      "makes": "isolatesMistake(explanation, mistake)",
+      "means": [
+        {
+          "mechanismReference": "IsolateMistakeMechanism",
+          "actualArguments": [
+            "explanation",
+            "kb"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CorrectExplanation",
+      "description": "Correct faulty explanation based on isolated mistake.",
+      "inputParameters": [
+        "mistake: mistake"
+      ],
+      "outputParameters": [
+        "correctedExplanation: explanation"
+      ],
+      "given": "!isEmpty(mistake)",
+      "makes": "corrects(correctedExplanation, mistake.faultyExplanation)",
+      "means": [
+        {
+          "mechanismReference": "CorrectExplanationMechanism",
+          "actualArguments": [
+            "mistake"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CorrectionComplete",
+      "description": "Represents successful completion of correction process.",
+      "inputParameters": [
+        "correctedExplanation: explanation"
+      ],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "true",
+      "means": []
+    },
+    {
+      "name": "CorrectionFailed",
+      "description": "Represents a failure state in the correction task.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "false",
+      "means": []
+    }
+  ]
+}

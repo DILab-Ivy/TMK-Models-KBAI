@@ -1,0 +1,255 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "logic",
+      "description": "A formal language for making assertions about the world, consisting of a knowledge base and rules of inference.",
+      "properties": []
+    },
+    {
+      "name": "knowledge_base",
+      "description": "A collection of sentences in the language of logic, assumed to be correct and complete.",
+      "properties": []
+    },
+    {
+      "name": "inference_rule",
+      "description": "A rule applied to a knowledge base to derive new, valid conclusions. Must be sound (derive only valid conclusions) and complete (derive all valid conclusions).",
+      "properties": []
+    },
+    {
+      "name": "logical_sentence",
+      "description": "A statement in the language of logic, such as an if-then statement or a predicate.",
+      "properties": []
+    },
+    {
+      "name": "predicate",
+      "description": "A function that maps object arguments to a truth value (True or False). E.g., Feathers(animal).",
+      "properties": []
+    },
+    {
+      "name": "implicative_relationship",
+      "description": "A logical relationship where one statement implies another (A => B).",
+      "properties": []
+    },
+    {
+      "name": "conjunction",
+      "description": "A logical AND operation (^). True only if all statements are true.",
+      "properties": []
+    },
+    {
+      "name": "disjunction",
+      "description": "A logical OR operation (v). True if at least one statement is true.",
+      "properties": []
+    },
+    {
+      "name": "negation",
+      "description": "A logical NOT operation (¬). Inverts the truth value of a statement.",
+      "properties": []
+    },
+    {
+      "name": "truth_table",
+      "description": "A table listing all possible truth values for a logical expression.",
+      "properties": []
+    },
+    {
+      "name": "logical_property",
+      "description": "Properties of logical operations, such as Commutative, Distributive, and Associative.",
+      "properties": []
+    },
+    {
+      "name": "de_morgans_law",
+      "description": "A rule for logical equivalence: ¬(A ^ B) <=> (¬A v ¬B) and ¬(A v B) <=> (¬A ^ ¬B).",
+      "properties": []
+    },
+    {
+      "name": "implication_elimination",
+      "description": "A rule for logical equivalence: (A => B) <=> (¬A v B).",
+      "properties": []
+    },
+    {
+      "name": "predicate_calculus",
+      "description": "First-order logic. An extension of propositional logic that includes variables and quantifiers.",
+      "properties": []
+    },
+    {
+      "name": "quantifier",
+      "description": "A symbol specifying the quantity of elements for which a predicate is true. (e.g., universal quantifier ∀, existential quantifier ∃).",
+      "properties": []
+    },
+    {
+      "name": "resolution_theorem_proving",
+      "description": "A method to prove logical statements by refutation, requiring CNF.",
+      "superConcept": "inference_rule"
+    },
+    {
+      "name": "conjunctive_normal_form",
+      "description": "Conjunctive Normal Form (CNF). A logical sentence that is a conjunction of clauses, where each clause is a disjunction of literals.",
+      "properties": []
+    },
+    {
+      "name": "clause",
+      "description": "A disjunction of one or more literals.",
+      "properties": []
+    },
+    {
+      "name": "literal",
+      "description": "An atomic formula (predicate) or its negation.",
+      "properties": []
+    },
+    {
+      "name": "modus_ponens",
+      "description": "Rule of inference: (P => Q, P) |- Q. (If P implies Q, and P is true, then Q is true).",
+      "superConcept": "inference_rule"
+    },
+    {
+      "name": "modus_tollens",
+      "description": "Rule of inference: (P => Q, ¬Q) |- ¬P. (If P implies Q, and Q is false, then P is false).",
+      "superConcept": "inference_rule"
+    },
+    {
+      "name": "problem_domain",
+      "description": "A specific problem scenario used to illustrate a logical task.",
+      "properties": []
+    },
+    {
+      "name": "robot_factory_problem",
+      "description": "A problem domain where a robot must determine if a widget is liftable.",
+      "superConcept": "problem_domain"
+    },
+    {
+      "name": "robot_bird_problem",
+      "description": "A problem domain where a robot must identify if an animal is a bird.",
+      "superConcept": "problem_domain"
+    },
+    {
+      "name": "object",
+      "description": "A physical or conceptual entity in a problem domain.",
+      "properties": []
+    },
+    {
+      "name": "proof_result",
+      "description": "The outcome of a proof, typically true (contradiction found) or false (no contradiction found).",
+      "properties": []
+    }
+  ],
+  "relations": [
+    {
+      "name": "implies",
+      "description": "Represents a logical implication between two logical sentences.",
+      "domain": "logical_sentence",
+      "range": "logical_sentence"
+    }
+  ],
+  "instances": [
+    {
+      "name": "Box",
+      "concept": "object"
+    },
+    {
+      "name": "Widget",
+      "concept": "object"
+    },
+    {
+      "name": "Robot",
+      "concept": "object"
+    },
+    {
+      "name": "Animal",
+      "concept": "object"
+    },
+    {
+      "name": "Harry",
+      "concept": "object"
+    },
+    {
+      "name": "Buzz",
+      "concept": "object"
+    },
+    {
+      "name": "Can_Move",
+      "concept": "predicate"
+    },
+    {
+      "name": "Liftable",
+      "concept": "predicate"
+    },
+    {
+      "name": "Battery_Full",
+      "concept": "predicate"
+    },
+    {
+      "name": "Has_Wings",
+      "concept": "predicate"
+    },
+    {
+      "name": "Has_Fur",
+      "concept": "predicate"
+    },
+    {
+      "name": "Is_Bird",
+      "concept": "predicate"
+    },
+    {
+      "name": "Feathers",
+      "concept": "predicate"
+    },
+    {
+      "name": "RTP_Box_KB_1",
+      "concept": "logical_sentence",
+      "description": "If a box cannot move, then it is not liftable.",
+      "value": "¬Can_Move(Box) => ¬Liftable(Box)"
+    },
+    {
+      "name": "RTP_Box_KB_2",
+      "concept": "logical_sentence",
+      "description": "If a box cannot move and the battery is full, then it is not liftable.",
+      "value": "(¬Can_Move(Box) ^ Battery_Full(Robot)) => ¬Liftable(Box)"
+    },
+    {
+      "name": "RTP_Bird_KB_1",
+      "concept": "logical_sentence",
+      "description": "If an animal has wings and does not have fur, it is a bird.",
+      "value": "(Has_Wings(Animal) ^ ¬Has_Fur(Animal)) => Is_Bird(Animal)"
+    },
+    {
+      "name": "MP_Bird_Rule",
+      "concept": "logical_sentence",
+      "description": "If an animal has feathers, it implies the animal is a bird.",
+      "value": "Feathers(Animal) => Is_Bird(Animal)"
+    },
+    {
+      "name": "MP_Harry_Fact",
+      "concept": "logical_sentence",
+      "description": "Harry has feathers.",
+      "value": "Feathers(Harry)"
+    },
+    {
+      "name": "MT_Buzz_Fact",
+      "concept": "logical_sentence",
+      "description": "Buzz is not a bird.",
+      "value": "¬Is_Bird(Buzz)"
+    }
+  ],
+  "triples": [
+    {
+      "instance1": "RTP_Box_KB_1",
+      "relation": "implies",
+      "instance2": "¬Liftable(Box)"
+    },
+    {
+      "instance1": "RTP_Box_KB_2",
+      "relation": "implies",
+      "instance2": "¬Liftable(Box)"
+    },
+    {
+      "instance1": "RTP_Bird_KB_1",
+      "relation": "implies",
+      "instance2": "Is_Bird(Animal)"
+    },
+    {
+      "instance1": "MP_Bird_Rule",
+      "relation": "implies",
+      "instance2": "Is_Bird(Animal)"
+    }
+  ]
+}

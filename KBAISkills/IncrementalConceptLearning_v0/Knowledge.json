@@ -1,0 +1,371 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "object",
+      "properties": [
+        {
+          "name": "objectType",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "block",
+      "properties": [
+        {
+          "name": "blockType",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "definition",
+      "properties": [
+        {
+          "name": "objectInstances",
+          "type": "STRING"
+        },
+        {
+          "name": "objectTriples",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "example",
+      "properties": [
+        {
+          "name": "exampleType",
+          "type": "STRING"
+        },
+        {
+          "name": "objectInstances",
+          "type": "STRING"
+        },
+        {
+          "name": "objectTriples",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "sequence",
+      "properties": [
+        {
+          "name": "examples",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "variabilization",
+      "properties": [
+        {
+          "name": "keyFeatures",
+          "type": "STRING"
+        },
+        {
+          "name": "relationships",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "generalization",
+      "properties": [
+        {
+          "name": "positiveExample",
+          "type": "STRING"
+        },
+        {
+          "name": "expandedConcept",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "specialization",
+      "properties": [
+        {
+          "name": "negativeExample",
+          "type": "STRING"
+        },
+        {
+          "name": "refinedConcept",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "incremental concept learning",
+      "properties": [
+        {
+          "name": "sequenceOfExamples",
+          "type": "STRING"
+        },
+        {
+          "name": "heuristics",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "require-link",
+      "properties": [
+        {
+          "name": "heuristicType",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "forbid-link",
+      "properties": [
+        {
+          "name": "heuristicType",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "drop-link",
+      "properties": [
+        {
+          "name": "heuristicType",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "enlarge-set",
+      "properties": [
+        {
+          "name": "heuristicType",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "climb-tree",
+      "properties": [
+        {
+          "name": "heuristicType",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "close-interval",
+      "properties": [
+        {
+          "name": "heuristicType",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Foo",
+      "properties": [
+        {
+          "name": "arrangement",
+          "type": "STRING"
+        }
+      ]
+    }
+  ],
+  "instances": [
+    {
+      "concept": "object",
+      "name": "brick 1",
+      "values": {
+        "objectType": "brick",
+        "superConcept": "block"
+      }
+    },
+    {
+      "concept": "object",
+      "name": "brick 2",
+      "values": {
+        "objectType": "brick",
+        "superConcept": "block"
+      }
+    },
+    {
+      "concept": "object",
+      "name": "brick 3",
+      "values": {
+        "objectType": "brick",
+        "superConcept": "block"
+      }
+    },
+    {
+      "concept": "object",
+      "name": "brick 4",
+      "values": {
+        "objectType": "brick",
+        "superConcept": "block"
+      }
+    },
+    {
+      "concept": "object",
+      "name": "cylinder 1",
+      "values": {
+        "objectType": "cylinder",
+        "superConcept": "block"
+      }
+    },
+    {
+      "concept": "object",
+      "name": "cylinder 2",
+      "values": {
+        "objectType": "cylinder",
+        "superConcept": "block"
+      }
+    },
+    {
+      "concept": "object",
+      "name": "wedge 1",
+      "values": {
+        "objectType": "wedge"
+      }
+    },
+    {
+      "concept": "definition",
+      "name": "foo definition",
+      "values": {
+        "objectInstances": "",
+        "objectTriples": ""
+      }
+    },
+    {
+      "concept": "example",
+      "name": "example 1",
+      "values": {
+        "exampleType": "positive",
+        "objectInstances": "brick 1, brick 2, brick 3, brick 4",
+        "objectTriples": "brick 1 supports brick 2, brick 1 supports brick 3, brick 2 supports brick 4, brick 3 supports brick 4"
+      }
+    },
+    {
+      "concept": "example",
+      "name": "example 2",
+      "values": {
+        "exampleType": "negative",
+        "objectInstances": "brick 1, brick 2, brick 3, brick 4",
+        "objectTriples": "brick 1 supports brick 2, brick 1 supports brick 3, brick 2 supports brick 4, brick 3 supports brick 4, brick 2 touches brick 3"
+      }
+    },
+    {
+      "concept": "example",
+      "name": "example 3",
+      "values": {
+        "exampleType": "positive",
+        "objectInstances": "brick 1, cylinder 1, cylinder 2, brick 4",
+        "objectTriples": "brick 1 supports cylinder 1, brick 1 supports cylinder 2, cylinder 1 supports brick 4, cylinder 2 supports brick 4"
+      }
+    },
+    {
+      "concept": "example",
+      "name": "example 4",
+      "values": {
+        "exampleType": "negative",
+        "objectInstances": "brick 1, brick 2, brick 3, wedge 1",
+        "objectTriples": "brick 1 supports brick 2, brick 1 supports brick 3, brick 2 supports wedge 1, brick 3 supports wedge 1"
+      }
+    },
+    {
+      "concept": "sequence",
+      "name": "foo sequence",
+      "values": {
+        "examples": "example 1, example 2, example 3, example 4"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "name": "supports",
+      "description": "The supports relationship is when one object is underneath another object.",
+      "domain": "object",
+      "range": "object"
+    },
+    {
+      "name": "touches",
+      "description": "The touch relationship is when two objects are touching each other.",
+      "domain": "object",
+      "range": "object"
+    }
+  ],
+  "Assertions": [
+    {
+      "name": "brick 1 supports brick 2",
+      "description": "brick 1 is underneath and supports brick 2",
+      "equivalentTo": "supports(brick 1, brick 2)"
+    },
+    {
+      "name": "brick 1 supports brick 3",
+      "description": "brick 1 is underneath and supports brick 3",
+      "equivalentTo": "supports(brick 1, brick 3)"
+    },
+    {
+      "name": "brick 2 supports brick 4",
+      "description": "brick 2 is underneath and supports brick 4",
+      "equivalentTo": "supports(brick 2, brick 4)"
+    },
+    {
+      "name": "brick 3 supports brick 4",
+      "description": "brick 3 is underneath and supports brick 4",
+      "equivalentTo": "supports(brick 3, brick 4)"
+    },
+    {
+      "name": "brick 1 supports cylinder 1",
+      "description": "brick 1 is underneath and supports cylinder 1",
+      "equivalentTo": "supports(brick 1, cylinder 1)"
+    },
+    {
+      "name": "brick 1 supports cylinder 2",
+      "description": "brick 1 is underneath and supports cylinder 2",
+      "equivalentTo": "supports(brick 1, cylinder 2)"
+    },
+    {
+      "name": "cylinder 1 supports brick 4",
+      "description": "cylinder 1 is underneath and supports brick 4",
+      "equivalentTo": "supports(cylinder 1, brick 4)"
+    },
+    {
+      "name": "cylinder 2 supports brick 4",
+      "description": "cylinder 2 is underneath and supports brick 4",
+      "equivalentTo": "supports(cylinder 2, brick 4)"
+    },
+    {
+      "name": "brick 2 supports wedge 1",
+      "description": "brick 2 is underneath and supports wedge 1",
+      "equivalentTo": "supports(brick 2, wedge 1)"
+    },
+    {
+      "name": "brick 3 supports wedge 1",
+      "description": "brick 3 is underneath and supports wedge 1",
+      "equivalentTo": "supports(brick 3, wedge 1)"
+    },
+    {
+      "name": "brick 2 touches brick 3",
+      "description": "brick 2 is touching brick 3",
+      "equivalentTo": "touches(brick 2, brick 3)"
+    },
+    {
+      "name": "object types",
+      "description": "Objects can be wedges, bricks, cylinders, or arches",
+      "equivalentTo": "object.objectType in {brick, cylinder, wedge, arch}"
+    },
+    {
+      "name": "block types",
+      "description": "Both cylinders and bricks can be considered blocks",
+      "equivalentTo": "block.blockType in {brick, cylinder}"
+    },
+    {
+      "name": "Foo definition",
+      "description": "A Foo is an arrangement of wooden objects. A Foo has a single wooden brick which supports two wooden blocks that do not touch each other. The two blocks, which can be bricks or cylinders, both support a single wooden brick that sit on top of them.",
+      "equivalentTo": "Foo = {base: brick, supports: [block1, block2], top: brick} where supports(base, block1) AND supports(base, block2) AND supports(block1, top) AND supports(block2, top) AND NOT touches(block1, block2)"
+    }
+  ]
+}

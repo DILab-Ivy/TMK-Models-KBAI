@@ -1,0 +1,246 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "learn concept incrementally",
+      "description": "Learn a concept definition from a sequence of labeled examples",
+      "inputParameters": [
+        "example_sequence",
+        "background_knowledge"
+      ],
+      "outputParameters": [
+        "concept_definition"
+      ],
+      "given": "examples are labeled as positive or negative",
+      "makes": "concept definition covers all positive examples and excludes all negative examples",
+      "means": [
+        {
+          "mechanismReference": "learn_concept_incrementally",
+          "actualArguments": [
+            "example_sequence",
+            "background_knowledge"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "variabilize_first_example",
+      "description": "Convert constants to variables in the first positive example",
+      "inputParameters": [
+        "first_positive_example"
+      ],
+      "outputParameters": [
+        "initial_concept_definition"
+      ],
+      "given": "this is the first example with constants",
+      "makes": "initial concept definition with variables",
+      "means": [
+        {
+          "mechanismReference": "variabilize_first_example",
+          "actualArguments": [
+            "first_positive_example"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "process_positive_example",
+      "description": "Update concept definition to cover positive example",
+      "inputParameters": [
+        "positive_example",
+        "current_concept_definition",
+        "background_knowledge"
+      ],
+      "outputParameters": [
+        "updated_concept_definition"
+      ],
+      "given": "example is a positive instance",
+      "makes": "concept definition covers this positive example",
+      "means": [
+        {
+          "mechanismReference": "process_positive_example",
+          "actualArguments": [
+            "positive_example",
+            "current_concept_definition"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "process_negative_example",
+      "description": "Update concept definition to exclude negative example",
+      "inputParameters": [
+        "negative_example",
+        "current_concept_definition"
+      ],
+      "outputParameters": [
+        "updated_concept_definition"
+      ],
+      "given": "example is a negative instance",
+      "makes": "concept definition excludes this negative example",
+      "means": [
+        {
+          "mechanismReference": "process_negative_example",
+          "actualArguments": [
+            "negative_example",
+            "current_concept_definition"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "check_coverage",
+      "description": "Determine if current concept definition covers the given example",
+      "inputParameters": [
+        "example",
+        "current_concept_definition"
+      ],
+      "outputParameters": [
+        "coverage_result"
+      ],
+      "given": "concept definition exists",
+      "makes": "determination whether example matches definition",
+      "means": [
+        {
+          "mechanismReference": "check_coverage",
+          "actualArguments": [
+            "example",
+            "current_concept_definition"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "generalize_using_drop_link",
+      "description": "Remove unnecessary link to generalize concept",
+      "inputParameters": [
+        "current_concept_definition",
+        "positive_example"
+      ],
+      "outputParameters": [
+        "generalized_concept_definition"
+      ],
+      "given": "structures overlap except for one extra link in current definition",
+      "makes": "more general definition without the extra link",
+      "means": [
+        {
+          "mechanismReference": "generalize_using_drop_link",
+          "actualArguments": [
+            "current_concept_definition",
+            "positive_example"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "generalize_using_enlarge_set",
+      "description": "Add new value to set of acceptable values",
+      "inputParameters": [
+        "current_concept_definition",
+        "positive_example"
+      ],
+      "outputParameters": [
+        "generalized_concept_definition"
+      ],
+      "given": "example has different value for same feature",
+      "makes": "definition accepting multiple values (e.g., brick or wedge)",
+      "means": [
+        {
+          "mechanismReference": "generalize_using_enlarge_set",
+          "actualArguments": [
+            "current_concept_definition",
+            "new_value_from_example"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "generalize_using_climb_tree",
+      "description": "Generalize using background knowledge hierarchy",
+      "inputParameters": [
+        "current_concept_definition",
+        "background_knowledge"
+      ],
+      "outputParameters": [
+        "generalized_concept_definition"
+      ],
+      "given": "background knowledge contains superclass for multiple values",
+      "makes": "definition using superclass (e.g., block instead of brick or wedge)",
+      "means": [
+        {
+          "mechanismReference": "generalize_using_climb_tree",
+          "actualArguments": [
+            "current_concept_definition",
+            "background_knowledge_hierarchy"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "specialize_using_require_link",
+      "description": "Make optional link required to exclude negative example",
+      "inputParameters": [
+        "current_concept_definition",
+        "negative_example"
+      ],
+      "outputParameters": [
+        "specialized_concept_definition"
+      ],
+      "given": "negative example lacks relationship present in positive examples",
+      "makes": "definition with must-have relationship",
+      "means": [
+        {
+          "mechanismReference": "specialize_using_require_link",
+          "actualArguments": [
+            "current_concept_definition",
+            "missing_link_from_negative_example"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "specialize_using_forbid_link",
+      "description": "Add forbidden relationship to exclude negative example",
+      "inputParameters": [
+        "current_concept_definition",
+        "negative_example"
+      ],
+      "outputParameters": [
+        "specialized_concept_definition"
+      ],
+      "given": "negative example has unwanted relationship not in positive examples",
+      "makes": "definition explicitly forbidding that relationship",
+      "means": [
+        {
+          "mechanismReference": "specialize_using_forbid_link",
+          "actualArguments": [
+            "current_concept_definition",
+            "unwanted_link_from_negative_example"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "solve_what_is_a_foo_problem",
+      "description": "Learn complete concept definition for foo from examples",
+      "inputParameters": [
+        "foo_example_sequence",
+        "background_knowledge_about_blocks"
+      ],
+      "outputParameters": [
+        "final_foo_concept_definition"
+      ],
+      "given": "at least one positive foo example is provided",
+      "makes": "complete foo concept definition",
+      "means": [
+        {
+          "mechanismReference": "learn_concept_incrementally",
+          "actualArguments": [
+            "foo_example_sequence",
+            "background_knowledge_about_blocks"
+          ]
+        }
+      ]
+    }
+  ]
+}

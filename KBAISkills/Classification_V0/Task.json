@@ -1,0 +1,111 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "ClassifyAnimalsAsBirds",
+      "description": "Classify animals as birds based on observed percepts.",
+      "inputParameters": [
+        "initialConfiguration: configuration",
+        "animalKnowledgeBase: knowledgeBase"
+      ],
+      "outputParameters": [
+        "finalConfiguration: configuration"
+      ],
+      "given": "!isEmpty(initialConfiguration.observedAnimals) && isValid(animalKnowledgeBase)",
+      "makes": "goodClassification(finalConfiguration)",
+      "means": [
+        {
+          "mechanismReference": "ClassificationSolution",
+          "actualArguments": [
+            "initialConfiguration",
+            "animalKnowledgeBase"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IdentifyPercepts",
+      "description": "Extract and validate the observed percepts from the animals.",
+      "inputParameters": [
+        "config: configuration"
+      ],
+      "outputParameters": [
+        "validatedPercepts: array of percept"
+      ],
+      "given": "!isEmpty(config.observedAnimals)",
+      "makes": "!isEmpty(validatedPercepts)",
+      "means": [
+        {
+          "mechanismReference": "IdentifyPerceptsMechanism",
+          "actualArguments": [
+            "config"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MatchAnimalsToCriteria",
+      "description": "Match observed animals to bird criteria using knowledge base.",
+      "inputParameters": [
+        "percepts: array of percept",
+        "kb: knowledgeBase"
+      ],
+      "outputParameters": [
+        "candidateAnimals: array of animal"
+      ],
+      "given": "!isEmpty(percepts)",
+      "makes": "meetsCriteria(candidateAnimals)",
+      "means": [
+        {
+          "mechanismReference": "MatchAnimalsToCriteriaMechanism",
+          "actualArguments": [
+            "percepts",
+            "kb"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CheckBirdCriteria",
+      "description": "Check if each candidate animal meets bird criteria.",
+      "inputParameters": [
+        "candidates: array of animal",
+        "percepts: array of percept"
+      ],
+      "outputParameters": [
+        "classifiedAnimals: array of animal"
+      ],
+      "given": "!isEmpty(candidates)",
+      "makes": "isClassifiedAsBird(classifiedAnimals)",
+      "means": [
+        {
+          "mechanismReference": "CheckBirdCriteriaMechanism",
+          "actualArguments": [
+            "candidates",
+            "percepts"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ClassificationComplete",
+      "description": "Represents the successful completion of the classification process.",
+      "inputParameters": [
+        "classifiedAnimals: array of animal"
+      ],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "true",
+      "means": []
+    },
+    {
+      "name": "ClassificationFailed",
+      "description": "Represents a failure state in the classification task.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "false",
+      "means": []
+    }
+  ]
+}

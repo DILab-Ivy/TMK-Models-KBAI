@@ -1,0 +1,132 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "GenerativeAI",
+      "description": "AI systems that produce new content (text, images, code) by reframing tasks as extremely open-ended prediction."
+    },
+    {
+      "name": "StatisticalAI",
+      "description": "Previous generation of AI focused on analysis and prediction for specific tasks like classification or translation, but did not generate truly new content."
+    },
+    {
+      "name": "TransformerArchitecture",
+      "description": "Model architecture introduced in 2017 ('Attention Is All You Need') that handles long sequences and vast training data, forming the foundation of modern Generative AI."
+    },
+    {
+      "name": "SelfAttention",
+      "description": "A mechanism within Transformers that allows the model to directly access context over long sequences, giving it the 'long-term memory' it previously lacked."
+    },
+    {
+      "name": "FineTuning",
+      "description": "A permanent change to the core model itself to make it better at a specific task or domain, for example, using a technique like LoRA."
+    },
+    {
+      "name": "Prompting",
+      "description": "Giving the general model a temporary instruction (input) to receive an output, without altering the underlying core of the model."
+    },
+    {
+      "name": "ModelAlignment",
+      "description": "The process of teaching a powerful statistical tool to use its knowledge responsibly and safely, aligning its behavior with human values because it lacks an innate moral compass."
+    },
+    {
+      "name": "UserRole",
+      "description": "A category describing an individual's level of engagement, knowledge, and required skill set concerning AI technology, based on the Automotive Analogy."
+    },
+    {
+      "name": "AutomotiveAnalogy",
+      "description": "An analogy used to explain how artificial intelligence spans an extremely wide variety of fields, careers, and impacts on everyday life."
+    }
+  ],
+  "relations": [
+    {
+      "name": "buildsUpon",
+      "description": "Indicates that one concept or technology is an evolution or extension of another.",
+      "domain": "GenerativeAI",
+      "range": "StatisticalAI"
+    },
+    {
+      "name": "isMechanismOf",
+      "description": "Indicates a core component or enabling technology.",
+      "domain": "TransformerArchitecture",
+      "range": "GenerativeAI"
+    },
+    {
+      "name": "contains",
+      "description": "Indicates an architectural component of a model.",
+      "domain": "TransformerArchitecture",
+      "range": "SelfAttention"
+    },
+    {
+      "name": "modifiesPermanently",
+      "description": "Indicates a permanent change to the model's core structure.",
+      "domain": "FineTuning",
+      "range": "GenerativeAI"
+    }
+  ],
+  "instances": [
+    {
+      "name": "PedestrianRole",
+      "concept": "UserRole",
+      "values": {
+        "level": "Coexistence",
+        "requiredKnowledge": "Must understand that not all content is human-written; watch for trustworthiness.",
+        "analogy": "Pedestrian"
+      }
+    },
+    {
+      "name": "DriverRole",
+      "concept": "UserRole",
+      "values": {
+        "level": "Active Use",
+        "requiredKnowledge": "Learns to operate the technology effectively and knows the 'rules of the road' (how to use it).",
+        "analogy": "Driver"
+      }
+    },
+    {
+      "name": "HomeMechanicRole",
+      "concept": "UserRole",
+      "values": {
+        "level": "Minor Modification/Troubleshooting",
+        "requiredKnowledge": "Can investigate issues (check engine light) or make minor modifications (e.g., changing the hubcaps).",
+        "analogy": "Home Mechanic"
+      }
+    },
+    {
+      "name": "ProfessionalMechanicRole",
+      "concept": "UserRole",
+      "values": {
+        "level": "Major Repair/Professional Maintenance",
+        "requiredKnowledge": "Paid to repair AI systems for a living, able to make bigger repairs or modifications.",
+        "analogy": "Professional Mechanic"
+      }
+    },
+    {
+      "name": "EngineerRole",
+      "concept": "UserRole",
+      "values": {
+        "level": "Design and Build",
+        "requiredKnowledge": "Designs and builds the core AI systems (the people who make the cars).",
+        "analogy": "Engineer"
+    }
+    },
+    {
+      "name": "RawAIPowerAnalogy",
+      "concept": "AutomotiveAnalogy",
+      "values": {
+        "component": "High-Performance Car Engine",
+        "analogyFor": "Raw, fine-tuned AI model",
+        "description": "A powerful, capable system (like a fast engine) that is not safe or useful until safety features are added."
+      }
+    },
+    {
+      "name": "AlignmentMechanismAnalogy",
+      "concept": "AutomotiveAnalogy",
+      "values": {
+        "component": "Brakes, Speed Limits, Traffic Laws",
+        "analogyFor": "Model Alignment",
+        "description": "The features that take raw power and ensure the system operates responsibly and safely once in the world."
+      }
+    }
+  ]
+}

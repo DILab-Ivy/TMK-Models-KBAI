@@ -1,0 +1,75 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "CaseBasedProblemSolving",
+      "description": "Solve a new problem using case-based reasoning.",
+      "inputParameters": ["newProblem: problem", "caseMem: memoryStore"],
+      "outputParameters": ["solution: solution", "updatedMem: memoryStore"],
+      "given": "isWellFormed(newProblem) && size(caseMem.cases) > 0",
+      "makes": "solved(newProblem, solution) && contains(updatedMem, newProblem, solution)",
+      "means": [
+        {
+          "mechanismReference": "CaseBasedReasoningMechanism",
+          "actualArguments": ["newProblem", "caseMem", "solution", "updatedMem"]
+        }
+      ]
+    },
+    {
+      "name": "RetrieveCase",
+      "description": "Identify the most relevant prior case.",
+      "inputParameters": ["np: problem", "m: memoryStore"],
+      "outputParameters": ["source: case"],
+      "given": "size(m.cases) > 0",
+      "makes": "source in m.cases",
+      "means": [
+        {
+          "mechanismReference": "RetrieveCaseMechanism",
+          "actualArguments": ["np", "m", "source"]
+        }
+      ]
+    },
+    {
+      "name": "AdaptCase",
+      "description": "Modify the retrieved case solution to fit the new problem.",
+      "inputParameters": ["np: problem", "source: case"],
+      "outputParameters": ["candidate: solution"],
+      "given": "source != null",
+      "makes": "candidate != null",
+      "means": [
+        {
+          "mechanismReference": "AdaptCaseMechanism",
+          "actualArguments": ["np", "source", "candidate"]
+        }
+      ]
+    },
+    {
+      "name": "EvaluateSolution",
+      "description": "Test whether the adapted solution works for the new problem.",
+      "inputParameters": ["np: problem", "cand: solution"],
+      "outputParameters": ["acc: BOOLEAN"],
+      "given": "candidate != null",
+      "makes": "acc == solved(np, candidate)",
+      "means": [
+        {
+          "mechanismReference": "EvaluateSolutionMechanism",
+          "actualArguments": ["np", "candidate", "acc"]
+        }
+      ]
+    },
+    {
+      "name": "StoreCase",
+      "description": "Store the new problem-solution pair in memory.",
+      "inputParameters": ["np: problem", "sol: solution", "m: memoryStore"],
+      "outputParameters": ["outputMemory: memoryStore"],
+      "given": "solved(np, sol)",
+      "makes": "contains(outputMemory, np, sol)",
+      "means": [
+        {
+          "mechanismReference": "StoreCaseMechanism",
+          "actualArguments": ["np", "sol", "m", "outputMemory"]
+        }
+      ]
+    }
+  ]
+}

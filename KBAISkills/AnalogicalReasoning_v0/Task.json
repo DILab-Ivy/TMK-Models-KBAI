@@ -1,0 +1,289 @@
+{
+    "model": "Task",
+    "tasks": [
+        {
+            "name": "AnalogicalProblemSolving",
+            "description": "Solve a target problem via analogical reasoning.",
+            "inputParameters": [
+                "targetProblem: problem",
+                "caseMem: memoryStore"
+            ],
+            "outputParameters": [
+                "solution: solution",
+                "updatedMem: memoryStore"
+            ],
+            "given": "isWellFormed(targetProblem) && size(caseMem.cases) > 0",
+            "makes": "solved(targetProblem, solution) && contains(updatedMem, targetProblem, solution)",
+            "means": [
+                {
+                    "mechanismReference": "AnalogicalReasoningMechanism",
+                    "actualArguments": [
+                        "targetProblem",
+                        "caseMem",
+                        "solution",
+                        "updatedMem"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "SolveRadiationProblem",
+            "description": "Use the fortress solution to solve Duncker’s radiation problem.",
+            "inputParameters": [
+                "mem: memoryStore"
+            ],
+            "outputParameters": [
+                "radSolution: solution",
+                "memOut: memoryStore"
+            ],
+            "given": "contains(mem, fortressProblem, fortressSolution)",
+            "makes": "solved(dunkersRadiationProblem, radSolution)",
+            "means": [
+                {
+                    "mechanismReference": "AnalogicalReasoningMechanism",
+                    "actualArguments": [
+                        "dunkersRadiationProblem",
+                        "mem",
+                        "radSolution",
+                        "memOut"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "SolveAtomicStructureProblem",
+            "description": "Map the solar-system model to the atomic-structure model.",
+            "inputParameters": [
+                "mem: memoryStore"
+            ],
+            "outputParameters": [
+                "atomSolution: solution",
+                "memOut: memoryStore"
+            ],
+            "given": "contains(mem, solarSystemModel, solarSystemModel)",
+            "makes": "solved(atomicStructureModel, atomSolution)",
+            "means": [
+                {
+                    "mechanismReference": "AnalogicalReasoningMechanism",
+                    "actualArguments": [
+                        "atomicStructureModel",
+                        "mem",
+                        "atomSolution",
+                        "memOut"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "RetrieveSourceCase",
+            "description": "Identify a source case in memory most similar to the target.",
+            "inputParameters": [
+                "tp: problem",
+                "m: memoryStore"
+            ],
+            "outputParameters": [
+                "src: case"
+            ],
+            "given": "true",
+            "makes": "src in m.cases",
+            "means": [
+                {
+                    "mechanismReference": "RetrieveSourceCaseMechanism",
+                    "actualArguments": [
+                        "tp",
+                        "m",
+                        "src"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "MapStructures",
+            "description": "Compute a structural mapping between target and source problems.",
+            "inputParameters": [
+                "tp: problem",
+                "sc: case"
+            ],
+            "outputParameters": [
+                "ok: BOOLEAN"
+            ],
+            "given": "true",
+            "makes": "ok",
+            "means": [
+                {
+                    "mechanismReference": "MapStructuresMechanism",
+                    "actualArguments": [
+                        "tp",
+                        "sc",
+                        "ok"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "TransferKnowledge",
+            "description": "Generate a candidate solution for the target by transfer.",
+            "inputParameters": [
+                "tp: problem",
+                "sc: case"
+            ],
+            "outputParameters": [
+                "cand: solution"
+            ],
+            "given": "true",
+            "makes": "cand != null",
+            "means": [
+                {
+                    "mechanismReference": "TransferKnowledgeMechanism",
+                    "actualArguments": [
+                        "tp",
+                        "sc",
+                        "cand"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "EvaluateCandidateSolution",
+            "description": "Test whether the candidate solution satisfies the target.",
+            "inputParameters": [
+                "tp: problem",
+                "cand: solution"
+            ],
+            "outputParameters": [
+                "acc: BOOLEAN"
+            ],
+            "given": "true",
+            "makes": "acc == solved(tp, cand)",
+            "means": [
+                {
+                    "mechanismReference": "EvaluateCandidateSolutionMechanism",
+                    "actualArguments": [
+                        "tp",
+                        "cand",
+                        "acc"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "StoreNewCase",
+            "description": "Store the new (problem, solution) pair in memory.",
+            "inputParameters": [
+                "tp: problem",
+                "sol: solution",
+                "m: memoryStore"
+            ],
+            "outputParameters": [
+                "mOut: memoryStore"
+            ],
+            "given": "true",
+            "makes": "contains(mOut, tp, sol)",
+            "means": [
+                {
+                    "mechanismReference": "StoreNewCaseMechanism",
+                    "actualArguments": [
+                        "tp",
+                        "sol",
+                        "m",
+                        "mOut"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "FailureGoal",
+            "description": "Represents a failure state.",
+            "inputParameters": [],
+            "outputParameters": [],
+            "given": "true",
+            "makes": "false",
+            "means": []
+        },
+        {
+            "name": "SourceCaseRetrieved",
+            "description": "Ensure selected case resides in memory.",
+            "inputParameters": [
+                "src: case",
+                "m: memoryStore"
+            ],
+            "outputParameters": [
+                "validatedSrc: case"
+            ],
+            "given": "src in m.cases",
+            "makes": "validatedSrc = src",
+            "means": []
+        },
+        {
+            "name": "MappingIsValid",
+            "description": "Ensure structural mapping succeeded.",
+            "inputParameters": [
+                "okIn: BOOLEAN"
+            ],
+            "outputParameters": [
+                "okOut: BOOLEAN"
+            ],
+            "given": "okIn",
+            "makes": "okOut = okIn",
+            "means": []
+        },
+        {
+            "name": "CandidateSolutionGenerated",
+            "description": "Ensure candidate solution is non-null.",
+            "inputParameters": [
+                "candIn: solution"
+            ],
+            "outputParameters": [
+                "candOut: solution"
+            ],
+            "given": "candIn != null",
+            "makes": "candOut = candIn",
+            "means": []
+        },
+        {
+            "name": "SolutionVerified",
+            "description": "Ensure candidate solution solves the problem.",
+            "inputParameters": [
+                "tp: problem",
+                "cand: solution",
+                "accIn: BOOLEAN"
+            ],
+            "outputParameters": [
+                "accOut: BOOLEAN"
+            ],
+            "given": "accIn && solved(tp, cand)",
+            "makes": "accOut = accIn",
+            "means": []
+        },
+        {
+            "name": "CaseStored",
+            "description": "Ensure new (P,S) pair is in memory.",
+            "inputParameters": [
+                "tp: problem",
+                "sol: solution",
+                "m: memoryStore"
+            ],
+            "outputParameters": [
+                "mValidated: memoryStore"
+            ],
+            "given": "contains(m, tp, sol)",
+            "makes": "mValidated = m",
+            "means": []
+        },
+        {
+            "name": "ProblemSolvedStored",
+            "description": "Final safety check: problem solved & case stored.",
+            "inputParameters": [
+                "tp: problem",
+                "sol: solution",
+                "mem: memoryStore"
+            ],
+            "outputParameters": [
+                "memOut: memoryStore"
+            ],
+            "given": "solved(tp, sol) && contains(mem, tp, sol)",
+            "makes": "memOut = mem",
+            "means": []
+        }
+    ]
+}

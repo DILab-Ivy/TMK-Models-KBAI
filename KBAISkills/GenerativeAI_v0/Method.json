@@ -1,0 +1,24 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "TODO",
+      "description": "This JSON is empty. As of drafting this (Oct 2025), there are no skill-based tasks in the lesson. Please refer to Knowledge.json for the lesson content.",
+      "inputParameters": [""],
+      "outputParameters": [""],
+      "requires": "",
+      "provides": "",
+      "organizer": {
+        "startState": "",
+        "successState": "",
+        "failureState": "",
+        "states": [
+          { "name": "", "goalInvocation": { "goalReference": "", "type": "", "actualArguments": [""] }}
+        ],
+        "transitions": [
+          { "sourceState": "", "targetState": "", "dataCondition": "" }
+        ]
+      }
+    }
+  ]
+}

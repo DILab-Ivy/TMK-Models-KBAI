@@ -1,0 +1,385 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "planning_skill",
+      "description": "The cognitive skill of selecting a sequence of actions (a plan) to achieve a goal, involving reasoning about states, goals, and operators.",
+      "properties": []
+    },
+    {
+      "name": "planning_method",
+      "description": "An abstract concept for a specific strategy used to solve a planning problem.",
+      "properties": []
+    },
+    {
+      "name": "partial_order_planning",
+      "superConcept": ["planning_method"],
+      "description": "A planning method (also called nonlinear planning) that avoids goal conflicts (clobbering) by only adding necessary ordering constraints, rather than committing to a full linear sequence early.",
+      "properties": []
+    },
+    {
+      "name": "hierarchical_task_network_planning",
+      "superConcept": ["planning_method"],
+      "description": "A planning method that decomposes complex, abstract tasks (macro-operators) into a hierarchy of simpler subtasks or primitive operations.",
+      "properties": []
+    },
+    {
+      "name": "state",
+      "description": "A representation of the world at a specific point in time, defined by a set of propositions or variable assignments.",
+      "properties": [
+        {
+          "name": "description",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "configuration",
+      "superConcept": ["state"],
+      "description": "A specific instance of a state, detailing the properties and relationships of all relevant entities.",
+      "properties": [
+        {
+          "name": "robotPosition",
+          "type": "String"
+        },
+        {
+          "name": "ladderState",
+          "type": "String"
+        },
+        {
+          "name": "ceilingState",
+          "type": "String"
+        },
+        {
+          "name": "blockArrangement",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "plan",
+      "description": "A sequence of operators (actions) designed to transition from an initial state to a goal state.",
+      "properties": []
+    },
+    {
+      "name": "operator",
+      "description": "A representation of an action an agent can take, defined by its preconditions and postconditions (effects).",
+      "properties": [
+        {
+          "name": "preconditions",
+          "type": "String"
+        },
+        {
+          "name": "postconditions",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "goal_clobbering",
+      "description": "A planning conflict where an action taken to achieve one goal negates a precondition required to achieve a different, uncompleted goal.",
+      "properties": []
+    },
+    {
+      "name": "logic_representation",
+      "description": "Abstract concept for formalisms used to represent states and goals.",
+      "properties": []
+    },
+    {
+      "name": "propositional_logic",
+      "superConcept": ["logic_representation"],
+      "description": "A form of logic using propositions (e.g., 'Painted(Ceiling)') and connectives (e.g., 'AND'/'^') to represent states.",
+      "properties": []
+    },
+    {
+      "name": "example_problem",
+      "description": "An abstract concept for a problem used to illustrate a planning skill.",
+      "properties": []
+    },
+    {
+      "name": "robot_painting_problem",
+      "superConcept": ["example_problem"],
+      "description": "A canonical planning problem where a robot must paint a ladder and a ceiling, involving a goal clobbering conflict.",
+      "properties": []
+    },
+    {
+      "name": "block_world_problem",
+      "superConcept": ["example_problem"],
+      "description": "A canonical planning problem involving stacking and unstacking blocks to match a goal configuration.",
+      "properties": []
+    },
+    {
+      "name": "entity",
+      "description": "A physical or abstract object in the problem domain.",
+      "properties": []
+    },
+    {
+      "name": "agent",
+      "superConcept": ["entity"],
+      "description": "An entity that performs actions.",
+      "properties": []
+    },
+    {
+      "name": "robot",
+      "superConcept": ["agent"],
+      "description": "The agent in the robot_painting_problem and block_world_problem.",
+      "properties": []
+    },
+    {
+      "name": "structure",
+      "superConcept": ["entity"],
+      "description": "A physical object in the environment.",
+      "properties": []
+    },
+    {
+      "name": "ladder",
+      "superConcept": ["structure"],
+      "description": "A structure that can be climbed or painted.",
+      "properties": [
+        {
+          "name": "ladderState",
+          "type": "String",
+          "description": "The state of the ladder (e.g., 'Dry', 'Wet', 'Painted')."
+        }
+      ]
+    },
+    {
+      "name": "ceiling",
+      "superConcept": ["structure"],
+      "description": "A structure that can be painted.",
+      "properties": [
+        {
+          "name": "ceilingState",
+          "type": "String",
+          "description": "The state of the ceiling (e.g., 'Dry', 'Painted')."
+        }
+      ]
+    },
+    {
+      "name": "floor",
+      "superConcept": ["structure"],
+      "description": "The ground surface.",
+      "properties": []
+    },
+    {
+      "name": "table",
+      "superConcept": ["structure"],
+      "description": "The surface on which blocks are placed.",
+      "properties": []
+    },
+    {
+      "name": "block",
+      "superConcept": ["structure"],
+      "description": "An object in the Block World problem.",
+      "properties": [
+        {
+          "name": "blockName",
+          "type": "String"
+        },
+        {
+          "name": "on",
+          "type": "String",
+          "description": "The name of the block or 'Table' it is resting on."
+        },
+        {
+          "name": "isClear",
+          "type": "Boolean"
+        }
+      ]
+    }
+  ],
+  "instances": [
+    {
+      "concept": "robot",
+      "name": "robot1"
+    },
+    {
+      "concept": "ladder",
+      "name": "ladder1",
+      "values": {
+        "ladderState": "Dry"
+      }
+    },
+    {
+      "concept": "ceiling",
+      "name": "ceiling1",
+      "values": {
+        "ceilingState": "Dry"
+      }
+    },
+    {
+      "concept": "floor",
+      "name": "floor1"
+    },
+    {
+      "concept": "table",
+      "name": "table1"
+    },
+    {
+      "concept": "configuration",
+      "name": "painting_initial_configuration",
+      "values": {
+        "robotPosition": "on(robot1, floor1)",
+        "ladderState": "Dry",
+        "ceilingState": "Dry"
+      }
+    },
+    {
+      "concept": "configuration",
+      "name": "painting_goal_configuration",
+      "values": {
+        "robotPosition": "on(robot1, floor1)",
+        "ladderState": "Painted",
+        "ceilingState": "Painted"
+      }
+    },
+    {
+      "concept": "block",
+      "name": "blockA",
+      "values": {
+        "blockName": "A"
+      }
+    },
+    {
+      "concept": "block",
+      "name": "blockB",
+      "values": {
+        "blockName": "B"
+      }
+    },
+    {
+      "concept": "block",
+      "name": "blockC",
+      "values": {
+        "blockName": "C"
+      }
+    },
+    {
+      "concept": "block",
+      "name": "blockD",
+      "values": {
+        "blockName": "D"
+      }
+    },
+    {
+      "concept": "configuration",
+      "name": "bw_initial_config_1",
+      "description": "Initial state from the example problem: D on B, B on A, A on C, C on Table.",
+      "values": {
+        "blockArrangement": "[{\"name\": \"D\", \"on\": \"B\", \"isClear\": true}, {\"name\": \"B\", \"on\": \"A\", \"isClear\": false}, {\"name\": \"A\", \"on\": \"C\", \"isClear\": false}, {\"name\": \"C\", \"on\": \"Table\", \"isClear\": false}]"
+      }
+    },
+    {
+      "concept": "configuration",
+      "name": "bw_goal_config_1",
+      "description": "Goal state from the example problem: A on B, B on C, C on D, D on Table.",
+      "values": {
+        "blockArrangement": "[{\"name\": \"A\", \"on\": \"B\", \"isClear\": true}, {\"name\": \"B\", \"on\": \"C\", \"isClear\": false}, {\"name\": \"C\", \"on\": \"D\", \"isClear\": false}, {\"name\": \"D\", \"on\": \"Table\", \"isClear\": false}]"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "name": "on",
+      "description": "Describes an agent being on a structure.",
+      "domain": "agent",
+      "range": "structure"
+    },
+    {
+      "name": "on",
+      "description": "Describes a block being on another block or on the table.",
+      "domain": "block",
+      "range": "entity"
+    },
+    {
+      "name": "painted",
+      "description": "A predicate indicating a structure is painted.",
+      "domain": "structure",
+      "range": "Boolean"
+    },
+    {
+      "name": "dry",
+      "description": "A predicate indicating a structure is dry.",
+      "domain": "structure",
+      "range": "Boolean"
+    },
+    {
+      "name": "isClear",
+      "description": "A predicate indicating a block has nothing on it.",
+      "domain": "block",
+      "range": "Boolean"
+    }
+  ],
+  "assertions": [
+    {
+      "name": "valid(configuration)",
+      "description": "True if a configuration object is non-null and its propositions are well-formed propositional logic statements.",
+      "equivalentTo": "configuration != null && configuration.propositions != null && forAll(p in configuration.propositions: isWellFormed(p))"
+    },
+    {
+      "name": "safe(partialPlans)",
+      "description": "True if the set of generated partial plans is non-null and each subgoal plan contains at least one step.",
+      "equivalentTo": "partialPlans != null && forAll(p in partialPlans: p.steps != null && p.steps.size() > 0)"
+    },
+    {
+      "name": "conflictsFound(conflictReport)",
+      "description": "True if the conflict report identifies at least one goal-clobbering conflict between the partial plans.",
+      "equivalentTo": "conflictReport != null && conflictReport.conflicts.size() > 0"
+    },
+    {
+      "name": "safe(reorderedPlan)",
+      "description": "True if the reordering process produced a conflict-free ordered plan.",
+      "equivalentTo": "reorderedPlan != null && reorderedPlan.conflicts.size() == 0"
+    },
+    {
+      "name": "safe(execution)",
+      "description": "True if the last plan step or operation executed successfully without a precondition violation.",
+      "equivalentTo": "execution.status == SUCCESS && execution.preconditionsMet == true"
+    },
+    {
+      "name": "stateMatchesGoal(currentState, goalConfiguration)",
+      "description": "True if every proposition in goalConfiguration is satisfied by currentState.",
+      "equivalentTo": "forAll(p in goalConfiguration.propositions: currentState.satisfies(p))"
+    },
+    {
+      "name": "macroTaskSelected",
+      "description": "True if a suitable high-level macro-task was found for the current state and remaining goal.",
+      "equivalentTo": "selectedMacroTask != null"
+    },
+    {
+      "name": "safe(decomposition)",
+      "description": "True if the macro-task was successfully decomposed into a non-empty sequence of sub-tasks or primitive operations.",
+      "equivalentTo": "decomposition != null && decomposition.steps.size() > 0"
+    },
+    {
+      "name": "decompositionComplete",
+      "description": "True if all steps from the current macro-task decomposition have been executed.",
+      "equivalentTo": "decomposition.remainingSteps.size() == 0"
+    },
+    {
+      "name": "blockToMoveFound",
+      "description": "True if there exists a clear block in the current configuration that is not on the table.",
+      "equivalentTo": "exists(b in currentConfig.blocks: isClear(b) && NOT on(b, Table))"
+    },
+    {
+      "name": "nextBlockFound",
+      "description": "True if there is a next block in goalOrder that has not yet been placed on its target block.",
+      "equivalentTo": "exists(b in goalOrder: NOT on(b, targetOf(b, goalOrder)))"
+    },
+    {
+      "name": "safe(move)",
+      "description": "True if a Move Block operation (to table or to block) completed successfully.",
+      "equivalentTo": "move.status == SUCCESS && move.preconditionsMet == true"
+    },
+    {
+      "name": "achieves(finalPlan, goalConfiguration)",
+      "description": "True if executing finalPlan from the given initial configuration results in a state that satisfies goalConfiguration.",
+      "equivalentTo": "stateMatchesGoal(execute(finalPlan, initialConfiguration), goalConfiguration)"
+    },
+    {
+      "name": "preconditionsMet(planStep, currentState)",
+      "description": "True if every precondition of the given operator is satisfied in the current state.",
+      "equivalentTo": "forAll(pre in planStep.preconditions: currentState.satisfies(pre))"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "constraint propagation",
+      "description": "A reasoning process that reduces the possible values of variables by enforcing constraints, typically until a unique solution emerges."
+    },
+    {
+      "name": "variable",
+      "description": "An element in the problem space whose value is to be determined."
+    },
+    {
+      "name": "domain",
+      "description": "The set of all possible values a variable can take before constraints are applied."
+    },
+    {
+      "name": "constraint",
+      "description": "A rule that restricts the possible values of variables."
+    },
+    {
+      "name": "domain reduction",
+      "description": "The process of eliminating values from a variable's domain that violate constraints."
+    },
+    {
+      "name": "consistency",
+      "description": "A state in which all constraints are satisfied and no variable has an empty domain."
+    },
+    {
+      "name": "intersection constraint types",
+      "description": "Categories of constraints applied to points where lines meet, such as Y-Constraint, W-Constraint, L-Constraint, and T-Constraint."
+    },
+    {
+      "name": "edge constraint types",
+      "description": "Categories of constraints applied to edges, such as 'fold' or 'blade', determined by the constraints of connected intersections."
+    },
+    {
+      "name": "grammatical constraint",
+      "description": "A rule that determines whether a sentence structure is valid according to grammar, regardless of semantic meaning."
+    }
+  ],
+  
+  "instances": [
+    {
+      "name": "example intersection",
+      "concept": "variable",
+      "properties": [
+        {
+          "domain": [
+            "Y-Constraint",
+            "W-Constraint",
+            "L-Constraint",
+            "T-Constraint"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "example edge",
+      "concept": "variable",
+      "properties": [
+        {
+          "domain": [
+            "fold",
+            "blade"
+          ]  
+        }
+      ]
+    },
+    {
+      "name": "example sentence",
+      "concept": "variable",
+      "properties": [
+        {
+          "domain": [
+            "grammatically correct",
+            "grammatically incorrect"
+          ]
+        }
+      ]
+    }
+  ]
+}

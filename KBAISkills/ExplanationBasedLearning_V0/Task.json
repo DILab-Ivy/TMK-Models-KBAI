@@ -1,0 +1,179 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "ProveObjectIsCup",
+      "description": "Determine whether a given unfamiliar object is an instance of the concept 'cup' using prior knowledge via explanation-based learning.",
+      "inputParameters": [
+        "unfamiliarObject: object",
+        "conceptSpace: concept_space"
+      ],
+      "outputParameters": [
+        "classification: boolean"
+      ],
+      "given": "valid(unfamiliarObject) && complete(conceptSpace)",
+      "makes": "proven(classification)",
+      "means": [
+        {
+          "mechanismReference": "EBLMechanism",
+          "actualArguments": [
+            "unfamiliarObject",
+            "Cup",
+            "conceptSpace"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ProveObjectIsMug",
+      "description": "Determine whether a given unfamiliar object is an instance of the concept 'mug' using prior knowledge via explanation-based learning.",
+      "inputParameters": [
+        "unfamiliarObject: object",
+        "conceptSpace: concept_space"
+      ],
+      "outputParameters": [
+        "classification: boolean"
+      ],
+      "given": "valid(unfamiliarObject) && complete(conceptSpace)",
+      "makes": "proven(classification)",
+      "means": [
+        {
+          "mechanismReference": "EBLMechanism",
+          "actualArguments": [
+            "unfamiliarObject",
+            "Mug",
+            "conceptSpace"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ProveObjectIsTargetConcept",
+      "description": "Generalized goal to determine whether a given unfamiliar object is an instance of a target concept using prior knowledge via explanation-based learning.",
+      "inputParameters": [
+        "unfamiliarObject: object",
+        "targetConcept: concept",
+        "conceptSpace: concept_space"
+      ],
+      "outputParameters": [
+        "classification: boolean"
+      ],
+      "given": "valid(unfamiliarObject) && complete(conceptSpace)",
+      "makes": "proven(classification)",
+      "means": [
+        {
+          "mechanismReference": "EBLMechanism",
+          "actualArguments": [
+            "unfamiliarObject",
+            "targetConcept",
+            "conceptSpace"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IdentifyRequiredFeatures",
+      "description": "Identify the structural and functional features required for the target concept.",
+      "inputParameters": [
+        "targetConcept: concept"
+      ],
+      "outputParameters": [
+        "requiredFeatures: list<feature>"
+      ],
+      "given": "defined(targetConcept)",
+      "makes": "complete(requiredFeatures)",
+      "means": [
+        {
+          "mechanismReference": "IdentifyFeaturesMechanism",
+          "actualArguments": [
+            "targetConcept"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AbstractCausalRelationships",
+      "description": "Abstract causal relationships from prior knowledge of related objects.",
+      "inputParameters": [
+        "conceptSpace: concept_space"
+      ],
+      "outputParameters": [
+        "abstractedRelationships: list<relationship>"
+      ],
+      "given": "complete(conceptSpace)",
+      "makes": "generalized(abstractedRelationships)",
+      "means": [
+        {
+          "mechanismReference": "AbstractRelationshipsMechanism",
+          "actualArguments": [
+            "conceptSpace"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TransferKnowledge",
+      "description": "Transfer abstracted knowledge to verify each required feature for the unfamiliar object.",
+      "inputParameters": [
+        "unfamiliarObject: object",
+        "requiredFeatures: list<feature>",
+        "abstractedRelationships: list<relationship>"
+      ],
+      "outputParameters": [
+        "featureProofs: list<proof_status>"
+      ],
+      "given": "valid(unfamiliarObject) && complete(requiredFeatures) && generalized(abstractedRelationships)",
+      "makes": "verified(featureProofs)",
+      "means": [
+        {
+          "mechanismReference": "TransferMechanism",
+          "actualArguments": [
+            "unfamiliarObject",
+            "requiredFeatures",
+            "abstractedRelationships"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AggregateProof",
+      "description": "Aggregate proof statuses to determine final classification.",
+      "inputParameters": [
+        "featureProofs: list<proof_status>"
+      ],
+      "outputParameters": [
+        "classification: boolean"
+      ],
+      "given": "verified(featureProofs)",
+      "makes": "proven(classification)",
+      "means": [
+        {
+          "mechanismReference": "AggregateMechanism",
+          "actualArguments": [
+            "featureProofs"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ValidClassification",
+      "description": "Determines if the classification is valid based on proof aggregation.",
+      "inputParameters": [
+        "classification: boolean"
+      ],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "all_features_proven(classification) || not_all_features_proven(classification)",
+      "means": []
+    },
+    {
+      "name": "FailureGoal",
+      "description": "Represents a failure state in the EBL process.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "false",
+      "means": []
+    }
+  ]
+}

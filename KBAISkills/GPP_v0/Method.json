@@ -1,0 +1,266 @@
+
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "GPPsolution",
+      "description": "FSM to represent optimal solution path for GPP.",
+      "inputParameters": ["initialConfiguration: configuration"],
+      "outputParameters": ["finalConfiguration: configuration"],
+      "requires": "safe(initialConfiguration)",
+      "provides": "safe(finalConfiguration)",
+      "organizer": {
+        "startState": "S0",
+        "successState": "S11",
+        "failureState": "Fail",
+        "states": [
+          { "name": "S0", "goalInvocation": { "goalReference": "MoveGuardAndPrisoner", "type": "task", "actualArguments": ["b", "g1", "p1", "initialConfiguration"] } },
+          { "name": "S1", "goalInvocation": { "goalReference": "ReturnGuard", "type": "task", "actualArguments": ["b", "g1", "S0"] } },
+          { "name": "S2", "goalInvocation": { "goalReference": "MoveTwoPrisoners", "type": "task", "actualArguments": ["b", "p2", "p3", "S1"] } },
+          { "name": "S3", "goalInvocation": { "goalReference": "ReturnPrisoner", "type": "task", "actualArguments": ["b", "p1", "S2"] } },
+          { "name": "S4", "goalInvocation": { "goalReference": "MoveTwoGuards", "type": "task", "actualArguments": ["b", "g2", "g3", "S3"] } },
+          { "name": "S5", "goalInvocation": { "goalReference": "ReturnGuard", "type": "task", "actualArguments": ["b", "g2", "S4"] } },
+          { "name": "S6", "goalInvocation": { "goalReference": "MoveGuardAndPrisoner", "type": "task", "actualArguments": ["b", "g2", "p1", "S5"] } },
+          { "name": "S7", "goalInvocation": { "goalReference": "ReturnGuardAndPrisoner", "type": "task", "actualArguments": ["b", "g3", "p2", "S6"] } },
+          { "name": "S8", "goalInvocation": { "goalReference": "MoveGuardAndPrisoner", "type": "task", "actualArguments": ["b", "g3", "p3", "S7"] } },
+          { "name": "S9", "goalInvocation": { "goalReference": "ReturnGuard", "type": "task", "actualArguments": ["b", "g3", "S8"] } },
+          { "name": "S10", "goalInvocation": { "goalReference": "MoveTwoGuards", "type": "task", "actualArguments": ["b", "g1", "g3", "S9"] } },
+          { "name": "S11", "goalInvocation": { "goalReference": "SafeConfiguration", "type": "task", "actualArguments": ["finalConfiguration"] } },
+          { "name": "Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "S0", "targetState": "S1", "dataCondition": "safe(S0) && safe(S1)" },
+          { "sourceState": "S0", "targetState": "Fail", "dataCondition": "NOT safe(S0) || NOT safe(S1)" },
+          { "sourceState": "S1", "targetState": "S2", "dataCondition": "safe(S1) && safe(S2)" },
+          { "sourceState": "S1", "targetState": "Fail", "dataCondition": "NOT safe(S1) || NOT safe(S2)" },
+          { "sourceState": "S2", "targetState": "S3", "dataCondition": "safe(S2) && safe(S3)" },
+          { "sourceState": "S2", "targetState": "Fail", "dataCondition": "NOT safe(S2) || NOT safe(S3)" },
+          { "sourceState": "S3", "targetState": "S4", "dataCondition": "safe(S3) && safe(S4)" },
+          { "sourceState": "S3", "targetState": "Fail", "dataCondition": "NOT safe(S3) || NOT safe(S4)" },
+          { "sourceState": "S4", "targetState": "S5", "dataCondition": "safe(S4) && safe(S5)" },
+          { "sourceState": "S4", "targetState": "Fail", "dataCondition": "NOT safe(S4) || NOT safe(S5)" },
+          { "sourceState": "S5", "targetState": "S6", "dataCondition": "safe(S5) && safe(S6)" },
+          { "sourceState": "S5", "targetState": "Fail", "dataCondition": "NOT safe(S5) || NOT safe(S6)" },
+          { "sourceState": "S6", "targetState": "S7", "dataCondition": "safe(S6) && safe(S7)" },
+          { "sourceState": "S6", "targetState": "Fail", "dataCondition": "NOT safe(S6) || NOT safe(S7)" },
+          { "sourceState": "S7", "targetState": "S8", "dataCondition": "safe(S7) && safe(S8)" },
+          { "sourceState": "S7", "targetState": "Fail", "dataCondition": "NOT safe(S7) || NOT safe(S8)" },
+          { "sourceState": "S8", "targetState": "S9", "dataCondition": "safe(S8) && safe(S9)" },
+          { "sourceState": "S8", "targetState": "Fail", "dataCondition": "NOT safe(S8) || NOT safe(S9)" },
+          { "sourceState": "S9", "targetState": "S10", "dataCondition": "safe(S9) && safe(S10)" },
+          { "sourceState": "S9", "targetState": "Fail", "dataCondition": "NOT safe(S9) || NOT safe(S10)" },
+          { "sourceState": "S10", "targetState": "S11", "dataCondition": "safe(S10) && safe(S11)" },
+          { "sourceState": "S10", "targetState": "Fail", "dataCondition": "NOT safe(S10) || NOT safe(S11)" }
+        ]
+      }
+    },
+    {
+      "name": "MoveGuardAndPrisonerMechanism",
+      "description": "FSM to move a guard and a prisoner together.",
+      "inputParameters": ["b: boat", "g: guard", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "MGAP_S0",
+        "successState": "MGAP_S4",
+        "failureState": "MGAP_Fail",
+        "states": [
+          { "name": "MGAP_S0", "goalInvocation": { "goalReference": "EmbarkGuard", "type": "operation", "actualArguments": ["b", "g", "c"] } },
+          { "name": "MGAP_S1", "goalInvocation": { "goalReference": "EmbarkPrisoner", "type": "operation", "actualArguments": ["b", "p", "c"] } },
+          { "name": "MGAP_S2", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "MGAP_S3", "goalInvocation": { "goalReference": "DisembarkGuard", "type": "operation", "actualArguments": ["b", "g"] } },
+          { "name": "MGAP_S4", "goalInvocation": { "goalReference": "DisembarkPrisoner", "type": "operation", "actualArguments": ["b", "p"] } },
+          { "name": "MGAP_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "MGAP_S0", "targetState": "MGAP_S1", "dataCondition": "safe(MGAP_S0) && safe(MGAP_S1)" },
+          { "sourceState": "MGAP_S0", "targetState": "MGAP_Fail", "dataCondition": "NOT safe(MGAP_S0) || NOT safe(MGAP_S1)" },
+          { "sourceState": "MGAP_S1", "targetState": "MGAP_S2", "dataCondition": "safe(MGAP_S1) && safe(MGAP_S2)" },
+          { "sourceState": "MGAP_S1", "targetState": "MGAP_Fail", "dataCondition": "NOT safe(MGAP_S1) || NOT safe(MGAP_S2)" },
+          { "sourceState": "MGAP_S2", "targetState": "MGAP_S3", "dataCondition": "safe(MGAP_S2) && safe(MGAP_S3)" },
+          { "sourceState": "MGAP_S2", "targetState": "MGAP_Fail", "dataCondition": "NOT safe(MGAP_S2) || NOT safe(MGAP_S3)" },
+          { "sourceState": "MGAP_S3", "targetState": "MGAP_S4", "dataCondition": "safe(MGAP_S3) && safe(MGAP_S4)" },
+          { "sourceState": "MGAP_S3", "targetState": "MGAP_Fail", "dataCondition": "NOT safe(MGAP_S3) || NOT safe(MGAP_S4)" }
+        ]
+      }
+    },
+    {
+      "name": "ReturnGuardMechanism",
+      "description": "FSM to return a guard alone across the river.",
+      "inputParameters": ["b: boat", "g: guard", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "RG_S0",
+        "successState": "RG_S3",
+        "failureState": "RG_Fail",
+        "states": [
+          { "name": "RG_S0", "goalInvocation": { "goalReference": "EmbarkGuard", "type": "operation", "actualArguments": ["b", "g", "c"] } },
+          { "name": "RG_S1", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "RG_S2", "goalInvocation": { "goalReference": "DisembarkGuard", "type": "operation", "actualArguments": ["b", "g"] } },
+          { "name": "RG_S3", "goalInvocation": { "goalReference": "SafeConfiguration", "type": "task", "actualArguments": ["newConfig"] } },
+          { "name": "RG_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RG_S0", "targetState": "RG_S1", "dataCondition": "safe(RG_S0) && safe(RG_S1)" },
+          { "sourceState": "RG_S0", "targetState": "RG_Fail", "dataCondition": "NOT safe(RG_S0) || NOT safe(RG_S1)" },
+          { "sourceState": "RG_S1", "targetState": "RG_S2", "dataCondition": "safe(RG_S1) && safe(RG_S2)" },
+          { "sourceState": "RG_S1", "targetState": "RG_Fail", "dataCondition": "NOT safe(RG_S1) || NOT safe(RG_S2)" },
+          { "sourceState": "RG_S2", "targetState": "RG_S3", "dataCondition": "safe(RG_S2) && safe(RG_S3)" },
+          { "sourceState": "RG_S2", "targetState": "RG_Fail", "dataCondition": "NOT safe(RG_S2) || NOT safe(RG_S3)" }
+        ]
+      }
+    },
+    {
+      "name": "ReturnPrisonerMechanism",
+      "description": "FSM to return a prisoner alone across the river.",
+      "inputParameters": ["b: boat", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "RP_S0",
+        "successState": "RP_S3",
+        "failureState": "RP_Fail",
+        "states": [
+          { "name": "RP_S0", "goalInvocation": { "goalReference": "EmbarkPrisoner", "type": "operation", "actualArguments": ["b", "p", "c"] } },
+          { "name": "RP_S1", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "RP_S2", "goalInvocation": { "goalReference": "DisembarkPrisoner", "type": "operation", "actualArguments": ["b", "p"] } },
+          { "name": "RP_S3", "goalInvocation": { "goalReference": "SafeConfiguration", "type": "task", "actualArguments": ["newConfig"] } },
+          { "name": "RP_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RP_S0", "targetState": "RP_S1", "dataCondition": "safe(RP_S0) && safe(RP_S1)" },
+          { "sourceState": "RP_S0", "targetState": "RP_Fail", "dataCondition": "NOT safe(RP_S0) || NOT safe(RP_S1)" },
+          { "sourceState": "RP_S1", "targetState": "RP_S2", "dataCondition": "safe(RP_S1) && safe(RP_S2)" },
+          { "sourceState": "RP_S1", "targetState": "RP_Fail", "dataCondition": "NOT safe(RP_S1) || NOT safe(RP_S2)" },
+          { "sourceState": "RP_S2", "targetState": "RP_S3", "dataCondition": "safe(RP_S2) && safe(RP_S3)" },
+          { "sourceState": "RP_S2", "targetState": "RP_Fail", "dataCondition": "NOT safe(RP_S2) || NOT safe(RP_S3)" }
+        ]
+      }
+    },
+    {
+      "name": "MoveTwoPrisonersMechanism",
+      "description": "FSM to move two prisoners across the river.",
+      "inputParameters": ["b: boat", "p1: prisoner", "p2: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "MTP_S0",
+        "successState": "MTP_S4",
+        "failureState": "MTP_Fail",
+        "states": [
+          { "name": "MTP_S0", "goalInvocation": { "goalReference": "EmbarkPrisoner", "type": "operation", "actualArguments": ["b", "p1", "c"] } },
+          { "name": "MTP_S1", "goalInvocation": { "goalReference": "EmbarkPrisoner", "type": "operation", "actualArguments": ["b", "p2", "c"] } },
+          { "name": "MTP_S2", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "MTP_S3", "goalInvocation": { "goalReference": "DisembarkPrisoner", "type": "operation", "actualArguments": ["b", "p1"] } },
+          { "name": "MTP_S4", "goalInvocation": { "goalReference": "DisembarkPrisoner", "type": "operation", "actualArguments": ["b", "p2"] } },
+          { "name": "MTP_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "MTP_S0", "targetState": "MTP_S1", "dataCondition": "safe(MTP_S0) && safe(MTP_S1)" },
+          { "sourceState": "MTP_S0", "targetState": "MTP_Fail", "dataCondition": "NOT safe(MTP_S0) || NOT safe(MTP_S1)" },
+          { "sourceState": "MTP_S1", "targetState": "MTP_S2", "dataCondition": "safe(MTP_S1) && safe(MTP_S2)" },
+          { "sourceState": "MTP_S1", "targetState": "MTP_Fail", "dataCondition": "NOT safe(MTP_S1) || NOT safe(MTP_S2)" },
+          { "sourceState": "MTP_S2", "targetState": "MTP_S3", "dataCondition": "safe(MTP_S2) && safe(MTP_S3)" },
+          { "sourceState": "MTP_S2", "targetState": "MTP_Fail", "dataCondition": "NOT safe(MTP_S2) || NOT safe(MTP_S3)" },
+          { "sourceState": "MTP_S3", "targetState": "MTP_S4", "dataCondition": "safe(MTP_S3) && safe(MTP_S4)" },
+          { "sourceState": "MTP_S3", "targetState": "MTP_Fail", "dataCondition": "NOT safe(MTP_S3) || NOT safe(MTP_S4)" }
+        ]
+      }
+    },
+    {
+      "name": "MoveTwoGuardsMechanism",
+      "description": "FSM to move two guards across the river.",
+      "inputParameters": ["b: boat", "g1: guard", "g2: guard", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "MTG_S0",
+        "successState": "MTG_S4",
+        "failureState": "MTG_Fail",
+        "states": [
+          { "name": "MTG_S0", "goalInvocation": { "goalReference": "EmbarkGuard", "type": "operation", "actualArguments": ["b", "g1", "c"] } },
+          { "name": "MTG_S1", "goalInvocation": { "goalReference": "EmbarkGuard", "type": "operation", "actualArguments": ["b", "g2", "c"] } },
+          { "name": "MTG_S2", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "MTG_S3", "goalInvocation": { "goalReference": "DisembarkGuard", "type": "operation", "actualArguments": ["b", "g1"] } },
+          { "name": "MTG_S4", "goalInvocation": { "goalReference": "DisembarkGuard", "type": "operation", "actualArguments": ["b", "g2"] } },
+          { "name": "MTG_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "MTG_S0", "targetState": "MTG_S1", "dataCondition": "safe(MTG_S0) && safe(MTG_S1)" },
+          { "sourceState": "MTG_S0", "targetState": "MTG_Fail", "dataCondition": "NOT safe(MTG_S0) || NOT safe(MTG_S1)" },
+          { "sourceState": "MTG_S1", "targetState": "MTG_S2", "dataCondition": "safe(MTG_S1) && safe(MTG_S2)" },
+          { "sourceState": "MTG_S1", "targetState": "MTG_Fail", "dataCondition": "NOT safe(MTG_S1) || NOT safe(MTG_S2)" },
+          { "sourceState": "MTG_S2", "targetState": "MTG_S3", "dataCondition": "safe(MTG_S2) && safe(MTG_S3)" },
+          { "sourceState": "MTG_S2", "targetState": "MTG_Fail", "dataCondition": "NOT safe(MTG_S2) || NOT safe(MTG_S3)" },
+          { "sourceState": "MTG_S3", "targetState": "MTG_S4", "dataCondition": "safe(MTG_S3) && safe(MTG_S4)" },
+          { "sourceState": "MTG_S3", "targetState": "MTG_Fail", "dataCondition": "NOT safe(MTG_S3) || NOT safe(MTG_S4)" }
+        ]
+      }
+    },
+    {
+      "name": "ReturnGuardAndPrisonerMechanism",
+      "description": "FSM to return a guard and a prisoner together across the river.",
+      "inputParameters": ["b: boat", "g: guard", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "RGAP_S0",
+        "successState": "RGAP_S4",
+        "failureState": "RGAP_Fail",
+        "states": [
+          { "name": "RGAP_S0", "goalInvocation": { "goalReference": "EmbarkGuard", "type": "operation", "actualArguments": ["b", "g", "c"] } },
+          { "name": "RGAP_S1", "goalInvocation": { "goalReference": "EmbarkPrisoner", "type": "operation", "actualArguments": ["b", "p", "c"] } },
+          { "name": "RGAP_S2", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "RGAP_S3", "goalInvocation": { "goalReference": "DisembarkGuard", "type": "operation", "actualArguments": ["b", "g"] } },
+          { "name": "RGAP_S4", "goalInvocation": { "goalReference": "DisembarkPrisoner", "type": "operation", "actualArguments": ["b", "p"] } },
+          { "name": "RGAP_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RGAP_S0", "targetState": "RGAP_S1", "dataCondition": "safe(RGAP_S0) && safe(RGAP_S1)" },
+          { "sourceState": "RGAP_S0", "targetState": "RGAP_Fail", "dataCondition": "NOT safe(RGAP_S0) || NOT safe(RGAP_S1)" },
+          { "sourceState": "RGAP_S1", "targetState": "RGAP_S2", "dataCondition": "safe(RGAP_S1) && safe(RGAP_S2)" },
+          { "sourceState": "RGAP_S1", "targetState": "RGAP_Fail", "dataCondition": "NOT safe(RGAP_S1) || NOT safe(RGAP_S2)" },
+          { "sourceState": "RGAP_S2", "targetState": "RGAP_S3", "dataCondition": "safe(RGAP_S2) && safe(RGAP_S3)" },
+          { "sourceState": "RGAP_S2", "targetState": "RGAP_Fail", "dataCondition": "NOT safe(RGAP_S2) || NOT safe(RGAP_S3)" },
+          { "sourceState": "RGAP_S3", "targetState": "RGAP_S4", "dataCondition": "safe(RGAP_S3) && safe(RGAP_S4)" },
+          { "sourceState": "RGAP_S3", "targetState": "RGAP_Fail", "dataCondition": "NOT safe(RGAP_S3) || NOT safe(RGAP_S4)" }
+        ]
+      }
+    },
+    {
+      "name": "EmbarkGuard",
+      "description": "Embarks a guard onto the boat.",
+      "inputParameters": ["b: boat", "g: guard", "c: configuration"],
+      "outputParameters": ["c': configuration"],
+      "requires": "b.occupancy < 2",
+      "provides": "c'.boat.occupancy = c.boat.occupancy + 1"
+    },
+    {
+      "name": "EmbarkPrisoner",
+      "description": "Embarks a prisoner onto the boat.",
+      "inputParameters": ["b: boat", "p: prisoner", "c: configuration"],
+      "outputParameters": ["c': configuration"],
+      "requires": "b.occupancy < 2",
+      "provides": "c'.boat.occupancy = c.boat.occupancy + 1"
+    },
+    {
+      "name": "DisembarkGuard",
+      "description": "Disembarks a guard from the boat to the bank.",
+      "inputParameters": ["b: boat", "g: guard"],
+      "outputParameters": ["c': configuration"],
+      "requires": "b.occupancy > 0",
+      "provides": "c'.boat.occupancy = c.boat.occupancy - 1"
+    },
+    {
+      "name": "DisembarkPrisoner",
+      "description": "Disembarks a prisoner from the boat to the bank.",
+      "inputParameters": ["b: boat", "p: prisoner"],
+      "outputParameters": ["c': configuration"],
+      "requires": "b.occupancy > 0",
+      "provides": "c'.boat.occupancy = c.boat.occupancy - 1"
+    },
+    {
+      "name": "Cross",
+      "description": "Moves the boat from one bank to the other.",
+      "inputParameters": ["b: boat"],
+      "outputParameters": ["b': boat"],
+      "requires": "true",
+      "provides": "b.position != b'.position"
+    }
+  ]
+}

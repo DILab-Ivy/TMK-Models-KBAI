@@ -1,0 +1,523 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "GPPsolution",
+      "description": "FSM to represent optimal solution path for GPP.",
+      "inputParameters": ["initialConfiguration: configuration"],
+      "outputParameters": ["finalConfiguration: configuration"],
+      "requires": "safe(initialConfiguration)",
+      "provides": "safe(finalConfiguration)",
+      "organizer": {
+        "startState": "S0",
+        "successState": "S11",
+        "failureState": "Fail",
+        "states": [
+          { "name": "S0", "goalInvocation": { "goalReference": "MoveGuardAndPrisoner", "type": "task", "actualArguments": ["b", "g1", "p1", "initialConfiguration"] } },
+          { "name": "S1", "goalInvocation": { "goalReference": "ReturnGuard", "type": "task", "actualArguments": ["b", "g1", "S0"] } },
+          { "name": "S2", "goalInvocation": { "goalReference": "MoveTwoPrisoners", "type": "task", "actualArguments": ["b", "p2", "p3", "S1"] } },
+          { "name": "S3", "goalInvocation": { "goalReference": "ReturnPrisoner", "type": "task", "actualArguments": ["b", "p1", "S2"] } },
+          { "name": "S4", "goalInvocation": { "goalReference": "MoveTwoGuards", "type": "task", "actualArguments": ["b", "g2", "g3", "S3"] } },
+          { "name": "S5", "goalInvocation": { "goalReference": "ReturnGuard", "type": "task", "actualArguments": ["b", "g2", "S4"] } },
+          { "name": "S6", "goalInvocation": { "goalReference": "MoveGuardAndPrisoner", "type": "task", "actualArguments": ["b", "g2", "p1", "S5"] } },
+          { "name": "S7", "goalInvocation": { "goalReference": "ReturnGuardAndPrisoner", "type": "task", "actualArguments": ["b", "g3", "p2", "S6"] } },
+          { "name": "S8", "goalInvocation": { "goalReference": "MoveGuardAndPrisoner", "type": "task", "actualArguments": ["b", "g3", "p3", "S7"] } },
+          { "name": "S9", "goalInvocation": { "goalReference": "ReturnGuard", "type": "task", "actualArguments": ["b", "g3", "S8"] } },
+          { "name": "S10", "goalInvocation": { "goalReference": "MoveTwoGuards", "type": "task", "actualArguments": ["b", "g1", "g3", "S9"] } },
+          { "name": "S11", "goalInvocation": { "goalReference": "SafeConfiguration", "type": "task", "actualArguments": ["finalConfiguration"] } },
+          { "name": "Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "S0", "targetState": "S1", "dataCondition": "safe(S0) && safe(S1)" },
+          { "sourceState": "S0", "targetState": "Fail", "dataCondition": "NOT safe(S0) || NOT safe(S1)" },
+          { "sourceState": "S1", "targetState": "S2", "dataCondition": "safe(S1) && safe(S2)" },
+          { "sourceState": "S1", "targetState": "Fail", "dataCondition": "NOT safe(S1) || NOT safe(S2)" },
+          { "sourceState": "S2", "targetState": "S3", "dataCondition": "safe(S2) && safe(S3)" },
+          { "sourceState": "S2", "targetState": "Fail", "dataCondition": "NOT safe(S2) || NOT safe(S3)" },
+          { "sourceState": "S3", "targetState": "S4", "dataCondition": "safe(S3) && safe(S4)" },
+          { "sourceState": "S3", "targetState": "Fail", "dataCondition": "NOT safe(S3) || NOT safe(S4)" },
+          { "sourceState": "S4", "targetState": "S5", "dataCondition": "safe(S4) && safe(S5)" },
+          { "sourceState": "S4", "targetState": "Fail", "dataCondition": "NOT safe(S4) || NOT safe(S5)" },
+          { "sourceState": "S5", "targetState": "S6", "dataCondition": "safe(S5) && safe(S6)" },
+          { "sourceState": "S5", "targetState": "Fail", "dataCondition": "NOT safe(S5) || NOT safe(S6)" },
+          { "sourceState": "S6", "targetState": "S7", "dataCondition": "safe(S6) && safe(S7)" },
+          { "sourceState": "S6", "targetState": "Fail", "dataCondition": "NOT safe(S6) || NOT safe(S7)" },
+          { "sourceState": "S7", "targetState": "S8", "dataCondition": "safe(S7) && safe(S8)" },
+          { "sourceState": "S7", "targetState": "Fail", "dataCondition": "NOT safe(S7) || NOT safe(S8)" },
+          { "sourceState": "S8", "targetState": "S9", "dataCondition": "safe(S8) && safe(S9)" },
+          { "sourceState": "S8", "targetState": "Fail", "dataCondition": "NOT safe(S8) || NOT safe(S9)" },
+          { "sourceState": "S9", "targetState": "S10", "dataCondition": "safe(S9) && safe(S10)" },
+          { "sourceState": "S9", "targetState": "Fail", "dataCondition": "NOT safe(S9) || NOT safe(S10)" },
+          { "sourceState": "S10", "targetState": "S11", "dataCondition": "safe(S10) && safe(S11)" },
+          { "sourceState": "S10", "targetState": "Fail", "dataCondition": "NOT safe(S10) || NOT safe(S11)" }
+        ]
+      }
+    },
+    {
+      "name": "MoveGuardAndPrisonerMechanism",
+      "description": "FSM to move a guard and a prisoner together.",
+      "inputParameters": ["b: boat", "g: guard", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "MGAP_S0",
+        "successState": "MGAP_S4",
+        "failureState": "MGAP_Fail",
+        "states": [
+          { "name": "MGAP_S0", "goalInvocation": { "goalReference": "EmbarkGuard", "type": "operation", "actualArguments": ["b", "g", "c"] } },
+          { "name": "MGAP_S1", "goalInvocation": { "goalReference": "EmbarkPrisoner", "type": "operation", "actualArguments": ["b", "p", "c"] } },
+          { "name": "MGAP_S2", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "MGAP_S3", "goalInvocation": { "goalReference": "DisembarkGuard", "type": "operation", "actualArguments": ["b", "g"] } },
+          { "name": "MGAP_S4", "goalInvocation": { "goalReference": "DisembarkPrisoner", "type": "operation", "actualArguments": ["b", "p"] } },
+          { "name": "MGAP_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "MGAP_S0", "targetState": "MGAP_S1", "dataCondition": "safe(MGAP_S0) && safe(MGAP_S1)" },
+          { "sourceState": "MGAP_S0", "targetState": "MGAP_Fail", "dataCondition": "NOT safe(MGAP_S0) || NOT safe(MGAP_S1)" },
+          { "sourceState": "MGAP_S1", "targetState": "MGAP_S2", "dataCondition": "safe(MGAP_S1) && safe(MGAP_S2)" },
+          { "sourceState": "MGAP_S1", "targetState": "MGAP_Fail", "dataCondition": "NOT safe(MGAP_S1) || NOT safe(MGAP_S2)" },
+          { "sourceState": "MGAP_S2", "targetState": "MGAP_S3", "dataCondition": "safe(MGAP_S2) && safe(MGAP_S3)" },
+          { "sourceState": "MGAP_S2", "targetState": "MGAP_Fail", "dataCondition": "NOT safe(MGAP_S2) || NOT safe(MGAP_S3)" },
+          { "sourceState": "MGAP_S3", "targetState": "MGAP_S4", "dataCondition": "safe(MGAP_S3) && safe(MGAP_S4)" },
+          { "sourceState": "MGAP_S3", "targetState": "MGAP_Fail", "dataCondition": "NOT safe(MGAP_S3) || NOT safe(MGAP_S4)" }
+        ]
+      }
+    },
+    {
+      "name": "ReturnGuardMechanism",
+      "description": "FSM to return a guard alone across the river.",
+      "inputParameters": ["b: boat", "g: guard", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "RG_S0",
+        "successState": "RG_S3",
+        "failureState": "RG_Fail",
+        "states": [
+          { "name": "RG_S0", "goalInvocation": { "goalReference": "EmbarkGuard", "type": "operation", "actualArguments": ["b", "g", "c"] } },
+          { "name": "RG_S1", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "RG_S2", "goalInvocation": { "goalReference": "DisembarkGuard", "type": "operation", "actualArguments": ["b", "g"] } },
+          { "name": "RG_S3", "goalInvocation": { "goalReference": "SafeConfiguration", "type": "task", "actualArguments": ["newConfig"] } },
+          { "name": "RG_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RG_S0", "targetState": "RG_S1", "dataCondition": "safe(RG_S0) && safe(RG_S1)" },
+          { "sourceState": "RG_S0", "targetState": "RG_Fail", "dataCondition": "NOT safe(RG_S0) || NOT safe(RG_S1)" },
+          { "sourceState": "RG_S1", "targetState": "RG_S2", "dataCondition": "safe(RG_S1) && safe(RG_S2)" },
+          { "sourceState": "RG_S1", "targetState": "RG_Fail", "dataCondition": "NOT safe(RG_S1) || NOT safe(RG_S2)" },
+          { "sourceState": "RG_S2", "targetState": "RG_S3", "dataCondition": "safe(RG_S2) && safe(RG_S3)" },
+          { "sourceState": "RG_S2", "targetState": "RG_Fail", "dataCondition": "NOT safe(RG_S2) || NOT safe(RG_S3)" }
+        ]
+      }
+    },
+    {
+      "name": "ReturnPrisonerMechanism",
+      "description": "FSM to return a prisoner alone across the river.",
+      "inputParameters": ["b: boat", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "RP_S0",
+        "successState": "RP_S3",
+        "failureState": "RP_Fail",
+        "states": [
+          { "name": "RP_S0", "goalInvocation": { "goalReference": "EmbarkPrisoner", "type": "operation", "actualArguments": ["b", "p", "c"] } },
+          { "name": "RP_S1", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "RP_S2", "goalInvocation": { "goalReference": "DisembarkPrisoner", "type": "operation", "actualArguments": ["b", "p"] } },
+          { "name": "RP_S3", "goalInvocation": { "goalReference": "SafeConfiguration", "type": "task", "actualArguments": ["newConfig"] } },
+          { "name": "RP_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RP_S0", "targetState": "RP_S1", "dataCondition": "safe(RP_S0) && safe(RP_S1)" },
+          { "sourceState": "RP_S0", "targetState": "RP_Fail", "dataCondition": "NOT safe(RP_S0) || NOT safe(RP_S1)" },
+          { "sourceState": "RP_S1", "targetState": "RP_S2", "dataCondition": "safe(RP_S1) && safe(RP_S2)" },
+          { "sourceState": "RP_S1", "targetState": "RP_Fail", "dataCondition": "NOT safe(RP_S1) || NOT safe(RP_S2)" },
+          { "sourceState": "RP_S2", "targetState": "RP_S3", "dataCondition": "safe(RP_S2) && safe(RP_S3)" },
+          { "sourceState": "RP_S2", "targetState": "RP_Fail", "dataCondition": "NOT safe(RP_S2) || NOT safe(RP_S3)" }
+        ]
+      }
+    },
+    {
+      "name": "MoveTwoPrisonersMechanism",
+      "description": "FSM to move two prisoners across the river.",
+      "inputParameters": ["b: boat", "p1: prisoner", "p2: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "MTP_S0",
+        "successState": "MTP_S4",
+        "failureState": "MTP_Fail",
+        "states": [
+          { "name": "MTP_S0", "goalInvocation": { "goalReference": "EmbarkPrisoner", "type": "operation", "actualArguments": ["b", "p1", "c"] } },
+          { "name": "MTP_S1", "goalInvocation": { "goalReference": "EmbarkPrisoner", "type": "operation", "actualArguments": ["b", "p2", "c"] } },
+          { "name": "MTP_S2", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "MTP_S3", "goalInvocation": { "goalReference": "DisembarkPrisoner", "type": "operation", "actualArguments": ["b", "p1"] } },
+          { "name": "MTP_S4", "goalInvocation": { "goalReference": "DisembarkPrisoner", "type": "operation", "actualArguments": ["b", "p2"] } },
+          { "name": "MTP_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "MTP_S0", "targetState": "MTP_S1", "dataCondition": "safe(MTP_S0) && safe(MTP_S1)" },
+          { "sourceState": "MTP_S0", "targetState": "MTP_Fail", "dataCondition": "NOT safe(MTP_S0) || NOT safe(MTP_S1)" },
+          { "sourceState": "MTP_S1", "targetState": "MTP_S2", "dataCondition": "safe(MTP_S1) && safe(MTP_S2)" },
+          { "sourceState": "MTP_S1", "targetState": "MTP_Fail", "dataCondition": "NOT safe(MTP_S1) || NOT safe(MTP_S2)" },
+          { "sourceState": "MTP_S2", "targetState": "MTP_S3", "dataCondition": "safe(MTP_S2) && safe(MTP_S3)" },
+          { "sourceState": "MTP_S2", "targetState": "MTP_Fail", "dataCondition": "NOT safe(MTP_S2) || NOT safe(MTP_S3)" },
+          { "sourceState": "MTP_S3", "targetState": "MTP_S4", "dataCondition": "safe(MTP_S3) && safe(MTP_S4)" },
+          { "sourceState": "MTP_S3", "targetState": "MTP_Fail", "dataCondition": "NOT safe(MTP_S3) || NOT safe(MTP_S4)" }
+        ]
+      }
+    },
+    {
+      "name": "MoveTwoGuardsMechanism",
+      "description": "FSM to move two guards across the river.",
+      "inputParameters": ["b: boat", "g1: guard", "g2: guard", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "MTG_S0",
+        "successState": "MTG_S4",
+        "failureState": "MTG_Fail",
+        "states": [
+          { "name": "MTG_S0", "goalInvocation": { "goalReference": "EmbarkGuard", "type": "operation", "actualArguments": ["b", "g1", "c"] } },
+          { "name": "MTG_S1", "goalInvocation": { "goalReference": "EmbarkGuard", "type": "operation", "actualArguments": ["b", "g2", "c"] } },
+          { "name": "MTG_S2", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "MTG_S3", "goalInvocation": { "goalReference": "DisembarkGuard", "type": "operation", "actualArguments": ["b", "g1"] } },
+          { "name": "MTG_S4", "goalInvocation": { "goalReference": "DisembarkGuard", "type": "operation", "actualArguments": ["b", "g2"] } },
+          { "name": "MTG_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "MTG_S0", "targetState": "MTG_S1", "dataCondition": "safe(MTG_S0) && safe(MTG_S1)" },
+          { "sourceState": "MTG_S0", "targetState": "MTG_Fail", "dataCondition": "NOT safe(MTG_S0) || NOT safe(MTG_S1)" },
+          { "sourceState": "MTG_S1", "targetState": "MTG_S2", "dataCondition": "safe(MTG_S1) && safe(MTG_S2)" },
+          { "sourceState": "MTG_S1", "targetState": "MTG_Fail", "dataCondition": "NOT safe(MTG_S1) || NOT safe(MTG_S2)" },
+          { "sourceState": "MTG_S2", "targetState": "MTG_S3", "dataCondition": "safe(MTG_S2) && safe(MTG_S3)" },
+          { "sourceState": "MTG_S2", "targetState": "MTG_Fail", "dataCondition": "NOT safe(MTG_S2) || NOT safe(MTG_S3)" },
+          { "sourceState": "MTG_S3", "targetState": "MTG_S4", "dataCondition": "safe(MTG_S3) && safe(MTG_S4)" },
+          { "sourceState": "MTG_S3", "targetState": "MTG_Fail", "dataCondition": "NOT safe(MTG_S3) || NOT safe(MTG_S4)" }
+        ]
+      }
+    },
+    {
+      "name": "ReturnGuardAndPrisonerMechanism",
+      "description": "FSM to return a guard and a prisoner together across the river.",
+      "inputParameters": ["b: boat", "g: guard", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "organizer": {
+        "startState": "RGAP_S0",
+        "successState": "RGAP_S4",
+        "failureState": "RGAP_Fail",
+        "states": [
+          { "name": "RGAP_S0", "goalInvocation": { "goalReference": "EmbarkGuard", "type": "operation", "actualArguments": ["b", "g", "c"] } },
+          { "name": "RGAP_S1", "goalInvocation": { "goalReference": "EmbarkPrisoner", "type": "operation", "actualArguments": ["b", "p", "c"] } },
+          { "name": "RGAP_S2", "goalInvocation": { "goalReference": "Cross", "type": "operation", "actualArguments": ["b"] } },
+          { "name": "RGAP_S3", "goalInvocation": { "goalReference": "DisembarkGuard", "type": "operation", "actualArguments": ["b", "g"] } },
+          { "name": "RGAP_S4", "goalInvocation": { "goalReference": "DisembarkPrisoner", "type": "operation", "actualArguments": ["b", "p"] } },
+          { "name": "RGAP_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RGAP_S0", "targetState": "RGAP_S1", "dataCondition": "safe(RGAP_S0) && safe(RGAP_S1)" },
+          { "sourceState": "RGAP_S0", "targetState": "RGAP_Fail", "dataCondition": "NOT safe(RGAP_S0) || NOT safe(RGAP_S1)" },
+          { "sourceState": "RGAP_S1", "targetState": "RGAP_S2", "dataCondition": "safe(RGAP_S1) && safe(RGAP_S2)" },
+          { "sourceState": "RGAP_S1", "targetState": "RGAP_Fail", "dataCondition": "NOT safe(RGAP_S1) || NOT safe(RGAP_S2)" },
+          { "sourceState": "RGAP_S2", "targetState": "RGAP_S3", "dataCondition": "safe(RGAP_S2) && safe(RGAP_S3)" },
+          { "sourceState": "RGAP_S2", "targetState": "RGAP_Fail", "dataCondition": "NOT safe(RGAP_S2) || NOT safe(RGAP_S3)" },
+          { "sourceState": "RGAP_S3", "targetState": "RGAP_S4", "dataCondition": "safe(RGAP_S3) && safe(RGAP_S4)" },
+          { "sourceState": "RGAP_S3", "targetState": "RGAP_Fail", "dataCondition": "NOT safe(RGAP_S3) || NOT safe(RGAP_S4)" }
+        ]
+      }
+    },
+    {
+      "name": "EmbarkGuard",
+      "description": "Embarks a guard onto the boat.",
+      "inputParameters": ["b: boat", "g: guard", "c: configuration"],
+      "outputParameters": ["c': configuration"],
+      "requires": "b.occupancy < 2",
+      "provides": "c'.boat.occupancy = c.boat.occupancy + 1"
+    },
+    {
+      "name": "EmbarkPrisoner",
+      "description": "Embarks a prisoner onto the boat.",
+      "inputParameters": ["b: boat", "p: prisoner", "c: configuration"],
+      "outputParameters": ["c': configuration"],
+      "requires": "b.occupancy < 2",
+      "provides": "c'.boat.occupancy = c.boat.occupancy + 1"
+    },
+    {
+      "name": "DisembarkGuard",
+      "description": "Disembarks a guard from the boat to the bank.",
+      "inputParameters": ["b: boat", "g: guard"],
+      "outputParameters": ["c': configuration"],
+      "requires": "b.occupancy > 0",
+      "provides": "c'.boat.occupancy = c.boat.occupancy - 1"
+    },
+    {
+      "name": "DisembarkPrisoner",
+      "description": "Disembarks a prisoner from the boat to the bank.",
+      "inputParameters": ["b: boat", "p: prisoner"],
+      "outputParameters": ["c': configuration"],
+      "requires": "b.occupancy > 0",
+      "provides": "c'.boat.occupancy = c.boat.occupancy - 1"
+    },
+    {
+      "name": "Cross",
+      "description": "Moves the boat from one bank to the other.",
+      "inputParameters": ["b: boat"],
+      "outputParameters": ["b': boat"],
+      "requires": "true",
+      "provides": "b.position != b'.position"
+    },
+
+    {
+      "name": "RPMSolution",
+      "description": "FSM to solve an Raven’s Progressive Matrices (RPM) problem using Semantic Networks",
+      "inputParameters": ["MatrixCells: figure", "Candidates: figure", "Weights: weights"],
+      "outputParameters": ["Answer: Candidates"],
+      "requires": "MatrixCells != null && Candidates != null",
+      "provides": "Answer != null",
+      "organizer": {
+        "startState": "RPM_S0",
+        "successState": "RPM_Success",
+        "failureState": "RPM_Fail",
+        "states": [
+          { "name": "RPM_S0", "goalInvocation": { "goalReference": "RepresentFigures", "type": "task", "actualArguments": ["MatrixCells", "Candidates"] } },
+          { "name": "RPM_S1", "goalInvocation": { "goalReference": "RepresentMatrixTransforms", "type": "task", "actualArguments": ["SN_Matrix"] } },
+          { "name": "RPM_S2", "goalInvocation": { "goalReference": "RepresentCandidateTransforms", "type": "task", "actualArguments": ["SN_Candidates"] } },
+          { "name": "RPM_S3", "goalInvocation": { "goalReference": "CompareTransformPatterns", "type": "task", "actualArguments": ["Matrix_Transform", "Candidate_Transform", "Weights"] } },
+          { "name": "RPM_S4", "goalInvocation": { "goalReference": "SelectAnswer", "type": "task", "actualArguments": ["Similarity_Scores", "Candidates"] } },
+          { "name": "RPM_Success", "goalInvocation": { "goalReference": "SuccessGoal", "type": "task", "actualArguments": [] } },
+          { "name": "RPM_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RPM_S0", "targetState": "RPM_S1", "dataCondition": "MatrixCells != null && Candidates != null" },
+          { "sourceState": "RPM_S0", "targetState": "RPM_Fail", "dataCondition": "(MatrixCells == null) || (Candidates == null)" },
+          { "sourceState": "RPM_S1", "targetState": "RPM_S2", "dataCondition": "SN_Matrix != null" },
+          { "sourceState": "RPM_S1", "targetState": "RPM_Fail", "dataCondition": "SN_Matrix == null" },
+          { "sourceState": "RPM_S2", "targetState": "RPM_S3", "dataCondition": "SN_Candidates != null" },
+          { "sourceState": "RPM_S2", "targetState": "RPM_Fail", "dataCondition": "SN_Candidates == null" },
+          { "sourceState": "RPM_S3", "targetState": "RPM_S4", "dataCondition": "Matrix_Transform != null && Candidate_Transform != null" },
+          { "sourceState": "RPM_S3", "targetState": "RPM_Fail", "dataCondition": "Matrix_Transform == null || Candidate_Transform == null" },
+          { "sourceState": "RPM_S4", "targetState": "RPM_Success", "dataCondition": "Similarity_Scores != null && Candidates != null && answerSelected" },
+          { "sourceState": "RPM_S4", "targetState": "RPM_Fail", "dataCondition": "Similarity_Scores == null || Candidates == null || Not answerSelected" }
+        ]
+      }
+    },
+    {
+      "name": "RepresentFiguresSolution",
+      "description": "FSM to represent each matrix cell and candidate to semantic networks representation",
+      "inputParameters": ["MatrixCells: figure", "Candidates: figure"],
+      "outputParameters": ["SN_Matrix: graph_representation", "SN_Candidates: graph_representation"],
+      "requires": "MatrixCells != null && Candidates != null",
+      "provides": "SN_Matrix != null && SN_Candidates != null",
+      "organizer": {
+        "startState": "RFS_S0",
+        "successState": "RFS_S3",
+        "failureState": "RFS_Fail",
+        "states": [
+          { "name": "RFS_S0", "goalInvocation": { "goalReference": "RepresentObjectsAsNodes", "type": "operation", "actualArguments": ["cell"] } },
+          { "name": "RFS_S1", "goalInvocation": { "goalReference": "LinkRelatedObjects", "type": "operation", "actualArguments": ["node"] } },
+          { "name": "RFS_S2", "goalInvocation": { "goalReference": "LabelRelations", "type": "operation", "actualArguments": ["edges"] } },
+          { "name": "RFS_S3", "goalInvocation": { "goalReference": "RepeatAboveForEachFigure", "type": "operation", "actualArguments": ["MatrixCells", "Candidates"] } },
+          { "name": "RFS_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RFS_S0", "targetState": "RFS_S1", "dataCondition": "cell != null" },
+          { "sourceState": "RFS_S0", "targetState": "RFS_Fail", "dataCondition": "cell == null" },
+          { "sourceState": "RFS_S1", "targetState": "RFS_S2", "dataCondition": "nodes != null" },
+          { "sourceState": "RFS_S1", "targetState": "RFS_Fail", "dataCondition": "nodes == null" },
+          { "sourceState": "RFS_S2", "targetState": "RFS_S3", "dataCondition": "edges != null" },
+          { "sourceState": "RFS_S2", "targetState": "RFS_Fail", "dataCondition": "edges == null" }
+        ]
+      }
+    },
+    {
+      "name": "RepresentMatrixTransformsSolution",
+      "description": "FSM to represent the transforms between matrix cells",
+      "inputParameters": ["SN_Matrix: graph_representation"],
+      "outputParameters": ["Matrix_Transform: graph_representation"],
+      "requires": "SN_Matrix != null",
+      "provides": "Matrix_Transform != null",
+      "organizer": {
+        "startState": "RMTS_S0",
+        "successState": "RMTS_S2",
+        "failureState": "RMTS_Fail",
+        "states": [
+          { "name": "RMTS_S0", "goalInvocation": { "goalReference": "LinkCorrespondingNodes", "type": "operation", "actualArguments": ["SN_Matrix"] } },
+          { "name": "RMTS_S1", "goalInvocation": { "goalReference": "LabelTransforms", "type": "operation", "actualArguments": ["edges"] } },
+          { "name": "RMTS_S2", "goalInvocation": { "goalReference": "RepeatAboveBetweenFigures", "type": "operation", "actualArguments": ["SN_Matrix"] } },
+          { "name": "RMTS_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RMTS_S0", "targetState": "RMTS_S1", "dataCondition": "SN_Matrix != null" },
+          { "sourceState": "RMTS_S0", "targetState": "RMTS_Fail", "dataCondition": "SN_Matrix == null" },
+          { "sourceState": "RMTS_S1", "targetState": "RMTS_S2", "dataCondition": "edges != null" },
+          { "sourceState": "RMTS_S1", "targetState": "RMTS_Fail", "dataCondition": "edges == null" }
+        ]
+      }
+    },
+    {
+      "name": "RepresentCandidateTransformsSolution",
+      "description": "FSM to represent the transforms between the predicted cell and each candidate",
+      "inputParameters": ["SN_Candidates: graph_representation"],
+      "outputParameters": ["Candidate_Transform: graph_representation"],
+      "requires": "SN_Candidates != null",
+      "provides": "Candidate_Transform != null",
+      "organizer": {
+        "startState": "RCTS_S0",
+        "successState": "RCTS_S2",
+        "failureState": "RCTS_Fail",
+        "states": [
+          { "name": "RCTS_S0", "goalInvocation": { "goalReference": "LinkCorrespondences", "type": "operation", "actualArguments": ["SN_Candidates"] } },
+          { "name": "RCTS_S1", "goalInvocation": { "goalReference": "LabelTransforms", "type": "operation", "actualArguments": ["edges"] } },
+          { "name": "RCTS_S2", "goalInvocation": { "goalReference": "RepeatAboveBetweenFigures", "type": "operation", "actualArguments": ["SN_Candidates"] } },
+          { "name": "RCTS_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RCTS_S0", "targetState": "RCTS_S1", "dataCondition": "SN_Candidates != null" },
+          { "sourceState": "RCTS_S0", "targetState": "RCTS_Fail", "dataCondition": "SN_Candidates == null" },
+          { "sourceState": "RCTS_S1", "targetState": "RCTS_S2", "dataCondition": "edges != null" },
+          { "sourceState": "RCTS_S1", "targetState": "RCTS_Fail", "dataCondition": "edges == null" }
+        ]
+      }
+    },
+    {
+      "name": "CompareTransformPatternsSolution",
+      "description": "FSM to compare reference transforms and candidate transforms representations, and compute the similarity based on the weights on operations",
+      "inputParameters": ["Matrix_Transform: graph_representation", "Candidate_Transform: graph_representation", "Weights: weights"],
+      "outputParameters": ["Similarity_Scores: float[]"],
+      "requires": "Matrix_Transform != null && Candidate_Transform != null && (Weights != null || Weights == default)",
+      "provides": "Similarity_Scores != null",
+      "organizer": {
+        "startState": "CTPS_S0",
+        "successState": "CTPS_S1",
+        "failureState": "CTPS_Fail",
+        "states": [
+          { "name": "CTPS_S0", "goalInvocation": { "goalReference": "CompareMatrixAndCandidatesTransform", "type": "operation", "actualArguments": ["Matrix_Transform", "Candidate_Transform"] } },
+          { "name": "CTPS_S1", "goalInvocation": { "goalReference": "ComputeWeightedSimilarity", "type": "operation", "actualArguments": ["Matrix_Transform", "Candidate_Transform", "Weights"] } },
+          { "name": "CTPS_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "CTPS_S0", "targetState": "CTPS_S1", "dataCondition": "Matrix_Transform != null && Candidate_Transform != null && (Weights != null || Weights == default)" },
+          { "sourceState": "CTPS_S0", "targetState": "CTPS_Fail", "dataCondition": "Matrix_Transform == null || Candidate_Transform == null" }
+        ]
+      }
+    },
+    {
+      "name": "SelectAnswerSolution",
+      "description": "FSM to select the best answer based on the similarity",
+      "inputParameters": ["Similarity_Scores", "Candidates"],
+      "outputParameters": ["Answer: Candidates"],
+      "requires": "Similarity_Score != null",
+      "provides": "Answer != null",
+      "organizer": {
+        "startState": "SAS_S0",
+        "successState": "SAS_S1",
+        "failureState": "SAS_Fail",
+        "states": [
+          { "name": "SAS_S0", "goalInvocation": { "goalReference": "IdentifyBestMatchingCandidate", "type": "operation", "actualArguments": ["Similarity_Scores"] } },
+          { "name": "SAS_S1", "goalInvocation": { "goalReference": "OutputAnswer", "type": "operation", "actualArguments": [] } },
+          { "name": "SAS_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "operation", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "SAS_S0", "targetState": "SAS_S1", "dataCondition": "Similarity_Scores != null && Candidates != null" },
+          { "sourceState": "SAS_S0", "targetState": "SAS_Fail", "dataCondition": "Similarity_Scores == null || Candidates == null" }
+        ]
+      }
+    },
+    {
+      "name": "RepresentObjectsAsNodes",
+      "description": "Detect and instantiate object as nodes from a single RPM figure",
+      "inputParameters": ["cell: figure"],
+      "outputParameters": ["nodes"],
+      "requires": "cell != null",
+      "provides": "nodes != null"
+    },
+    {
+      "name": "LinkRelatedObjects",
+      "description": "Construct unlabelled edges between related nodes within a single figure.",
+      "inputParameters": ["nodes"],
+      "outputParameters": ["edges"],
+      "requires": "nodes != null",
+      "provides": "edges != null"
+    },
+    {
+     "name": "LabelRelations",
+      "description": "Label the edges with the corresponding relationships, e.g., inside, above, below.",
+      "inputParameters": ["edges", "nodes"],
+      "outputParameters": ["labeledEdges"],
+      "requires": "edges != null && nodes >= 0",
+      "provides": "labeledEdges != null"
+    },
+    {
+      "name": "RepeatAboveForEachFigure",
+      "description": "Batch wrapper that applies the three atomic steps RepresentObjectsAsNodes, LinkRelatedObjects, LabelRelations to all matrix cells and all candidates, assembling per-figure semantic networks.",
+      "inputParameters": [
+        "MatrixCells: figure",
+        "Candidates: figure"
+      ],
+      "outputParameters": [
+        "SN_Matrix: graph_representation",
+        "SN_Candidates: graph_representation"
+      ],
+      "requires": "MatrixCells != null && Candidates != null",
+      "provides": "SN_Matrix != null && SN_Candidates != null"
+    },
+    {
+      "name": "LinkCorrespondingNodes",
+      "description": "Create cross-cell correspondences (edges) between nodes in per-figure semantic networks",
+      "inputParameters": ["SN: graph_representation"],
+      "outputParameters": ["edges"],
+      "requires": "SN_Matrix != null",
+      "provides": "edges != null)"
+    },
+    {
+      "name": "LabelTransforms",
+      "description": "Assign transformation labels to correspondence edges (e.g., unchanged, rotate, scale).",
+      "inputParameters": ["edges"],
+      "outputParameters": ["labeledTransforms"],
+      "requires": "edges != null",
+      "provides": "labeledTransforms != null"
+    },
+    {
+      "name": "RepeatAboveBetweenFigures",
+      "description": "Apply correspondence linking and transform labeling for all required figure pairs; aggregate into a transform representation",
+      "inputParameters": ["SN_figures: graph_representation"],
+      "outputParameters": ["SN_Transform: graph_representation"],
+      "requires": "SN_figures != null",
+      "provides": "SN_Transform != null"
+    },
+    {
+      "name": "CompareMatrixAndCandidatesTransform",
+      "description": "Compare the transfrom patterns between matrix and candidates transforms, and see how similar they are and if they can match",
+      "inputParameters": ["Matrix_Transform: graph_representation", "Candidate_Transform: graph_representation"],
+      "outputParameters": [],
+      "requires": "Matrix_Transform != null && Candidate_Transform != null",
+      "provides": ""
+    },
+    {
+      "name": "ComputeWeightedSimilarity",
+      "description": "If weights are given on transfoms, apply their weights to compute weighted similarity scores. If no weights are given, all transformations have equal weights.",
+      "inputParameters": ["Matrix_Transform", "Candidate_Transform", "Weights"],
+      "outputParameters": ["similarity_scores"],
+      "requires": "Matrix_Transform != null && Candidate_Transform != null",
+      "provides": "similarity_scores != null"
+    },
+    {
+      "name": "IdentifyBestMatchingCandidate",
+      "description": "Find the candidate with the highest similarity with the reference matrix",
+      "inputParameters": ["similarity_scores", "Candidates"],
+      "outputParameters": [],
+      "requires": "similarity_scores != null && Candidates != null",
+      "provides": ""
+    },
+    {
+      "name": "OutputAnswer",
+      "description": "The success state to output the final answer",
+      "inputParameters": [],
+      "outputParameters": ["Answer"],
+      "requires": "",
+      "provides": "Answer != null"
+    }
+  ]
+}
+
+
+
+
+
+
+

@@ -1,0 +1,473 @@
+{
+    "model": "Method",
+    "methods": [
+        {
+            "name": "ClassificationSolution",
+            "description": "FSM to manage the classification process from animal analysis to final bird classification.",
+            "inputParameters": [
+                "initialConfiguration: configuration",
+                "kb: knowledgeBase"
+            ],
+            "outputParameters": [
+                "finalConfiguration: configuration"
+            ],
+            "requires": "!isEmpty(initialConfiguration.observedAnimals) && isValid(kb)",
+            "provides": "goodClassification(finalConfiguration)",
+            "organizer": {
+                "startState": "S0_Identify",
+                "successState": "S3_Complete",
+                "failureState": "Fail",
+                "states": [
+                    {
+                        "name": "S0_Identify",
+                        "goalInvocation": {
+                            "goalReference": "IdentifyPercepts",
+                            "type": "task",
+                            "actualArguments": [
+                                "initialConfiguration"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "S1_Match",
+                        "goalInvocation": {
+                            "goalReference": "MatchAnimalsToCriteria",
+                            "type": "task",
+                            "actualArguments": [
+                                "S0_Identify.validatedPercepts",
+                                "kb"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "S2_CheckCriteria",
+                        "goalInvocation": {
+                            "goalReference": "CheckBirdCriteria",
+                            "type": "task",
+                            "actualArguments": [
+                                "S1_Match.candidateAnimals",
+                                "S0_Identify.validatedPercepts"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "S3_Complete",
+                        "goalInvocation": {
+                            "goalReference": "ClassificationComplete",
+                            "type": "task",
+                            "actualArguments": [
+                                "S2_CheckCriteria.classifiedAnimals"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "Fail",
+                        "goalInvocation": {
+                            "goalReference": "ClassificationFailed",
+                            "type": "task",
+                            "actualArguments": []
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "sourceState": "S0_Identify",
+                        "targetState": "S1_Match",
+                        "dataCondition": "!isEmpty(S0_Identify.validatedPercepts)"
+                    },
+                    {
+                        "sourceState": "S0_Identify",
+                        "targetState": "Fail",
+                        "dataCondition": "isEmpty(S0_Identify.validatedPercepts)"
+                    },
+                    {
+                        "sourceState": "S1_Match",
+                        "targetState": "S2_CheckCriteria",
+                        "dataCondition": "!isEmpty(S1_Match.candidateAnimals)"
+                    },
+                    {
+                        "sourceState": "S1_Match",
+                        "targetState": "Fail",
+                        "dataCondition": "isEmpty(S1_Match.candidateAnimals)"
+                    },
+                    {
+                        "sourceState": "S2_CheckCriteria",
+                        "targetState": "S3_Complete",
+                        "dataCondition": "goodClassification(S2_CheckCriteria.classifiedAnimals)"
+                    },
+                    {
+                        "sourceState": "S2_CheckCriteria",
+                        "targetState": "Fail",
+                        "dataCondition": "!goodClassification(S2_CheckCriteria.classifiedAnimals)"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "IdentifyPerceptsMechanism",
+            "description": "Mechanism to extract and validate observed percepts.",
+            "inputParameters": [
+                "config: configuration"
+            ],
+            "outputParameters": [
+                "validatedPercepts: array of percept"
+            ],
+            "requires": "!isEmpty(config.observedAnimals)",
+            "provides": "!isEmpty(validatedPercepts)",
+            "organizer": {
+                "startState": "IP_S0",
+                "successState": "IP_S2",
+                "failureState": "IP_Fail",
+                "states": [
+                    {
+                        "name": "IP_S0",
+                        "goalInvocation": {
+                            "goalReference": "ExtractPercepts",
+                            "type": "operation",
+                            "actualArguments": [
+                                "config"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "IP_S1",
+                        "goalInvocation": {
+                            "goalReference": "ValidatePercepts",
+                            "type": "operation",
+                            "actualArguments": [
+                                "IP_S0"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "IP_S2",
+                        "goalInvocation": {
+                            "goalReference": "OutputValidatedPercepts",
+                            "type": "operation",
+                            "actualArguments": [
+                                "IP_S1"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "IP_Fail",
+                        "goalInvocation": {
+                            "goalReference": "ClassificationFailed",
+                            "type": "task",
+                            "actualArguments": []
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "sourceState": "IP_S0",
+                        "targetState": "IP_S1",
+                        "dataCondition": "!isEmpty(IP_S0)"
+                    },
+                    {
+                        "sourceState": "IP_S0",
+                        "targetState": "IP_Fail",
+                        "dataCondition": "isEmpty(IP_S0)"
+                    },
+                    {
+                        "sourceState": "IP_S1",
+                        "targetState": "IP_S2",
+                        "dataCondition": "!isEmpty(IP_S1)"
+                    },
+                    {
+                        "sourceState": "IP_S1",
+                        "targetState": "IP_Fail",
+                        "dataCondition": "isEmpty(IP_S1)"
+                    },
+                    {
+                        "sourceState": "IP_S2",
+                        "targetState": "IP_Fail",
+                        "dataCondition": "isEmpty(IP_S2)"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "MatchAnimalsToCriteriaMechanism",
+            "description": "Mechanism to match animals to bird criteria.",
+            "inputParameters": [
+                "percepts: array of percept",
+                "kb: knowledgeBase"
+            ],
+            "outputParameters": [
+                "candidateAnimals: array of animal"
+            ],
+            "requires": "!isEmpty(percepts)",
+            "provides": "meetsCriteria(candidateAnimals)",
+            "organizer": {
+                "startState": "MA_S0",
+                "successState": "MA_S2",
+                "failureState": "MA_Fail",
+                "states": [
+                    {
+                        "name": "MA_S0",
+                        "goalInvocation": {
+                            "goalReference": "ComparePercepts",
+                            "type": "operation",
+                            "actualArguments": [
+                                "percepts",
+                                "kb"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "MA_S1",
+                        "goalInvocation": {
+                            "goalReference": "ValidateMatches",
+                            "type": "operation",
+                            "actualArguments": [
+                                "MA_S0"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "MA_S2",
+                        "goalInvocation": {
+                            "goalReference": "OutputCandidateAnimals",
+                            "type": "operation",
+                            "actualArguments": [
+                                "MA_S1"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "MA_Fail",
+                        "goalInvocation": {
+                            "goalReference": "ClassificationFailed",
+                            "type": "task",
+                            "actualArguments": []
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "sourceState": "MA_S0",
+                        "targetState": "MA_S1",
+                        "dataCondition": "!isEmpty(MA_S0)"
+                    },
+                    {
+                        "sourceState": "MA_S0",
+                        "targetState": "MA_Fail",
+                        "dataCondition": "isEmpty(MA_S0)"
+                    },
+                    {
+                        "sourceState": "MA_S1",
+                        "targetState": "MA_S2",
+                        "dataCondition": "meetsCriteria(MA_S1)"
+                    },
+                    {
+                        "sourceState": "MA_S1",
+                        "targetState": "MA_Fail",
+                        "dataCondition": "!meetsCriteria(MA_S1)"
+                    },
+                    {
+                        "sourceState": "MA_S2",
+                        "targetState": "MA_Fail",
+                        "dataCondition": "!meetsCriteria(MA_S2)"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "CheckBirdCriteriaMechanism",
+            "description": "Mechanism to check if animals meet bird criteria.",
+            "inputParameters": [
+                "candidates: array of animal",
+                "percepts: array of percept"
+            ],
+            "outputParameters": [
+                "classifiedAnimals: array of animal"
+            ],
+            "requires": "!isEmpty(candidates)",
+            "provides": "isClassifiedAsBird(classifiedAnimals)",
+            "organizer": {
+                "startState": "CB_S0",
+                "successState": "CB_S2",
+                "failureState": "CB_Fail",
+                "states": [
+                    {
+                        "name": "CB_S0",
+                        "goalInvocation": {
+                            "goalReference": "TestCriteria",
+                            "type": "operation",
+                            "actualArguments": [
+                                "candidates",
+                                "percepts"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "CB_S1",
+                        "goalInvocation": {
+                            "goalReference": "ConfirmClassification",
+                            "type": "operation",
+                            "actualArguments": [
+                                "CB_S0"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "CB_S2",
+                        "goalInvocation": {
+                            "goalReference": "OutputClassifiedAnimals",
+                            "type": "operation",
+                            "actualArguments": [
+                                "CB_S1"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "CB_Fail",
+                        "goalInvocation": {
+                            "goalReference": "ClassificationFailed",
+                            "type": "task",
+                            "actualArguments": []
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "sourceState": "CB_S0",
+                        "targetState": "CB_S1",
+                        "dataCondition": "!isEmpty(CB_S0)"
+                    },
+                    {
+                        "sourceState": "CB_S0",
+                        "targetState": "CB_Fail",
+                        "dataCondition": "isEmpty(CB_S0)"
+                    },
+                    {
+                        "sourceState": "CB_S1",
+                        "targetState": "CB_S2",
+                        "dataCondition": "isClassifiedAsBird(CB_S1)"
+                    },
+                    {
+                        "sourceState": "CB_S1",
+                        "targetState": "CB_Fail",
+                        "dataCondition": "!isClassifiedAsBird(CB_S1)"
+                    },
+                    {
+                        "sourceState": "CB_S2",
+                        "targetState": "CB_Fail",
+                        "dataCondition": "!isClassifiedAsBird(CB_S2)"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "ExtractPercepts",
+            "description": "Operation to extract percepts from configuration.",
+            "inputParameters": [
+                "config: configuration"
+            ],
+            "outputParameters": [
+                "validatedPercepts: array of percept"
+            ],
+            "requires": "!isEmpty(config.observedAnimals)",
+            "provides": "!isEmpty(validatedPercepts)"
+        },
+        {
+            "name": "ComparePercepts",
+            "description": "Operation to compare percepts with animal profiles.",
+            "inputParameters": [
+                "percepts: array of percept",
+                "kb: knowledgeBase"
+            ],
+            "outputParameters": [
+                "candidateAnimals: array of animal"
+            ],
+            "requires": "!isEmpty(percepts)",
+            "provides": "meetsCriteria(candidateAnimals)"
+        },
+        {
+            "name": "TestCriteria",
+            "description": "Operation to test bird criteria for animals.",
+            "inputParameters": [
+                "candidates: array of animal",
+                "percepts: array of percept"
+            ],
+            "outputParameters": [
+                "classifiedAnimals: array of animal"
+            ],
+            "requires": "!isEmpty(candidates)",
+            "provides": "isClassifiedAsBird(classifiedAnimals)"
+        },
+        {
+            "name": "ValidatePercepts",
+            "description": "Operation to validate extracted percepts against known features.",
+            "inputParameters": [
+                "extractedPercepts: array of percept"
+            ],
+            "outputParameters": [
+                "validatedPercepts: array of percept"
+            ],
+            "requires": "!isEmpty(extractedPercepts)",
+            "provides": "!isEmpty(validatedPercepts)"
+        },
+        {
+            "name": "ValidateMatches",
+            "description": "Operation to validate percept matches against criteria.",
+            "inputParameters": [
+                "matchedAnimals: array of animal"
+            ],
+            "outputParameters": [
+                "candidateAnimals: array of animal"
+            ],
+            "requires": "!isEmpty(matchedAnimals)",
+            "provides": "meetsCriteria(candidateAnimals)"
+        },
+        {
+            "name": "ConfirmClassification",
+            "description": "Operation to confirm animals meet bird criteria.",
+            "inputParameters": [
+                "testedAnimals: array of animal"
+            ],
+            "outputParameters": [
+                "classifiedAnimals: array of animal"
+            ],
+            "requires": "!isEmpty(testedAnimals)",
+            "provides": "isClassifiedAsBird(classifiedAnimals)"
+        },
+        {
+            "name": "OutputValidatedPercepts",
+            "description": "Operation to output validated percepts as final result.",
+            "inputParameters": [
+                "validatedPercepts: array of percept"
+            ],
+            "outputParameters": [
+                "finalPercepts: array of percept"
+            ],
+            "requires": "!isEmpty(validatedPercepts)",
+            "provides": "!isEmpty(finalPercepts)"
+        },
+        {
+            "name": "OutputCandidateAnimals",
+            "description": "Operation to output matched animals as final candidates.",
+            "inputParameters": [
+                "candidateAnimals: array of animal"
+            ],
+            "outputParameters": [
+                "finalCandidates: array of animal"
+            ],
+            "requires": "meetsCriteria(candidateAnimals)",
+            "provides": "meetsCriteria(finalCandidates)"
+        },
+        {
+            "name": "OutputClassifiedAnimals",
+            "description": "Operation to output classified animals as final result.",
+            "inputParameters": [
+                "classifiedAnimals: array of animal"
+            ],
+            "outputParameters": [
+                "finalClassification: array of animal"
+            ],
+            "requires": "isClassifiedAsBird(classifiedAnimals)",
+            "provides": "isClassifiedAsBird(finalClassification)"
+        }
+    ]
+}

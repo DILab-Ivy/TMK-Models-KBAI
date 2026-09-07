@@ -1,0 +1,115 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "Prove Statement with Resolution Theorem Proving",
+      "description": "Prove a logical statement by refutation using Resolution Theorem Proving.",
+      "inputParameters": [
+        "knowledgeBase: list<logical_sentence>",
+        "goalStatement: logical_sentence"
+      ],
+      "outputParameters": [
+        "proofResult: boolean"
+      ],
+      "given": "is_valid(knowledgeBase) && is_valid(goalStatement)",
+      "makes": "is_proven(goalStatement, proofResult)",
+      "means": [
+        {
+          "mechanismReference": "Resolution Theorem Proving Mechanism",
+          "actualArguments": [
+            "knowledgeBase",
+            "goalStatement"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prove Box Liftability",
+      "description": "Robot proves whether a box is liftable or not using resolution theorem proving.",
+      "inputParameters": [
+        "boxKnowledge: list<logical_sentence>",
+        "goal: logical_sentence"
+      ],
+      "outputParameters": [
+        "proof: proof_result"
+      ],
+      "given": "is_valid(boxKnowledge)",
+      "makes": "is_proven(goal, proof)",
+      "means": [
+        {
+          "mechanismReference": "Resolution Theorem Proving Mechanism",
+          "actualArguments": [
+            "boxKnowledge",
+            "goal"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prove Animal is Bird",
+      "description": "Robot proves whether an animal is a bird or not using resolution theorem proving.",
+      "inputParameters": [
+        "animalKnowledge: list<logical_sentence>",
+        "goal: logical_sentence"
+      ],
+      "outputParameters": [
+        "proof: proof_result"
+      ],
+      "given": "is_valid(animalKnowledge)",
+      "makes": "is_proven(goal, proof)",
+      "means": [
+        {
+          "mechanismReference": "Resolution Theorem Proving Mechanism",
+          "actualArguments": [
+            "animalKnowledge",
+            "goal"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prove Harry is Bird",
+      "description": "Use Modus Ponens to prove that Harry is a bird.",
+      "inputParameters": [
+        "birdRule: logical_sentence",
+        "harryFact: logical_sentence"
+      ],
+      "outputParameters": [
+        "inference: logical_sentence"
+      ],
+      "given": "is_modus_ponens_form(birdRule, harryFact)",
+      "makes": "is_valid(inference)",
+      "means": [
+        {
+          "mechanismReference": "Modus Ponens Mechanism",
+          "actualArguments": [
+            "birdRule",
+            "harryFact"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prove Buzz lacks Feathers",
+      "description": "Use Modus Tollens to prove that Buzz does not have feathers.",
+      "inputParameters": [
+        "birdRule: logical_sentence",
+        "buzzFact: logical_sentence"
+      ],
+      "outputParameters": [
+        "inference: logical_sentence"
+      ],
+      "given": "is_modus_tollens_form(birdRule, buzzFact)",
+      "makes": "is_valid(inference)",
+      "means": [
+        {
+          "mechanismReference": "Modus Tollens Mechanism",
+          "actualArguments": [
+            "birdRule",
+            "buzzFact"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "CaseBasedReasoningMechanism",
+      "description": "Four-phase FSM: retrieve → apply → evaluate → record.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "caseMem: memoryStore"
+      ],
+      "outputParameters": [
+        "solution: solution",
+        "updatedMemory: memoryStore"
+      ],
+      "organizer": {
+        "startState": "CBR_Retrieve",
+        "successState": "CBR_Record",
+        "failureState": "CBR_Fail",
+        "states": [
+          {
+            "name": "CBR_Retrieve",
+            "goalInvocation": {
+              "goalReference": "NearestNeighbor",
+              "type": "operation",
+              "actualArguments": [
+                "targetProblem",
+                "caseMem",
+                "source"
+              ]
+            }
+          },
+          {
+            "name": "CBR_Apply",
+            "goalInvocation": {
+              "goalReference": "ApplySolution",
+              "type": "operation",
+              "actualArguments": [
+                "targetProblem",
+                "source",
+                "candidate"
+              ]
+            }
+          },
+          {
+            "name": "CBR_Evaluate",
+            "goalInvocation": {
+              "goalReference": "EvaluateSolution",
+              "type": "operation",
+              "actualArguments": [
+                "targetProblem",
+                "candidate",
+                "CBR_acc"
+              ]
+            }
+          },
+          {
+            "name": "CBR_Record",
+            "goalInvocation": {
+              "goalReference": "StoreCase",
+              "type": "operation",
+              "actualArguments": [
+                "targetProblem",
+                "candidate",
+                "caseMem",
+                "updatedMemory"
+              ]
+            }
+          },
+          {
+            "name": "CBR_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+
+        "transitions": [
+          {
+            "sourceState": "CBR_Retrieve",
+            "targetState": "CBR_Apply",
+            "dataCondition": "source != null"
+          },
+          {
+            "sourceState": "CBR_Retrieve",
+            "targetState": "CBR_Fail",
+            "dataCondition": "source == null"
+          },
+          {
+            "sourceState": "CBR_Apply",
+            "targetState": "CBR_Evaluate",
+            "dataCondition": "candidate != null"
+          },
+          {
+            "sourceState": "CBR_Apply",
+            "targetState": "CBR_Fail",
+            "dataCondition": "candidate == null"
+          },
+          {
+            "sourceState": "CBR_Evaluate",
+            "targetState": "CBR_Record",
+            "dataCondition": "valid"
+          },
+          {
+            "sourceState": "CBR_Evaluate",
+            "targetState": "CBR_Fail",
+            "dataCondition": "not valid"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NearestNeighborMechanism",
+      "description": "Select the stored case closest to the target problem using the similarity metric.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "caseMemory: memoryStore"
+      ],
+      "outputParameters": "source: case",
+      "requires": "size(caseMemory) > 0",
+      "provides": "source != null"
+    },
+    {
+      "name": "ApplySolutionMechanism",
+      "description": "Transfer solution from source case to target.",
+      "inputParameters": [
+        "candidate: problem",
+        "storedCase: case"
+      ],
+      "outputParameters": "candidate: solution",
+      "requires": "storedCase != null",
+      "provides": "candidate != null"
+    },
+    {
+      "name": "EvaluateSolutionMechanism",
+      "description": "Check if candidate solution solves target.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "candidate: solution"
+      ],
+      "outputParameters": "valid: Boolean",
+      "requires": "candidate != null",
+      "provides": "valid == solved(targetProblem, candidate)"
+    },
+    {
+      "name": "StoreCaseMechanism",
+      "description": "Insert new case into memory.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "solution: solution",
+        "caseMemory: memoryStore"
+      ],
+      "outputParameters": "updatedMemory: memoryStore",
+      "requires": "solved(targetProblem, solution)",
+      "provides": "contains(updatedMemory, targetProblem, solution)"
+    }
+  ]
+}

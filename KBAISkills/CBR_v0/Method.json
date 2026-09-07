@@ -1,0 +1,209 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "CaseBasedReasoningMechanism",
+      "description": "Four-phase FSM: retrieve → adapt → evaluate → store.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "caseMemory: memoryStore"
+      ],
+      "outputParameters": [
+        "solution: solution",
+        "updatedMemory: memoryStore"
+      ],
+      
+      "organiser": {
+        "startState": "CBR_Retrieve",
+        "successState": "CBR_ValidateFinal",
+        "failureState": "CBR_Fail",
+        
+        "states": [
+          {
+            "name": "CBR_Retrieve",
+            "goalInvocation": {
+              "goalReference": "RetrieveCase",
+              "type": "operation",
+              "actualArguments": [
+                "targetProblem",
+                "caseMemory",
+                "source"
+              ]
+            }
+          },
+          {
+            "name": "CBR_Adapt",
+            "goalInvocation": {
+              "goalReference": "AdaptCase",
+              "type": "operation",
+              "actualArguments": [
+                "targetProblem",
+                "source",
+                "candidate"
+              ]
+            }
+          },
+          {
+            "name": "CBR_Evaluate",
+            "goalInvocation": {
+              "goalReference": "EvaluateSolution",
+              "type": "operation",
+              "actualArguments": [
+                "targetProblem",
+                "candidate",
+                "valid"
+              ]
+            }
+          },
+          {
+            "name": "CBR_Store",
+            "goalInvocation": {
+              "goalReference": "StoreCase",
+              "type": "operation",
+              "actualArguments": [
+                "targetProblem",
+                "candidate",
+                "caseMemory",
+                "updatedMemory"
+              ]
+            }
+          },
+          {
+            "name": "CBR_ValidateFinal",
+            "goalInvocation": {
+              "goalReference": "ProblemSolvedStored",
+              "type": "operation",
+              "actualArguments": [
+                "targetProblem",
+                "candidate",
+                "updatedMemory"
+              ]
+            }
+          },
+          {
+            "name": "CBR_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+              }
+          }
+        ],
+        
+        "transitions": [
+          {
+            "sourceState": "CBR_Retrieve",
+            "targetState": "CBR_Adapt",
+            "dataCondition": "source != null"
+          },
+          {
+            "sourceState": "CBR_Retrieve",
+            "targetState": "CBR_Fail",
+            "dataCondition": "source == null"
+          },
+          {
+            "sourceState": "CBR_Adapt",
+            "targetState": "CBR_Evaluate",
+            "dataCondition": "candidate != null"
+          },
+          {
+            "sourceState": "CBR_Adapt",
+            "targetState": "CBR_Fail",
+            "dataCondition": "candidate == null"
+          },
+          {
+            "sourceState": "CBR_Evaluate",
+            "targetState": "CBR_Store",
+            "dataCondition": "valid"
+          },
+          {
+            "sourceState": "CBR_Evaluate",
+            "targetState": "CBR_Fail",
+            "dataCondition": "not valid"
+          },
+          {
+            "sourceState": "CBR_Store",
+            "targetState": "CBR_ValidateFinal",
+            "dataCondition": "contains(updatedMemory, targetProblem, CBR_cand)"
+          },
+          {
+            "sourceState": "CBR_Store",
+            "targetState": "CBR_Fail",
+            "dataCondition": "not contains(updatedMemory, targetProblem, CBR_cand)"
+          }
+        ]
+      }
+    },
+
+    {
+      "name": "RetrieveCase",
+      "description": "Retrieves the most similar case(s) from the case memory given a target problem.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "caseMemory: set<case>",
+        "source: case"
+      ],
+      "outputParameters": [
+        "retrievedCases: set<case>"
+      ],
+      "requires": "targetProblem != null AND caseMemory is not empty",
+      "provides": "retrievedCases is not empty and targetProblem is similar to retrieved cases"
+    },
+    {
+      "name": "AdaptCase",
+      "description": "Adapts the solution of a retrieved case to fit the target problem.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "source: case",
+        "candidate: solution"
+      ],
+      "outputParameters": [
+        "adaptedSolution: solution"
+      ],
+      "requires": "source != null and targetProblem != null",
+      "provides": "adaptedSolution is a solution to targetProblem"
+    },
+    {
+      "name": "EvaluateSolution",
+      "description": "Operation to evaluate the adapted solution against the target problem's requirements.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "candidate: solution",
+        "valid: boolean"
+      ],
+      "outputParameters": [
+        "isSolutionValid: boolean"
+      ],
+      "requires": "candidate != null and targetProblem != null",
+      "provides": "isSolutionValid is true or isSolutionValid is false"
+    },
+    {
+      "name": "StoreCase",
+      "description": "Operation to store the validated target problem and its solution as a new case in the case memory.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "candidate: solution",
+        "caseMemory: set<case>"
+      ],
+      "outputParameters": [
+        "updatedCaseMemory: set<case>"
+      ],
+      "requires": "targetProblem != null and candidate is valid",
+      "provides": "updatedCaseMemory contains newCase(targetProblem, candidate)"
+    },
+    {
+      "name": "ProblemSolvedStored",
+      "description": "Final validation and confirmation that the problem has been solved and the new case has been stored in the knowledge base.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "candidate: solution",
+        "updatedMemory: set<case>"
+      ],
+      "outputParameters": [
+        "finalStatus: string"
+      ],
+      "requires": "candidate is a valid solution and updatedMemory contains newCase(targetProblem, candidate)",
+      "provides": "finalStatus is solved"
+    }
+  ]
+}

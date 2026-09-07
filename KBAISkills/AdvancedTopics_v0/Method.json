@@ -1,0 +1,385 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "VisuospatialReasoningSolution",
+      "description": "FSM to reason with visuospatial knowledge by retrieving content, encoding it, and generating a consistent solution.",
+      "inputParameters": ["problemContext"],
+      "outputParameters": ["visuoSpatialSolution"],
+      "requires": "Problem has visuospatial content defined",
+      "provides": "problem solution",
+      "organizer": {
+        "startState": "VR_S0",
+        "successState": "VR_S2",
+        "failureState": "VR_Fail",
+        "states": [
+          { "name": "VR_S0", "goalInvocation": { "goalReference": "RetrieveVisuoSpatialContent", "type": "task", "actualArguments": ["problemContext"]} },
+          { "name": "VR_S1", "goalInvocation": { "goalReference": "EncodeVisuoSpatialContentAndSolve", "type": "task", "actualArguments": ["rawVisuoSpatialContent"]} },
+          { "name": "VR_S2", "goalInvocation": { "goalReference": "SuccessGoal", "type": "task", "actualArguments": []} },
+          { "name": "VR_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": []} }
+        ],
+        "transitions": [
+          { "sourceState": "VR_S0", "targetState": "VR_S1", "dataCondition": "Problem has visuospatial content defined" },
+          { "sourceState": "VR_S0", "targetState": "VR_Fail", "dataCondition": "Problem has no visuospatial content defined" },
+          { "sourceState": "VR_S1", "targetState": "VR_S2", "dataCondition": "rawVisuoSpatialContent != null && visuoSpatialSolution != null && consistent(visuoSpatialSolution, problemContext)" },
+          { "sourceState": "VR_S1", "targetState": "VR_Fail", "dataCondition": "rawVisuoSpatialContent == null || visuoSpatialSolution == null || NOT consistent(visuoSpatialSolution, problemContext)" }
+        ]
+      }
+    },
+    {
+      "name": "RetrieveVisuoSpatialContentSolution",
+      "description": "FSM to retrieve visuospatial content required for reasoning.",
+      "inputParameters": ["problemContext"],
+      "outputParameters": ["rawVisuoSpatialContent"],
+      "requires": "Problem has visuospatial content defined",
+      "provides": "rawVisuoSpatialContent containing visual and spatial parts",
+      "organizer": {
+        "startState": "RVC_S0",
+        "successState": "RVC_S2",
+        "failureState": "RVC_Fail",
+        "states": [
+          { "name": "RVC_S0", "goalInvocation": { "goalReference": "RetrieveVisualPart", "type": "operation", "actualArguments": ["problemContext"] } },
+          { "name": "RVC_S1", "goalInvocation": { "goalReference": "RetrieveSpatialPart", "type": "operation", "actualArguments": ["problemContext"] } },
+          { "name": "RVC_S2", "goalInvocation": { "goalReference": "AssembleVisuoSpatialContent", "type": "task", "actualArguments": ["visualContent", "spatialContent"] } },
+          { "name": "RVC_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RVC_S0", "targetState": "RVC_S1", "dataCondition": "Problem has visuospatial content defined" },
+          { "sourceState": "RVC_S0", "targetState": "RVC_Fail", "dataCondition": "Problem has no visuospatial content defined" },
+          { "sourceState": "RVC_S1", "targetState": "RVC_S2", "dataCondition": "visualContent != null && spatialContent != null && rawVisuoSpatialContent != null" },
+          { "sourceState": "RVC_S1", "targetState": "RVC_Fail", "dataCondition": "visualContent == null && spatialContent == null || rawVisuoSpatialContent == null" }
+        ]
+      }
+    },
+    {
+      "name": "EncodeVisuoSpatialContentAndSolveSolution",
+      "description": "FSM to encode retrieved visuospatial content into an representation suitable for reasoning. Chooses between propositional and analogical encodings, then produces a structured representation.",
+      "inputParameters": ["rawVisuoSpatialContent"],
+      "outputParameters": ["visuoSpatialSolution"],
+      "requires": "rawVisuoSpatialContent != null",
+      "provides": "visuoSpatialSolution != null",
+      "organizer": {
+        "startState": "EVC_S0",
+        "successState": "EVC_S3",
+        "failureState": "EVC_Fail",
+        "states": [
+          { "name": "EVC_S0", "goalInvocation": { "goalReference": "SelectRepresentationMode", "type": "operation", "actualArguments": ["rawVisuoSpatialContent"]} },
+          { "name": "EVC_S1_Propositional", "goalInvocation": { "goalReference": "SolveUsingPropositionalRepresentation", "type": "task", "actualArguments": ["visuoSpatialSolution"]} },
+          { "name": "EVC_S2_Analogical", "goalInvocation": { "goalReference": "SolveUsingAnalogicalRepresentation", "type": "task", "actualArguments": ["visuoSpatialSolution"]} },
+          { "name": "EVC_S3", "goalInvocation": { "goalReference": "SuccessGoal", "type": "operation", "actualArguments": []} },
+          { "name": "EVC_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": []} }
+        ],
+        "transitions": [
+          { "sourceState": "EVC_S0", "targetState": "EVC_S1_Propositional", "dataCondition": "rawVisuoSpatialContent != null && repMode == 'propositional'" },
+          { "sourceState": "EVC_S0", "targetState": "EVC_S2_Analogical", "dataCondition": "rawVisuoSpatialContent != null && repMode == 'analogical'" },
+          { "sourceState": "EVC_S0", "targetState": "EVC_Fail", "dataCondition": "rawVisuoSpatialContent == null || (repMode != 'propositional' && repMode != 'analogical')" },
+          { "sourceState": "EVC_S1_Propositional", "targetState": "EVC_S3", "dataCondition": "visuoSpatialSolution != null && consistent(visuoSpatialSolution, problemContext)" },
+          { "sourceState": "EVC_S1_Propositional", "targetState": "EVC_Fail", "dataCondition": "visuoSpatialSolution == null || NOT consistent(visuoSpatialSolution, problemContext)" },
+          { "sourceState": "EVC_S2_Analogical", "targetState": "EVC_S3", "dataCondition": "analogicalRepresentation != null && consistent(visuoSpatialSolution, problemContext)" },
+          { "sourceState": "EVC_S2_Analogical", "targetState": "EVC_Fail", "dataCondition": "analogicalRepresentation == null || NOT consistent(visuoSpatialSolution, problemContext)" }
+        ]
+      }
+    },
+    {
+      "name": "SolveUsingPropositionalRepresentationSolution",
+      "description": "FSM to build propositional representation of visuospatial content.",
+      "inputParameters": ["rawVisuoSpatialContent", "problemContext"],
+      "outputParameters": ["visuoSpatialSolution"],
+      "requires": "rawVisuoSpatialContent != null",
+      "provides": "visuoSpatialSolution != null && consistent(visuoSpatialSolution, problemContext)",
+      "organizer": {
+        "startState": "SPR_S0",
+        "successState": "SPR_S3",
+        "failureState": "SPR_Fail",
+        "states": [
+          { "name": "SPR_S0", "goalInvocation": { "goalReference": "ConstructPropositionalRepresentation", "type": "operation", "actualArguments": ["rawVisuoSpatialContent"]} },
+          { "name": "SPR_S1", "goalInvocation": { "goalReference": "ExtractCausalPattern", "type": "operation", "actualArguments": ["PropositionalRepresentation"]} },
+          { "name": "SPR_S2", "goalInvocation": { "goalReference": "ApplyCausalPatternToProblem", "type": "operation", "actualArguments": ["causalPattern", "problemContext"]} },
+          { "name": "SPR_S3", "goalInvocation": { "goalReference": "SuccessGoal", "type": "task", "actualArguments": []} },
+          { "name": "SPR_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": []} }
+        ],
+        "transitions": [
+          { "sourceState": "SPR_S0", "targetState": "SPR_S1", "dataCondition": "rawVisuoSpatialContent != null" },
+          { "sourceState": "SPR_S0", "targetState": "SPR_Fail", "dataCondition": "rawVisuoSpatialContent == null" },
+          { "sourceState": "SPR_S1", "targetState": "SPR_S2", "dataCondition": "PropositionalRepresentation != null" },
+          { "sourceState": "SPR_S1", "targetState": "SPR_Fail", "dataCondition": "PropositionalRepresentation == null" },
+          { "sourceState": "SPR_S2", "targetState": "SPR_S3", "dataCondition": "causalPattern != null && consistent(causalPattern, problemContext)" },
+          { "sourceState": "SPR_S2", "targetState": "SPR_Fail", "dataCondition": "propositionalRep == null || NOT consistent(causalPattern, problemContext)" }
+        ]
+      }
+    },
+    {
+      "name": "SolveUsingAnalogicalRepresentationSolution",
+      "description": "FSM to solve a visuospatial problem using analogical representations.",
+      "inputParameters": ["rawVisuoSpatialContent", "problemContext"],
+      "outputParameters": ["visuoSpatialSolution"],
+      "requires": "rawVisuoSpatialContent != null",
+      "provides": "visuoSpatialSolution != null && consistent(visuoSpatialSolution, problemContext)",
+      "organizer": {
+        "startState": "SAR_S0",
+        "successState": "SAR_S2",
+        "failureState": "SAR_Fail",
+        "states": [
+          { "name": "SAR_S0", "goalInvocation": { "goalReference": "ConstructAnalogicalRepresentation", "type": "operation", "actualArguments": ["rawVisuoSpatialContent"]} },
+          { "name": "SAR_S1", "goalInvocation": { "goalReference": "MapAnalogicalStructureToProblem", "type": "operation", "actualArguments": ["AnalogicalRepresentation", "problemContext"]} },
+          { "name": "SAR_S2", "goalInvocation": { "goalReference": "SuccessGoal", "type": "task", "actualArguments": []} },
+          { "name": "SAR_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": []} }
+        ],
+        "transitions": [
+          { "sourceState": "SAR_S0", "targetState": "SAR_S1", "dataCondition": "rawVisuoSpatialContent != null" },
+          { "sourceState": "SAR_S0", "targetState": "SAR_Fail", "dataCondition": "rawVisuoSpatialContent == null" },
+          { "sourceState": "SAR_S1", "targetState": "SAR_S2", "dataCondition": "AnalogicalRepresentation != null && consistent(visuoSpatialSolution, problemContext)" },
+          { "sourceState": "SAR_S1", "targetState": "SAR_Fail", "dataCondition": "AnalogicalRepresentation == null || NOT consistent(visuoSpatialSolution, problemContext)" }
+        ]
+      }
+    },
+    {
+      "name": "RetrieveVisualPart",
+      "description": "Extracts the visual component of the VisuoSpatial problem, identifying the What part of the problem.",
+      "inputParameters": ["problemContext"],
+      "outputParameters": ["visualContent"],
+      "requires": "Problem contains visual content data",
+      "provides": "visualContent of the visuoSpatial problem"
+    },
+    {
+      "name": "RetrieveSpatialPart",
+      "description": "Extracts the spatial component of the VisuoSpatial problem, identifying the Where part of the problem.",
+      "inputParameters": ["problemContext"],
+      "outputParameters": ["spatialContent"],
+      "requires": "Problem contains spatial information",
+      "provides": "spatialContent defines spatial relations and coordinates of the visuoSpatial problem"
+    },
+    {
+      "name": "SelectRepresentationMode",
+      "description": "Determines whether the retrieved visuospatial content should be represented propositionally or analogically for reasoning.",
+      "inputParameters": ["rawVisuoSpatialContent"],
+      "outputParameters": ["repMode: modeType"],
+      "requires": "rawVisuoSpatialContent != null",
+      "provides": "repMode is either 'propositional' or 'analogical'"
+    },
+    {
+      "name": "ConstructPropositionalRepresentation",
+      "description": "Converts visuospatial content into a propositional structure by encoding objects, attributes, and relations as symbolic predicates.",
+      "inputParameters": ["rawVisuoSpatialContent"],
+      "outputParameters": ["PropositionalRepresentation"],
+      "requires": "rawVisuoSpatialContent contains identifiable entities and relations",
+      "provides": "PropositionalRepresentation well-formed"
+    },
+    {
+      "name": "ExtractCausalPattern",
+      "description": "Identifies a causal or relational pattern within the propositional structure.",
+      "inputParameters": ["PropositionalRepresentation"],
+      "outputParameters": ["causalPattern"],
+      "requires": "PropositionalRepresentation is well-formed",
+      "provides": "causalPattern encodes cause-effect or dependency chains"
+    },
+    {
+      "name": "ApplyCausalPatternToProblem",
+      "description": "Applies the extracted causal pattern to the problem context to infer outcomes or generate a solution explanation.",
+      "inputParameters": ["causalPattern", "problemContext"],
+      "outputParameters": ["visuoSpatialSolution"],
+      "requires": "causalPattern valid and relevant to problemContext",
+      "provides": "visuoSpatialSolution consistent with causalPattern"
+    },
+    {
+      "name": "ConstructAnalogicalRepresentation",
+      "description": "Builds a structural (analogical) representation preserving implied relational correspondences from visuospatial content.",
+      "inputParameters": ["rawVisuoSpatialContent"],
+      "outputParameters": ["AnalogicalRepresentation"],
+      "requires": "rawVisuoSpatialContent contains mappable structures",
+      "provides": "AnalogicalRepresentation encodes graph preserving structure"
+    },
+    {
+      "name": "MapAnalogicalStructureToProblem",
+      "description": "Maps the analogical structure from source to target problem domain to propose a new solution.",
+      "inputParameters": ["AnalogicalRepresentation", "problemContext"],
+      "outputParameters": ["visuoSpatialSolution"],
+      "requires": "AnalogicalRepresentation well-formed",
+      "provides": "visuoSpatialSolution maintains structural correspondence with source"
+    },
+
+    {
+      "name": "StructureBehaviorFunctionModelingSolution",
+      "description": "FSM to construct an Structure Behavior Function model for system thinking.",
+      "inputParameters": ["System"],
+      "outputParameters": ["SBFModel"],
+      "requires": "System != null",
+      "provides": "SBFModel != null",
+      "organizer": {
+        "startState": "SBF_S0",
+        "successState": "SBF_S3",
+        "failureState": "SBF_Fail",
+        "states": [
+          { "name": "SBF_S0", "goalInvocation": { "goalReference": "RepresentVisibleStructure", "type": "operation", "actualArguments": ["System"]} },
+          { "name": "SBF_S1", "goalInvocation": { "goalReference": "RepresentInvisibleBehaviorAndFunction", "type": "task", "actualArguments": ["StructureModel", "System"]} },
+          { "name": "SBF_S2", "goalInvocation": { "goalReference": "InteractMultilevelSBFModel", "type": "operation", "actualArguments": ["StructureModel", "BehaviorModel", "FunctionModel", "System"]} },
+          { "name": "SBF_S3", "goalInvocation": { "goalReference": "SuccessGoal", "type": "task", "actualArguments": []} },
+          { "name": "SBF_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": []} }
+        ],
+        "transitions": [
+          { "sourceState": "SBF_S0", "targetState": "SBF_S1", "dataCondition": "System != null && complete(StructureModel)" },
+          { "sourceState": "SBF_S0", "targetState": "SBF_Fail", "dataCondition": "System == null || NOT complete(StructureModel)" },
+          { "sourceState": "SBF_S1", "targetState": "SBF_S2", "dataCondition": "BehaviorModel != null && FunctionModel != null && SBF models aligned" },
+          { "sourceState": "SBF_S1", "targetState": "SBF_Fail", "dataCondition": "BehaviorModel == null || FunctionModel == null || SBF models not aligned" },
+          { "sourceState": "SBF_S2", "targetState": "SBF_S3", "dataCondition": "multilevel SBFModel complete" },
+          { "sourceState": "SBF_S2", "targetState": "SBF_Fail", "dataCondition": "multilevel SBFModel not complete" }
+        ]
+      }
+    },
+    {
+      "name": "RepresentInvisibleBehaviorAndFunctionSolution",
+      "description": "FSM to represent invisible function and behavior in modeling BSF models for a system",
+      "inputParameters": ["StructureModel", "System"],
+      "outputParameters": ["FunctionModel", "BehaviorModel"],
+      "requires": "StructureModel != null",
+      "provides": "FunctionModel != null && BehaviorModel != null && SBF models aligned",
+      "organizer": {
+        "startState": "RIBF_S0",
+        "successState": "RIBF_S4",
+        "failureState": "RIBF_Fail",
+        "states": [
+          { "name": "RIBF_S0", "goalInvocation": { "goalReference": "AnalyzeSystemFunction", "type": "operation", "actualArguments": ["System"] } },
+          { "name": "RIBF_S1", "goalInvocation": { "goalReference": "RepresentFunction", "type": "operation", "actualArguments": ["FunctionalRequirement"] } },
+          { "name": "RIBF_S2", "goalInvocation": { "goalReference": "CaptureBehaviorAsStateTransitionModel", "type": "operation", "actualArguments": ["StructureModel", "FunctionModel", "System"] } },
+          { "name": "RIBF_S3", "goalInvocation": { "goalReference": "AlignBehaviorAndFunctionWithStructure", "type": "operation", "actualArguments": ["BehaviorModel", "FunctionModel", "StructureModel"] } },
+          { "name": "RIBF_S4", "goalInvocation": { "goalReference": "SuccessGoal", "type": "task", "actualArguments": [] } },
+          { "name": "RIBF_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "RIBF_S0", "targetState": "RIBF_S1", "dataCondition": "System != null" },
+          { "sourceState": "RIBF_S0", "targetState": "RIBF_Fail", "dataCondition": "System == null" },
+          { "sourceState": "RIBF_S1", "targetState": "RIBF_S2", "dataCondition": "FunctionalRequirement != null" },
+          { "sourceState": "RIBF_S1", "targetState": "RIBF_Fail", "dataCondition": "FunctionalRequirement == null" },
+          { "sourceState": "RIBF_S2", "targetState": "RIBF_S3", "dataCondition": "FunctionModel != null && BehaviorModel != null" },
+          { "sourceState": "RIBF_S2", "targetState": "RIBF_Fail", "dataCondition": "FunctionModel == null || BehaviorModel == null" },
+          { "sourceState": "RIBF_S3", "targetState": "RIBF_S4", "dataCondition": "FunctionModel != null && BehaviorModel != null && StructureModel != null && SBF models aligned" },
+          { "sourceState": "RIBF_S3", "targetState": "RIBF_Fail", "dataCondition": "FunctionModel == null || BehaviorModel == null || StructureModel == null || SBF models not aligned" }
+        ]
+      }
+    },
+    {
+      "name": "RepresentVisibleStructure",
+      "description": "Identifies and encodes the visible physical components of a system and their connections into a structural model.",
+      "inputParameters": ["System"],
+      "outputParameters": ["StructureModel"],
+      "requires": "System != null",
+      "provides": "StructureModel lists components and connectivity relations"
+    },
+    {
+      "name": "InteractMultilevelSBFModel",
+      "description": "Integrates structure, behavior, and function models into a coherent multilevel SBF representation.",
+      "inputParameters": ["StructureModel", "BehaviorModel", "FunctionModel", "System"],
+      "outputParameters": ["SBFModel"],
+      "requires": "BehaviorModel and FunctionModel consistent with StructureModel",
+      "provides": "SBFModel captures cross-level dependencies and abstractions"
+    },
+    {
+      "name": "AnalyzeSystemFunction",
+      "description": "Determines the intended or observed function of a system by analyzing its purpose, goals, or outputs.",
+      "inputParameters": ["System"],
+      "outputParameters": ["FunctionalRequirement"],
+      "requires": "System != null",
+      "provides": "FunctionalRequirement expresses desired input-output behavior"
+    },
+    {
+      "name": "RepresentFunction",
+      "description": "Encodes the analyzed system function as a structured model capturing purpose, inputs, outputs, and success conditions.",
+      "inputParameters": ["FunctionalRequirement"],
+      "outputParameters": ["FunctionModel"],
+      "requires": "FunctionalRequirement defined",
+      "provides": "FunctionModel formalizes goal and performance conditions"
+    },
+    {
+      "name": "CaptureBehaviorAsStateTransitionModel",
+      "description": "Derives the invisible behaviors of the system by modeling internal causal processes as state transitions.",
+      "inputParameters": ["StructureModel", "FunctionModel", "System"],
+      "outputParameters": ["BehaviorModel"],
+      "requires": "StructureModel != null && FunctionModel != null",
+      "provides": "BehaviorModel describes time-ordered state changes producing function"
+    },
+    {
+      "name": "AlignBehaviorAndFunctionWithStructure",
+      "description": "Links behavior and function models to corresponding structures, ensuring that every process is grounded in physical components.",
+      "inputParameters": ["BehaviorModel", "FunctionModel", "StructureModel"],
+      "outputParameters": ["Aligned SBF"],
+      "requires": "BehaviorModel and FunctionModel valid",
+      "provides": "Aligned SBF establishes causal mapping between components and functions"
+    },
+
+    {
+      "name": "DesignThinkingSolution",
+      "description": "FSM to perform design thinking",
+      "inputParameters": ["DesignGoal", "CurrentSystemModel", "Constraints"],
+      "outputParameters": ["ProposedDesign"],
+      "requires": "DesignGoal != null && CurrentSystemModel != null && Constraints != null",
+      "provides": "ProposedDesign satisfies Design Goal",
+      "organizer": {
+        "startState": "DT_S0",
+        "successState": "DT_S2",
+        "failureState": "DT_Fail",
+        "states": [
+          { "name": "DT_S0", "goalInvocation": { "goalReference": "SystemThinking", "type": "task", "actualArguments": ["CurrentSystemModel"] } },
+          { "name": "DT_S1", "goalInvocation": { "goalReference": "GenerateCreativeDesign", "type": "task", "actualArguments": ["DesignGoal", "SystemInsights", "Constraints"] } },
+          { "name": "DT_S2", "goalInvocation": { "goalReference": "LearnFromDesign", "type": "operation", "actualArguments": ["ProposedDesign", "SystemInsights"]} },
+          { "name": "DT_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": []} }
+        ],
+        "transitions": [
+          { "sourceState": "DT_S0", "targetState": "DT_S1", "dataCondition": "CurrentSystemModel != null" },
+          { "sourceState": "DT_S0", "targetState": "DT_Fail", "dataCondition": "CurrentSystemModel == null" },
+          { "sourceState": "DT_S1", "targetState": "DT_S2", "dataCondition": "SystemInsights != null && Constraints != null && ProposedDesign != null && addresses(ProposedDesign, DesignGoal)" },
+          { "sourceState": "DT_S1", "targetState": "DT_Fail", "dataCondition": "SystemInsights == null || Constraints == null || ProposedDesign == null || NOT addresses(ProposedDesign, DesignGoal)" }
+        ]
+      }
+    },
+    {
+      "name": "GenerateCreativeDesignSolution",
+      "description": "FSM to generate a creative design that satisfies a target goal by reusing/replicating prior design knowledge and transforming it to meet new requirements.",
+      "inputParameters": ["DesignGoal", "SystemInsights", "Constraints"],
+      "outputParameters": ["ProposedDesign"],
+      "requires": "SystemInsights != null && Constraints != null && DesignGoal != null",
+      "provides": "ProposedDesign addresses DesignGoal",
+      "organizer": {
+        "startState": "GCD_S0",
+        "successState": "GCD_Success",
+        "failureState": "GCD_Fail",
+        "states": [
+          { "name": "GCD_S0", "goalInvocation": { "goalReference": "RetrieveOrReplicatePriorDesign", "type": "operation", "actualArguments": ["SystemInsights"] } },
+          { "name": "GCD_S1", "goalInvocation": { "goalReference": "TransformToNewDesign", "type": "operation", "actualArguments": ["DesignPattern", "DesignGoal", "Constraints"] } },
+          { "name": "GCD_Success", "goalInvocation": { "goalReference": "SuccessGoal", "type": "task", "actualArguments": [] } },
+          { "name": "GCD_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "GCD_S0", "targetState": "GCD_S1", "dataCondition": "SystemInsights != null" },
+          { "sourceState": "GCD_S0", "targetState": "GCD_Fail", "dataCondition": "BaselineDesign == null" },
+          { "sourceState": "GCD_S1", "targetState": "GCD_Success", "dataCondition": "DesignPattern != null && Constraints != null && DesignGoal != null && addresses(ProposedDesign, DesignGoal)" },
+          { "sourceState": "GCD_S1", "targetState": "GCD_Fail", "dataCondition": "DesignPattern == null || Constraints == null || DesignGoal == null || NOT addresses(ProposedDesign, DesignGoal)" }
+        ]
+      }
+    },
+
+    {
+      "name": "LearnFromDesign",
+      "description": "Extracts reusable design knowledge or design patterns from an existing solution for future applications.",
+      "inputParameters": ["ProposedDesign", "SystemInsights"],
+      "outputParameters": ["LearnedDesignPattern"],
+      "requires": "ProposedDesign != null",
+      "provides": "LearnedDesignPattern reusable and generalizable"
+    },
+    {
+      "name": "RetrieveOrReplicatePriorDesign",
+      "description": "Retrieves a prior design from memory or replicates an existing pattern as a baseline for new creative design.",
+      "inputParameters": ["SystemInsights"],
+      "outputParameters": ["DesignPattern"],
+      "requires": "SystemInsights includes prior examples or analogous designs",
+      "provides": "DesignPattern reusable and domain-consistent"
+    },
+    {
+      "name": "TransformToNewDesign",
+      "description": "Transforms an existing design pattern or baseline design to meet new goals or constraints while maintaining functional integrity.",
+      "inputParameters": ["DesignPattern", "DesignGoal", "Constraints"],
+      "outputParameters": ["ProposedDesign"],
+      "requires": "DesignPattern valid and compatible with constraints",
+      "provides": "ProposedDesign meets DesignGoal within constraints"
+    }
+  ]
+}

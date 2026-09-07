@@ -1,0 +1,124 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "CaseBasedLearning",
+      "description": "Solve a new problem by retrieving and applying a similar past case.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "caseMemory: memoryStore"
+      ],
+      "outputParameters": [
+        "solution: solution",
+        "updatedMemory: memoryStore"
+      ],
+      "given": "isWellFormed(targetProblem and size(caseMemory) > 0",
+      "makes": "solved(targetProblem, solution) and contains(updatedMemory, targetProblem, solution)",
+      "means": [
+        {
+          "mechanismReference": "CaseBasedReasoningMechanism",
+          "actualArguments": [
+            "targetProblem",
+            "caseMemory",
+            "solution",
+            "updatedMemory"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RetrieveNearestCase",
+      "description": "Identify the most similar case in memory using an appropriate similarity metric.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "caseMemory: memoryStore"
+      ],
+      "outputParameters": [
+        "source: case"
+      ],
+      "given": "size(caseMemory) > 0",
+      "makes": "source in caseMemory",
+      "means": [
+        {
+          "mechanismReference": "NearestNeighbourMechanism",
+          "actualArguments": [
+            "targetProblem",
+            "caseMemory",
+            "source"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ApplyCaseSolution",
+      "description": "Check if the applied solution solves the target problem.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "savedCase: case"
+      ],
+      "outputParameters": [
+        "candidate: solution"
+      ],
+      "given": "savedCase != null",
+      "makes": "candidate != null",
+      "means": [
+        {
+          "mechanismReference": "ApplySolutionMechanism",
+          "actualArguments": [
+            "targetProblem",
+            "savedCase",
+            "candidate"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EvaluateCaseSolution",
+      "description": "Transfer the solution of a retrieved case to the target problem.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "candidate: solution"
+      ],
+      "outputParameters": [
+        "valid: boolean"
+      ],
+      "given": "candidate != null",
+      "makes": "valid == solved(targetProblem, candidate)",
+      "means": [
+        {
+          "mechanismReference": "EvaluateSolutionMechanism",
+          "actualArguments": [
+            "targetProblem",
+            "candidate",
+            "valid"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RecordNewCase",
+      "description": "Record the new (problem, solution) case in memory for future reference.",
+      "inputParameters": [
+        "targetProblem: problem",
+        "solution: solution",
+        "caseMemory: memoryStore"
+      ],
+      "outputParameters": [
+        "updatedMemory: memoryStore"
+      ],
+      "given": "solved(targetProblem, solution)",
+      "makes": "contains(updatedMemory, targetProblem, solution)",
+      "means": [
+        {
+          "mechanismReference": "StoreCaseMechanism",
+          "actualArguments": [
+            "targetProblem",
+            "solution",
+            "caseMemory",
+            "updatedMemory"
+          ]
+        }
+      ]
+    }
+  ]
+}

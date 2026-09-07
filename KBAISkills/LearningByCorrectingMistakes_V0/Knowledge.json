@@ -1,0 +1,136 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "decision"
+    },
+    {
+      "name": "explanation",
+      "properties": [
+        {
+          "name": "explainsDecision",
+          "type": "decision"
+        }
+      ]
+    },
+    {
+      "name": "mistake",
+      "properties": [
+        {
+          "name": "faultyExplanation",
+          "type": "explanation"
+        }
+      ]
+    },
+    {
+      "name": "configuration",
+      "properties": [
+        {
+          "name": "observedDecision",
+          "type": "decision"
+        },
+        {
+          "name": "correctedExplanation",
+          "type": "explanation"
+        }
+      ]
+    },
+    {
+      "name": "knowledgeBase",
+      "properties": [
+        {
+          "name": "explanations",
+          "type": "array of explanation"
+        }
+      ]
+    }
+  ],
+  "Instances": [
+    {
+      "concept": "decision",
+      "name": "laneChange"
+    },
+    {
+      "concept": "decision",
+      "name": "cupIdentification"
+    },
+    {
+      "concept": "explanation",
+      "name": "laneChangeExplanation",
+      "values": {
+        "explainsDecision": "laneChange"
+      }
+    },
+    {
+      "concept": "explanation",
+      "name": "cupIdentificationExplanation",
+      "values": {
+        "explainsDecision": "cupIdentification"
+      }
+    },
+    {
+      "concept": "mistake",
+      "name": "laneChangeMistake",
+      "values": {
+        "faultyExplanation": "laneChangeExplanation"
+      }
+    },
+    {
+      "concept": "mistake",
+      "name": "cupIdentificationMistake",
+      "values": {
+        "faultyExplanation": "cupIdentificationExplanation"
+      }
+    },
+    {
+      "concept": "configuration",
+      "name": "initialConfiguration",
+      "values": {
+        "observedDecision": "laneChange",
+        "correctedExplanation": null
+      }
+    },
+    {
+      "concept": "configuration",
+      "name": "finalConfiguration",
+      "values": {
+        "observedDecision": "laneChange",
+        "correctedExplanation": "correctedLaneChangeExplanation"
+      }
+    },
+    {
+      "concept": "knowledgeBase",
+      "name": "reasoningKnowledgeBase",
+      "values": {
+        "explanations": [
+          "laneChangeExplanation",
+          "cupIdentificationExplanation"
+        ]
+      }
+    }
+  ],
+  "Relations": [
+    {
+      "name": "explains",
+      "domain": "explanation",
+      "range": "decision"
+    },
+    {
+      "name": "isolatesMistake",
+      "domain": "explanation",
+      "range": "mistake"
+    },
+    {
+      "name": "corrects",
+      "domain": "explanation",
+      "range": "explanation"
+    }
+  ],
+  "Assertions": [
+    {
+      "name": "goodCorrection",
+      "description": "Evaluates if a configuration has a good correction and, possibly, doesn't lead to new errors",
+      "equivalentTo": "corrects(correctedExplanation, faultyExplanation) && avoidsMistake(correctedExplanation)"
+    }
+  ]
+}

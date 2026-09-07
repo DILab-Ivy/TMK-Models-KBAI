@@ -1,0 +1,100 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "GenerateAndTest",
+      "description": "Generates potential solutions to a problem and tests them for their effectiveness in addressing the problem",
+      "inputParameters": [
+        "initialState",
+        "goalState",
+        "constraints"
+      ],
+      "outputParameters": [
+        "solutionPath",
+        "failure"
+      ],
+      "given": "Initial state and goal state are defined; problem constraints are specified; generator and tester components are available",
+      "makes": "A valid path from initial state to goal state is found that satisfies all constraints, or failure is reported if no solution exists",
+      "means": [
+        {
+          "mechanismReference": "DumbGenerateAndTest",
+          "actualArguments": [
+            "initialState",
+            "goalState",
+            "constraints"
+          ]
+        },
+        {
+          "mechanismReference": "SmartGenerateAndTest",
+          "actualArguments": [
+            "initialState",
+            "goalState",
+            "constraints"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SolveGuardsAndPrisonersProblem",
+      "description": "Find a valid sequence of boat trips to transport all guards and prisoners across the river without ever having more prisoners than guards on either bank",
+      "inputParameters": [
+        "initialState",
+        "goalState"
+      ],
+      "outputParameters": [
+        "solutionPath"
+      ],
+      "given": "Initial state has all guards and prisoners on left bank; boat capacity is 2; prisoners cannot outnumber guards on either bank",
+      "makes": "All guards and prisoners are on right bank; no constraints violated during solution",
+      "means": [
+        {
+          "mechanismReference": "DumbGenerateAndTest",
+          "actualArguments": [
+            "initialState",
+            "goalState",
+            "constraints"
+          ]
+        },
+        {
+          "mechanismReference": "SmartGenerateAndTest",
+          "actualArguments": [
+            "initialState",
+            "goalState",
+            "constraints"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SolveRavensProgressiveMatrices",
+      "description": "Determine the missing figure in a Raven's Progressive Matrix by identifying and applying transformations",
+      "inputParameters": [
+        "figuresABC",
+        "choices"
+      ],
+      "outputParameters": [
+        "selectedAnswer"
+      ],
+      "given": "Semantic network representation of figures; transformation patterns exist between A→B",
+      "makes": "Selected answer matches transformation pattern with highest confidence",
+      "means": [
+        {
+          "mechanismReference": "DumbGenerateAndTest",
+          "actualArguments": [
+            "figuresABC",
+            "choices",
+            "transformationConstraints"
+          ]
+        },
+        {
+          "mechanismReference": "SmartGenerateAndTest",
+          "actualArguments": [
+            "figuresABC",
+            "choices",
+            "transformationConstraints"
+          ]
+        }
+      ]
+    }
+  ]
+}

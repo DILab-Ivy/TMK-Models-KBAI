@@ -1,0 +1,197 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "Resolution Theorem Proving Mechanism",
+      "description": "A mechanism to prove logical statements by refutation through resolution. Follows an FSM to convert, negate, resolve, and check for contradiction.",
+      "inputParameters": [
+        "kb: list<logical_sentence>",
+        "goal: logical_sentence"
+      ],
+      "outputParameters": [
+        "proofResult: boolean"
+      ],
+      "organizer": {
+        "startState": "S0_Start",
+        "successState": "S4_Success",
+        "failureState": "S_Fail",
+        "states": [
+          {
+            "name": "S0_Start",
+            "goalInvocation": {
+              "goalReference": "Convert to CNF",
+              "type": "operation",
+              "actualArguments": [
+                "kb"
+              ]
+            }
+          },
+          {
+            "name": "S1_KB_Converted",
+            "goalInvocation": {
+              "goalReference": "Negate Goal",
+              "type": "operation",
+              "actualArguments": [
+                "goal"
+              ]
+            }
+          },
+          {
+            "name": "S2_Resolution_Input_Ready",
+            "goalInvocation": {
+              "goalReference": "Apply Resolution",
+              "type": "operation",
+              "actualArguments": [
+                "S0.output.cnf_kb",
+                "S1.output.negated_goal"
+              ]
+            }
+          },
+          {
+            "name": "S3_Resolution_Applied",
+            "goalInvocation": {
+              "goalReference": "Check Contradiction",
+              "type": "operation",
+              "actualArguments": [
+                "S2.output.result_clauses"
+              ]
+            }
+          },
+          {
+            "name": "S4_Success",
+            "goalInvocation": {
+              "goalReference": "SuccessGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "S_Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "S0_Start",
+            "targetState": "S1_KB_Converted",
+            "dataCondition": "Input converted to CNF"
+          },
+          {
+            "sourceState": "S0_Start",
+            "targetState": "S_Fail",
+            "dataCondition": "Input NOT converted to CNF"
+          },
+          {
+            "sourceState": "S1_KB_Converted",
+            "targetState": "S2_Resolution_Input_Ready",
+            "dataCondition": "Goal negated"
+          },
+          {
+            "sourceState": "S1_KB_Converted",
+            "targetState": "S_Fail",
+            "dataCondition": "Goal NOT negated"
+          },
+          {
+            "sourceState": "S2_Resolution_Input_Ready",
+            "targetState": "S3_Resolution_Applied",
+            "dataCondition": "Resolution step successful"
+          },
+          {
+            "sourceState": "S2_Resolution_Input_Ready",
+            "targetState": "S_Fail",
+            "dataCondition": "Resolution step NOT successful"
+          },
+          {
+            "sourceState": "S3_Resolution_Applied",
+            "targetState": "S4_Success",
+            "dataCondition": "S3.output.contradiction_found"
+          },
+          {
+            "sourceState": "S3_Resolution_Applied",
+            "targetState": "S_Fail",
+            "dataCondition": "NOT S3.output.contradiction_found"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Convert to CNF",
+      "description": "Operation to convert logical sentences into conjunctive normal form (CNF).",
+      "inputParameters": [
+        "sentences: list<logical_sentence>"
+      ],
+      "outputParameters": [
+        "cnf_kb: list<clause>"
+      ],
+      "requires": "is_valid(sentences)",
+      "provides": "is_in_cnf(cnf_kb) && equivalent(sentences, cnf_kb)"
+    },
+    {
+      "name": "Negate Goal",
+      "description": "Operation to negate the goal statement for proof by refutation.",
+      "inputParameters": [
+        "goal: logical_sentence"
+      ],
+      "outputParameters": [
+        "negated_goal: logical_sentence"
+      ],
+      "requires": "is_valid(goal)",
+      "provides": "is_negation_of(negated_goal, goal)"
+    },
+    {
+      "name": "Apply Resolution",
+      "description": "Operation to repeatedly apply the resolution rule to a set of CNF clauses.",
+      "inputParameters": [
+        "cnf_kb: list<clause>",
+        "negated_goal: logical_sentence"
+      ],
+      "outputParameters": [
+        "result_clauses: list<clause>"
+      ],
+      "requires": "is_in_cnf(cnf_kb) && is_in_cnf(negated_goal)",
+      "provides": "are_resolvents_of(result_clauses, cnf_kb + negated_goal)"
+    },
+    {
+      "name": "Check Contradiction",
+      "description": "Operation to check if the empty clause is present in a list of clauses.",
+      "inputParameters": [
+        "clauses: list<clause>"
+      ],
+      "outputParameters": [
+        "contradiction_found: boolean"
+      ],
+      "requires": "is_list(clauses)",
+      "provides": "contradiction_found == contains_empty_clause(clauses)"
+    },
+    {
+      "name": "Modus Ponens Mechanism",
+      "description": "Operation to apply the Modus Ponens rule of inference.",
+      "inputParameters": [
+        "rule: logical_sentence",
+        "antecedent: logical_sentence"
+      ],
+      "outputParameters": [
+        "consequent: logical_sentence"
+      ],
+      "requires": "is_implication(rule) && matches_antecedent(rule, antecedent)",
+      "provides": "is_consequent_of(consequent, rule)"
+    },
+    {
+      "name": "Modus Tollens Mechanism",
+      "description": "Operation to apply the Modus Tollens rule of inference.",
+      "inputParameters": [
+        "rule: logical_sentence",
+        "negatedConsequent: logical_sentence"
+      ],
+      "outputParameters": [
+        "negatedAntecedent: logical_sentence"
+      ],
+      "requires": "is_implication(rule) && matches_negated_consequent(rule, negatedConsequent)",
+      "provides": "is_negated_antecedent_of(negatedAntecedent, rule)"
+    }
+  ]
+}

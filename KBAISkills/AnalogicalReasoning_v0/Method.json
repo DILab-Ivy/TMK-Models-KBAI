@@ -1,0 +1,538 @@
+{
+    "model": "Method",
+    "methods": [
+        {
+            "name": "AnalogicalReasoningMechanism",
+            "description": "Five-phase FSM: retrieve → map → transfer → evaluate → store.",
+            "inputParameters": [
+                "targetProblem: problem",
+                "caseMem: memoryStore"
+            ],
+            "outputParameters": [
+                "solution: solution",
+                "updatedMem: memoryStore"
+            ],
+            "requires": "isWellFormed(targetProblem) && size(caseMem.cases) > 0",
+            "provides": "solved(targetProblem, solution) && contains(updatedMem, targetProblem, solution)",
+            "organizer": {
+                "startState": "AR_Retrieve",
+                "successState": "AR_ValidateFinal",
+                "failureState": "AR_Fail",
+                "states": [
+                    {
+                        "name": "AR_Retrieve",
+                        "goalInvocation": {
+                            "goalReference": "RetrieveSourceCase",
+                            "type": "task",
+                            "actualArguments": [
+                                "targetProblem",
+                                "caseMem",
+                                "AR_src"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "AR_Map",
+                        "goalInvocation": {
+                            "goalReference": "MapStructures",
+                            "type": "task",
+                            "actualArguments": [
+                                "targetProblem",
+                                "AR_src",
+                                "AR_ok"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "AR_Transfer",
+                        "goalInvocation": {
+                            "goalReference": "TransferKnowledge",
+                            "type": "task",
+                            "actualArguments": [
+                                "targetProblem",
+                                "AR_src",
+                                "AR_cand"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "AR_Evaluate",
+                        "goalInvocation": {
+                            "goalReference": "EvaluateCandidateSolution",
+                            "type": "task",
+                            "actualArguments": [
+                                "targetProblem",
+                                "AR_cand",
+                                "AR_acc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "AR_Store",
+                        "goalInvocation": {
+                            "goalReference": "StoreNewCase",
+                            "type": "task",
+                            "actualArguments": [
+                                "targetProblem",
+                                "AR_cand",
+                                "caseMem",
+                                "AR_memOut"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "AR_ValidateFinal",
+                        "goalInvocation": {
+                            "goalReference": "ProblemSolvedStored",
+                            "type": "task",
+                            "actualArguments": [
+                                "targetProblem",
+                                "AR_cand",
+                                "AR_memOut",
+                                "updatedMem"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "AR_Fail",
+                        "goalInvocation": {
+                            "goalReference": "FailureGoal",
+                            "type": "task",
+                            "actualArguments": []
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "sourceState": "AR_Retrieve",
+                        "targetState": "AR_Map",
+                        "dataCondition": "AR_src != null"
+                    },
+                    {
+                        "sourceState": "AR_Retrieve",
+                        "targetState": "AR_Fail",
+                        "dataCondition": "AR_src == null"
+                    },
+                    {
+                        "sourceState": "AR_Map",
+                        "targetState": "AR_Transfer",
+                        "dataCondition": "AR_ok"
+                    },
+                    {
+                        "sourceState": "AR_Map",
+                        "targetState": "AR_Fail",
+                        "dataCondition": "!AR_ok"
+                    },
+                    {
+                        "sourceState": "AR_Transfer",
+                        "targetState": "AR_Evaluate",
+                        "dataCondition": "AR_cand != null"
+                    },
+                    {
+                        "sourceState": "AR_Transfer",
+                        "targetState": "AR_Fail",
+                        "dataCondition": "AR_cand == null"
+                    },
+                    {
+                        "sourceState": "AR_Evaluate",
+                        "targetState": "AR_Store",
+                        "dataCondition": "AR_acc"
+                    },
+                    {
+                        "sourceState": "AR_Evaluate",
+                        "targetState": "AR_Fail",
+                        "dataCondition": "!AR_acc"
+                    },
+                    {
+                        "sourceState": "AR_Store",
+                        "targetState": "AR_ValidateFinal",
+                        "dataCondition": "contains(AR_memOut, targetProblem, AR_cand)"
+                    },
+                    {
+                        "sourceState": "AR_Store",
+                        "targetState": "AR_Fail",
+                        "dataCondition": "!contains(AR_memOut, targetProblem, AR_cand)"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "RetrieveSourceCaseMechanism",
+            "description": "Find a source case in memory similar to the target.",
+            "inputParameters": [
+                "tp: problem",
+                "m: memoryStore"
+            ],
+            "outputParameters": [
+                "src: case"
+            ],
+            "organizer": {
+                "startState": "RSC_Search",
+                "successState": "RSC_Validate",
+                "failureState": "RSC_Fail",
+                "states": [
+                    {
+                        "name": "RSC_Search",
+                        "goalInvocation": {
+                            "goalReference": "SearchMemory",
+                            "type": "operation",
+                            "actualArguments": [
+                                "tp",
+                                "m",
+                                "tmpSrc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "RSC_Validate",
+                        "goalInvocation": {
+                            "goalReference": "SourceCaseRetrieved",
+                            "type": "task",
+                            "actualArguments": [
+                                "tmpSrc",
+                                "m",
+                                "src"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "RSC_Fail",
+                        "goalInvocation": {
+                            "goalReference": "FailureGoal",
+                            "type": "task",
+                            "actualArguments": []
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "sourceState": "RSC_Search",
+                        "targetState": "RSC_Validate",
+                        "dataCondition": "tmpSrc != null"
+                    },
+                    {
+                        "sourceState": "RSC_Search",
+                        "targetState": "RSC_Fail",
+                        "dataCondition": "tmpSrc == null"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "MapStructuresMechanism",
+            "description": "Validate structural mapping between target & source.",
+            "inputParameters": [
+                "tp: problem",
+                "sc: case"
+            ],
+            "outputParameters": [
+                "ok: BOOLEAN"
+            ],
+            "organizer": {
+                "startState": "MS_Check",
+                "successState": "MS_Validate",
+                "failureState": "MS_Fail",
+                "states": [
+                    {
+                        "name": "MS_Check",
+                        "goalInvocation": {
+                            "goalReference": "ValidateMapping",
+                            "type": "operation",
+                            "actualArguments": [
+                                "tp",
+                                "sc",
+                                "tmpOK"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "MS_Validate",
+                        "goalInvocation": {
+                            "goalReference": "MappingIsValid",
+                            "type": "task",
+                            "actualArguments": [
+                                "tmpOK",
+                                "ok"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "MS_Fail",
+                        "goalInvocation": {
+                            "goalReference": "FailureGoal",
+                            "type": "task",
+                            "actualArguments": []
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "sourceState": "MS_Check",
+                        "targetState": "MS_Validate",
+                        "dataCondition": "tmpOK"
+                    },
+                    {
+                        "sourceState": "MS_Check",
+                        "targetState": "MS_Fail",
+                        "dataCondition": "!tmpOK"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "TransferKnowledgeMechanism",
+            "description": "Create candidate solution by knowledge transfer.",
+            "inputParameters": [
+                "tp: problem",
+                "sc: case"
+            ],
+            "outputParameters": [
+                "cand: solution"
+            ],
+            "organizer": {
+                "startState": "TK_Create",
+                "successState": "TK_Validate",
+                "failureState": "TK_Fail",
+                "states": [
+                    {
+                        "name": "TK_Create",
+                        "goalInvocation": {
+                            "goalReference": "GenerateCandidateSolution",
+                            "type": "operation",
+                            "actualArguments": [
+                                "tp",
+                                "sc",
+                                "tmpCand"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "TK_Validate",
+                        "goalInvocation": {
+                            "goalReference": "CandidateSolutionGenerated",
+                            "type": "task",
+                            "actualArguments": [
+                                "tmpCand",
+                                "cand"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "TK_Fail",
+                        "goalInvocation": {
+                            "goalReference": "FailureGoal",
+                            "type": "task",
+                            "actualArguments": []
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "sourceState": "TK_Create",
+                        "targetState": "TK_Validate",
+                        "dataCondition": "tmpCand != null"
+                    },
+                    {
+                        "sourceState": "TK_Create",
+                        "targetState": "TK_Fail",
+                        "dataCondition": "tmpCand == null"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "EvaluateCandidateSolutionMechanism",
+            "description": "Check whether candidate solution really solves target.",
+            "inputParameters": [
+                "tp: problem",
+                "cand: solution"
+            ],
+            "outputParameters": [
+                "acc: BOOLEAN"
+            ],
+            "organizer": {
+                "startState": "EC_Test",
+                "successState": "EC_Validate",
+                "failureState": "EC_Fail",
+                "states": [
+                    {
+                        "name": "EC_Test",
+                        "goalInvocation": {
+                            "goalReference": "TestCandidateSolution",
+                            "type": "operation",
+                            "actualArguments": [
+                                "tp",
+                                "cand",
+                                "tmpAcc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "EC_Validate",
+                        "goalInvocation": {
+                            "goalReference": "SolutionVerified",
+                            "type": "task",
+                            "actualArguments": [
+                                "tp",
+                                "cand",
+                                "tmpAcc",
+                                "acc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "EC_Fail",
+                        "goalInvocation": {
+                            "goalReference": "FailureGoal",
+                            "type": "task",
+                            "actualArguments": []
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "sourceState": "EC_Test",
+                        "targetState": "EC_Validate",
+                        "dataCondition": "tmpAcc"
+                    },
+                    {
+                        "sourceState": "EC_Test",
+                        "targetState": "EC_Fail",
+                        "dataCondition": "!tmpAcc"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "StoreNewCaseMechanism",
+            "description": "Insert new (problem,solution) case into memory.",
+            "inputParameters": [
+                "tp: problem",
+                "sol: solution",
+                "m: memoryStore"
+            ],
+            "outputParameters": [
+                "mOut: memoryStore"
+            ],
+            "organizer": {
+                "startState": "SN_Add",
+                "successState": "SN_Validate",
+                "failureState": "SN_Fail",
+                "states": [
+                    {
+                        "name": "SN_Add",
+                        "goalInvocation": {
+                            "goalReference": "AddCaseToMemory",
+                            "type": "operation",
+                            "actualArguments": [
+                                "tp",
+                                "sol",
+                                "m",
+                                "tmpMem"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "SN_Validate",
+                        "goalInvocation": {
+                            "goalReference": "CaseStored",
+                            "type": "task",
+                            "actualArguments": [
+                                "tp",
+                                "sol",
+                                "tmpMem",
+                                "mOut"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "SN_Fail",
+                        "goalInvocation": {
+                            "goalReference": "FailureGoal",
+                            "type": "task",
+                            "actualArguments": []
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "sourceState": "SN_Add",
+                        "targetState": "SN_Validate",
+                        "dataCondition": "contains(tmpMem, tp, sol)"
+                    },
+                    {
+                        "sourceState": "SN_Add",
+                        "targetState": "SN_Fail",
+                        "dataCondition": "!contains(tmpMem, tp, sol)"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "SearchMemory",
+            "description": "Heuristic search for best source case.",
+            "inputParameters": [
+                "tp: problem",
+                "m: memoryStore"
+            ],
+            "outputParameters": [
+                "src: case"
+            ],
+            "requires": "size(m.cases) > 0",
+            "provides": "src != null"
+        },
+        {
+            "name": "ValidateMapping",
+            "description": "Compute structural match score.",
+            "inputParameters": [
+                "tp: problem",
+                "sc: case"
+            ],
+            "outputParameters": [
+                "ok: BOOLEAN"
+            ],
+            "requires": "true",
+            "provides": "ok"
+        },
+        {
+            "name": "GenerateCandidateSolution",
+            "description": "Instantiate candidate solution from mapping transfer.",
+            "inputParameters": [
+                "tp: problem",
+                "sc: case"
+            ],
+            "outputParameters": [
+                "cand: solution"
+            ],
+            "requires": "true",
+            "provides": "cand != null"
+        },
+        {
+            "name": "TestCandidateSolution",
+            "description": "Run simulation / analytic check on candidate.",
+            "inputParameters": [
+                "tp: problem",
+                "cand: solution"
+            ],
+            "outputParameters": [
+                "acc: BOOLEAN"
+            ],
+            "requires": "cand != null",
+            "provides": "acc == solved(tp, cand)"
+        },
+        {
+            "name": "AddCaseToMemory",
+            "description": "Insert new case into memory store.",
+            "inputParameters": [
+                "tp: problem",
+                "sol: solution",
+                "m: memoryStore"
+            ],
+            "outputParameters": [
+                "mOut: memoryStore"
+            ],
+            "requires": "solved(tp, sol)",
+            "provides": "contains(mOut, tp, sol)"
+        }
+    ]
+}

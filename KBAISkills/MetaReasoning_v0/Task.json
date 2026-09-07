@@ -1,0 +1,98 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "MetaReasoning",
+      "description": "Solve a reasoning or learning problem using meta-reasoning processes.",
+      "inputParameters": ["Problem: Problem"],
+      "outputParameters": ["Resolution"],
+      "given": "Problem != null",
+      "makes": "Resolution != null",
+      "means": [
+        {
+          "mechanismReference": "MetaReasoningSolution",
+          "actualArguments": ["Problem", "Resolution"]
+        }
+      ]
+    },
+    {
+      "name": "ClassifyIssue",
+      "description": "Classify a detected issue into {'Error','Gap'}.",
+      "inputParameters": ["Issue: issue"],
+      "outputParameters": ["IssueType: type"],
+      "given": "Issue != null",
+      "makes": "IssueType in {'Error','Gap'}",
+      "means": [
+        {
+          "mechanismReference": "ClassifyIssueSolution",
+          "actualArguments": ["Issue", "IssueType"]
+        }
+      ]
+    },
+    {
+      "name": "SpawnMetaGoal",
+      "description": "Create a meta-level goal based on the classified issue type.",
+      "inputParameters": ["IssueType: type"],
+      "outputParameters": ["MetaGoal: goal"],
+      "given": "IssueType in {'Error','Gap'}",
+      "makes": "MetaGoal != null",
+      "means": [
+        {
+          "mechanismReference": "SpawnMetaGoalSolution",
+          "actualArguments": ["IssueType", "MetaGoal"]
+        }
+      ]
+    },
+    {
+      "name": "SelectStrategy",
+      "description": "Select the most appropriate reasoning strategy to achieve the meta-goal.",
+      "inputParameters": ["MetaGoal: goal"],
+      "outputParameters": ["ChosenStrategy: strategy"],
+      "given": "MetaGoal != null",
+      "makes": "ChosenStrategy != null",
+      "means": [
+        {
+          "mechanismReference": "SelectStrategySolution",
+          "actualArguments": ["MetaGoal", "ChosenStrategy"]
+        }
+      ]
+    },
+    {
+      "name": "IntegrateStrategies",
+      "description": "Apply the selected strategy; if progress stalls, integrate or switch strategies to satisfy the meta-goal.",
+      "inputParameters": ["ChosenStrategy: strategy", "MetaGoal: goal"],
+      "outputParameters": ["Resolution: result"],
+      "given": "ChosenStrategy != null && MetaGoal != null",
+      "makes": "Resolution != null",
+      "means": [
+        {
+          "mechanismReference": "IntegrateStrategiesSolution",
+          "actualArguments": ["ChosenStrategy", "MetaGoal", "Resolution"]
+        }
+      ]
+    },
+    {
+      "name": "DetectIssue",
+      "description": "Detect an issue (error or gap) in a reasoning or learning problem.",
+      "inputParameters": ["Problem: Problem"],
+      "outputParameters": ["Issue: issue"],
+      "given": "Problem != null",
+      "makes": "Issue != null",
+      "means": [
+        {
+          "mechanismReference": "DetectIssueSolution",
+          "actualArguments": ["Problem", "Issue"]
+        }
+      ]
+    },
+    {
+      "name": "FailureGoal",
+      "description": "Represents a failure state in the task execution.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "false",
+      "means": []
+    }
+  ]
+}

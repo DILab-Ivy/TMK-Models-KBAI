@@ -1,0 +1,243 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "percept"
+    },
+    {
+      "name": "animal",
+      "properties": [
+        {
+          "name": "hasPercepts",
+          "type": "[percept]"
+        }
+      ]
+    },
+    {
+      "name": "configuration",
+      "properties": [
+        {
+          "name": "observedAnimals",
+          "type": "[animal]"
+        },
+        {
+          "name": "classification",
+          "type": "[animal]"
+        }
+      ]
+    },
+    {
+      "name": "knowledgeBase",
+      "properties": [
+        {
+          "name": "animals",
+          "type": "[animal]"
+        }
+      ]
+    }
+  ],
+  "Instances": [
+    {
+      "concept": "percept",
+      "name": "laysEggs"
+    },
+    {
+      "concept": "percept",
+      "name": "hasWings"
+    },
+    {
+      "concept": "percept",
+      "name": "hasFeathers"
+    },
+    {
+      "concept": "percept",
+      "name": "hasBeak"
+    },
+    {
+      "concept": "percept",
+      "name": "flies"
+    },
+    {
+      "concept": "percept",
+      "name": "hasTalons"
+    },
+    {
+      "concept": "animal",
+      "name": "sugarGlider",
+      "values": {
+        "hasPercepts": [
+          "flies"
+        ]
+      }
+    },
+    {
+      "concept": "animal",
+      "name": "bat",
+      "values": {
+        "hasPercepts": [
+          "hasWings",
+          "flies"
+        ]
+      }
+    },
+    {
+      "concept": "animal",
+      "name": "platypus",
+      "values": {
+        "hasPercepts": [
+          "laysEggs",
+          "hasBeak"
+        ]
+      }
+    },
+    {
+      "concept": "animal",
+      "name": "bluebird",
+      "values": {
+        "hasPercepts": [
+          "laysEggs",
+          "hasWings",
+          "hasFeathers",
+          "hasBeak",
+          "hasTalons",
+          "flies"
+        ]
+      }
+    },
+    {
+      "concept": "animal",
+      "name": "eagle",
+      "values": {
+        "hasPercepts": [
+          "laysEggs",
+          "hasWings",
+          "hasFeathers",
+          "hasBeak",
+          "hasTalons",
+          "flies"
+        ]
+      }
+    },
+    {
+      "concept": "animal",
+      "name": "duck",
+      "values": {
+        "hasPercepts": [
+          "laysEggs",
+          "hasWings",
+          "hasFeathers",
+          "hasBeak",
+          "flies"
+        ]
+      }
+    },
+    {
+      "concept": "animal",
+      "name": "penguin",
+      "values": {
+        "hasPercepts": [
+          "laysEggs",
+          "hasWings",
+          "hasFeathers",
+          "hasBeak"
+        ]
+      }
+    },
+    {
+      "concept": "animal",
+      "name": "ostrich",
+      "values": {
+        "hasPercepts": [
+          "laysEggs",
+          "hasWings",
+          "hasFeathers",
+          "hasBeak"
+        ]
+      }
+    },
+    {
+      "concept": "configuration",
+      "name": "initialConfiguration",
+      "values": {
+        "observedAnimals": [
+          "sugarGlider",
+          "bat",
+          "platypus",
+          "bluebird",
+          "eagle",
+          "duck",
+          "penguin",
+          "ostrich"
+        ],
+        "classification": []
+      }
+    },
+    {
+      "concept": "configuration",
+      "name": "finalConfiguration",
+      "values": {
+        "observedAnimals": [
+          "sugarGlider",
+          "bat",
+          "platypus",
+          "bluebird",
+          "eagle",
+          "duck",
+          "penguin",
+          "ostrich"
+        ],
+        "classification": [
+          "bluebird",
+          "eagle",
+          "duck",
+          "penguin",
+          "ostrich"
+        ]
+      }
+    },
+    {
+      "concept": "knowledgeBase",
+      "name": "animalKnowledgeBase",
+      "values": {
+        "animals": [
+          "sugarGlider",
+          "bat",
+          "platypus",
+          "bluebird",
+          "eagle",
+          "duck",
+          "penguin",
+          "ostrich"
+        ]
+      }
+    }
+  ],
+  "Relations": [
+    {
+      "name": "hasPercept",
+      "domain": "animal",
+      "range": "[percept]"
+    },
+    {
+      "name": "isClassifiedAsBird",
+      "domain": "animal",
+      "range": "BOOLEAN"
+    },
+    {
+      "name": "meetsCriteria",
+      "domain": "[animal]",
+      "range": "BOOLEAN"
+    }
+  ],
+  "Assertions": [
+    {
+      "name": "goodClassification",
+      "description": "Evaluates if a configuration has a good classification based on bird criteria.",
+      "equivalentTo": "meetsCriteria(classification)"
+    },
+    {
+      "name": "Abbreviations",
+      "description": "Abbreviations for FSM states: IP (IdentifyPercepts), MA (MatchAnimalsToCriteria), CB (CheckBirdCriteria)."
+    }
+  ]
+}

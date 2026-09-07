@@ -1,0 +1,80 @@
+{
+  "model" : "Knowledge",
+  "concepts": [
+    { "name": "passenger" },
+    { "name": "guard", "superConcept": ["passenger"] },
+    { "name": "prisoner", "superConcept": ["passenger"] },
+    { "name": "bank" },
+    { "name": "boat", "properties": [
+      { "name": "position", "type": "bank" },
+      { "name": "occupancy", "type": "INTEGER" }
+    ] },
+    { "name": "pair", "properties": [
+      { "name": "guardCount", "type": "INTEGER" },
+      { "name": "prisonerCount", "type": "INTEGER" }
+    ] },
+    { "name": "configuration", "properties": [
+      { "name": "leftBank", "type": "pair" },
+      { "name": "rightBank", "type": "pair" }
+    ] }
+  ],
+  "Instances": [
+    { "concept": "guard", "name": "guard1" },
+    { "concept": "guard", "name": "guard2" },
+    { "concept": "guard", "name": "guard3" },
+    { "concept": "prisoner", "name": "prisoner1" },
+    { "concept": "prisoner", "name": "prisoner2" },
+    { "concept": "prisoner", "name": "prisoner3" },
+    { "concept": "bank", "name": "leftBank" },
+    { "concept": "bank", "name": "rightBank" },
+    { "concept": "boat", "name": "boat1", "values": { "position": "rightBank", "occupancy": 0 } },
+    { "concept": "configuration", "name": "initialConfiguration", "values": {
+      "leftBank": { "guardCount": 0, "prisonerCount": 0 },
+      "rightBank": { "guardCount": 3, "prisonerCount": 3 }
+    }},
+    { "concept": "configuration", "name": "finalConfiguration", "values": {
+      "leftBank": { "guardCount": 3, "prisonerCount": 3 },
+      "rightBank": { "guardCount": 0, "prisonerCount": 0 }
+    }}
+  ],
+  "Relations": [
+    { "name": "carries", "domain": "boat", "range": "passenger" }
+  ],
+"Assertions": [
+    {
+      "name": "safe",
+      "description": "Evaluates if a configuration is valid or legal based on guard-to-prisoner rules on both banks.",
+      "equivalentTo": "SafeConfiguration(config)"
+    },
+    {
+      "name": "MGAP",
+      "description": "Abbreviation for MoveGuardAndPrisonerMechanism",
+      "equivalentTo": "MoveGuardAndPrisonerMechanism"
+    },
+    {
+      "name": "RG",
+      "description": "Abbreviation for ReturnGuardMechanism",
+      "equivalentTo": "ReturnGuardMechanism"
+    },
+    {
+      "name": "RP",
+      "description": "Abbreviation for ReturnPrisonerMechanism",
+      "equivalentTo": "ReturnPrisonerMechanism"
+    },
+    {
+      "name": "MTP",
+      "description": "Abbreviation for MoveTwoPrisonersMechanism",
+      "equivalentTo": "MoveTwoPrisonersMechanism"
+    },
+    {
+      "name": "MTG",
+      "description": "Abbreviation for MoveTwoGuardsMechanism",
+      "equivalentTo": "MoveTwoGuardsMechanism"
+    },
+    {
+      "name": "RGAP",
+      "description": "Abbreviation for ReturnGuardAndPrisonerMechanism",
+      "equivalentTo": "ReturnGuardAndPrisonerMechanism"
+    }
+  ]
+}

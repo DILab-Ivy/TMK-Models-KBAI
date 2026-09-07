@@ -1,0 +1,125 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    { "name": "Example", "properties": [
+      { "name": "restaurant", "type": "STRING" },
+      { "name": "meal", "type": "STRING" },
+      { "name": "day", "type": "STRING" },
+      { "name": "cost", "type": "STRING" },
+      { "name": "vegan", "type": "BOOLEAN" },
+      { "name": "reaction", "type": "BOOLEAN" }
+    ]},
+    { "name": "Model" },
+    { "name": "SpecificModels", "description": "models with most specific conditions that satisfy given examples.", "properties": ["list of Model"] },
+    { "name": "GeneralModels", "description": "models with most general conditions that satisfy given examples", "properties": ["list of Model"] },
+    
+    { "name": "Condition", "properties": [
+      { "name": "restaurant", "type": "STRING" },
+      { "name": "meal", "type": "STRING" },
+      { "name": "day", "type": "STRING" },
+      { "name": "cost", "type": "STRING" },
+      { "name": "vegan", "type": "BOOLEAN" }
+    ], "superConcept": ["Model"]}
+  ],
+
+  "instances": [
+    { "concept": "Example", "name": "ex1", "values": { "restaurant": "Kim's", "meal": "Breakfast", "day": "Friday", "cost": "Cheap", "vegan": false } },
+    { "concept": "Example", "name": "ex2", "values": { "restaurant": "Kim's", "meal": "Breakfast", "day": "Friday", "cost": "Cheap", "vegan": false } },
+    { "concept": "Example", "name": "ex3", "values": { "restaurant": "Sam's", "meal": "Lunch", "day": "Saturday", "cost": "Cheap", "vegan": false } },
+    { "concept": "Example", "name": "ex4", "values": { "restaurant": "Kim's", "meal": "Breakfast", "day": "Sunday", "cost": "Cheap", "vegan": true } },
+    { "concept": "Example", "name": "ex5", "values": { "restaurant": "Sam's", "meal": "Breakfast", "day": "Sunday", "cost": "Expensive", "vegan": true } },
+    { "concept": "Example", "name": "ex6", "values": { "restaurant": "Kim's", "meal": "Lunch", "day": "Sunday", "cost": "Cheap", "vegan": false } },
+    { "concept": "Example", "name": "ex7", "values": { "restaurant": "Kim's", "meal": "Lunch", "day": "Monday", "cost": "Expensive", "vegan": false } }
+
+  ],
+
+  "relations": [
+    {
+      "name": "includes",
+      "description": "an example is included by a model if the model satisfies the example",
+      "domain": "Model",
+      "range": "Example"
+    },
+    {
+      "name": "consumes",
+      "description": "general model A is consumed by general model B if B is a generalization of A; specific model A is consumed by specific model B if B is a specification of A ",
+      "domain": "Model",
+      "range": "Model"
+    },
+    {
+      "name": "consistent",
+      "description": "for positive example, a model is consistent with it if it can include it; for negative example, a model is consistent with it if it doesn't include it",
+      "domain": "Model",
+      "range": "Example"
+    }
+  ], 
+
+  "Assertions": [
+    {
+      "name": "modelsMatch",
+      "description": "Indicates that specific models and general models have matching models."
+    },
+    {
+      "name": "modelConverged",
+      "description": "Indicates that the matching specific and general models have converged to a same condition."
+    },
+    {
+      "name": "CurrentExampleValid",
+      "description": "Indicates that the current example is logically valid and is consistent with the concept Example properties."
+    },
+    {
+      "name": "ModelInitialized",
+      "description": "Indicates that both the specific and general models have been initialized."
+    },
+    {
+      "name": "SpecificModelGeneralized",
+      "description": "Indicates that generalization has been applied to the specific models to include positive example."
+    },
+    {
+      "name": "SpecificModelGeneralized",
+      "description": "Indicates that specialization has been applied to the general models to exclude negative example."
+    },
+    {
+      "name": "InconsistenciesRemoved",
+      "description": "Indicates that specific and general models that are not consistent with the current example have been removed."
+    },
+    {
+      "name": "SubsumedModelsRemoved",
+      "description": "Indicates that subsumed (redundant) models have been removed from general and specific models."
+    },
+    {
+      "name": "PE",
+      "description": "Abbreviation for ProcessExampleMechanism",
+      "equivalentTo": "ProcessExampleMechanism"
+    },
+    {
+      "name": "IM",
+      "description": "Abbreviation for InitializeModelMechanism",
+      "equivalentTo": "InitializeModelMechanism"
+    },
+    {
+      "name": "GS",
+      "description": "Abbreviation for GeneralizeSpecificMechanism",
+      "equivalentTo": "GeneralizeSpecificMechanism"
+    },
+    {
+      "name": "SG",
+      "description": "Abbreviation for SpecializeGeneralMechanism",
+      "equivalentTo": "SpecializeGeneralMechanism"
+    },
+    {
+      "name": "PI",
+      "description": "Abbreviation for PruneInconsistentMechanism",
+      "equivalentTo": "PruneInconsistentMechanism"
+    },
+    {
+      "name": "CC",
+      "description": "Abbreviation for CheckConvergenceMechanism",
+      "equivalentTo": "CheckConvergenceMechanism"
+    },
+    {
+      "name": "VS",
+      "description": "Abbreviation for Version Spaces"
+    }
+  ]
+}

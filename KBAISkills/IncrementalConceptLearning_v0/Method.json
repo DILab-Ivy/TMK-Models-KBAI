@@ -1,0 +1,994 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "learn_concept_incrementally",
+      "description": "Learn a concept definition from a sequence of labeled examples using variabilization, generalization, and specialization",
+      "inputParameters": [
+        "example_sequence: example_sequence",
+        "background_knowledge: background_knowledge"
+      ],
+      "outputParameters": [
+        "concept_definition: concept_definition"
+      ],
+      "requires": "examples are labeled as positive or negative",
+      "provides": "concept definition covers all positive examples and excludes all negative examples",
+      "organizer": {
+        "startState": "VariabilizeFirst",
+        "successState": "ConceptDefined",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "VariabilizeFirst",
+            "goalInvocation": {
+              "goalReference": "variabilize_first_example",
+              "type": "task",
+              "actualArguments": [
+                "first_positive_example"
+              ]
+            }
+          },
+          {
+            "name": "CheckLabel",
+            "goalInvocation": {
+              "goalReference": "check_example_label",
+              "type": "task",
+              "actualArguments": [
+                "labeled_example"
+              ]
+            }
+          },
+          {
+            "name": "ProcessPositive",
+            "goalInvocation": {
+              "goalReference": "process_positive_example",
+              "type": "task",
+              "actualArguments": [
+                "positive_example",
+                "current_concept_definition",
+                "background_knowledge"
+              ]
+            }
+          },
+          {
+            "name": "ProcessNegative",
+            "goalInvocation": {
+              "goalReference": "process_negative_example",
+              "type": "task",
+              "actualArguments": [
+                "negative_example",
+                "current_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "CheckMoreExamples",
+            "goalInvocation": {
+              "goalReference": "check_if_more_examples_remain",
+              "type": "task",
+              "actualArguments": [
+                "current_example_index",
+                "total_examples"
+              ]
+            }
+          },
+          {
+            "name": "ConceptDefined",
+            "goalInvocation": {
+              "goalReference": "return_concept_definition",
+              "type": "task",
+              "actualArguments": [
+                "concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "LearningFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "VariabilizeFirst",
+            "targetState": "CheckLabel",
+            "dataCondition": "first_positive_example != null"
+          },
+          {
+            "sourceState": "VariabilizeFirst",
+            "targetState": "Fail",
+            "dataCondition": "first_positive_example == null"
+          },
+          {
+            "sourceState": "CheckLabel",
+            "targetState": "ProcessPositive",
+            "dataCondition": "labeled_example.label == positive"
+          },
+          {
+            "sourceState": "CheckLabel",
+            "targetState": "ProcessNegative",
+            "dataCondition": "labeled_example.label == negative"
+          },
+          {
+            "sourceState": "CheckLabel",
+            "targetState": "Fail",
+            "dataCondition": "labeled_example.label != positive && labeled_example.label != negative"
+          },
+          {
+            "sourceState": "ProcessPositive",
+            "targetState": "CheckMoreExamples",
+            "dataCondition": "current_example_index <= total_examples"
+          },
+          {
+            "sourceState": "ProcessPositive",
+            "targetState": "Fail",
+            "dataCondition": "updated_concept_definition == null"
+          },
+          {
+            "sourceState": "ProcessNegative",
+            "targetState": "CheckMoreExamples",
+            "dataCondition": "current_example_index <= total_examples"
+          },
+          {
+            "sourceState": "ProcessNegative",
+            "targetState": "Fail",
+            "dataCondition": "updated_concept_definition == null"
+          },
+          {
+            "sourceState": "CheckMoreExamples",
+            "targetState": "ConceptDefined",
+            "dataCondition": "current_example_index >= total_examples"
+          },
+          {
+            "sourceState": "CheckMoreExamples",
+            "targetState": "Fail",
+            "dataCondition": "current_example_index == null || total_example == null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "variabilize_first_example",
+      "description": "Convert constants to variables in the first positive example",
+      "inputParameters": [
+        "first_positive_example: first_positive_example"
+      ],
+      "outputParameters": [
+        "initial_concept_definition: initial_concept_definition"
+      ],
+      "requires": "this is the first example with constants",
+      "provides": "initial concept definition with variables",
+      "organizer": {
+        "startState": "ExtractConstants",
+        "successState": "InitialDefinitionCreated",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "ExtractConstants",
+            "goalInvocation": {
+              "goalReference": "extract_constants_from_example",
+              "type": "task",
+              "actualArguments": [
+                "first_positive_example"
+              ]
+            }
+          },
+          {
+            "name": "ReplaceWithVariables",
+            "goalInvocation": {
+              "goalReference": "replace_constants_with_variables",
+              "type": "task",
+              "actualArguments": [
+                "example_constants",
+                "variable_types"
+              ]
+            }
+          },
+          {
+            "name": "InitialDefinitionCreated",
+            "goalInvocation": {
+              "goalReference": "return_initial_concept_definition",
+              "type": "task",
+              "actualArguments": [
+                "initial_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "VariabilizationFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "ExtractConstants",
+            "targetState": "ReplaceWithVariables",
+            "dataCondition": "example_constants != null"
+          },
+          {
+            "sourceState": "ExtractConstants",
+            "targetState": "Fail",
+            "dataCondition": "example_constants == null"
+          },
+          {
+            "sourceState": "ReplaceWithVariables",
+            "targetState": "InitialDefinitionCreated",
+            "dataCondition": "initial_concept_definition != null"
+          },
+          {
+            "sourceState": "ReplaceWithVariables",
+            "targetState": "Fail",
+            "dataCondition": "initial_concept_definition == null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "process_positive_example",
+      "description": "Update concept definition to cover positive example",
+      "inputParameters": [
+        "positive_example: positive_example",
+        "current_concept_definition: current_concept_definition",
+        "background_knowledge: background_knowledge"
+      ],
+      "outputParameters": [
+        "updated_concept_definition: updated_concept_definition"
+      ],
+      "requires": "example is a positive instance",
+      "provides": "concept definition covers this positive example",
+      "organizer": {
+        "startState": "CheckCoverage",
+        "successState": "DefinitionUpdated",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "CheckCoverage",
+            "goalInvocation": {
+              "goalReference": "check_coverage",
+              "type": "task",
+              "actualArguments": [
+                "positive_example",
+                "current_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "DoNothing",
+            "goalInvocation": {
+              "goalReference": "do_nothing",
+              "type": "task",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "TryDropLink",
+            "goalInvocation": {
+              "goalReference": "generalize_using_drop_link",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "positive_example"
+              ]
+            }
+          },
+          {
+            "name": "TryEnlargeSet",
+            "goalInvocation": {
+              "goalReference": "generalize_using_enlarge_set",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "positive_example"
+              ]
+            }
+          },
+          {
+            "name": "TryClimbTree",
+            "goalInvocation": {
+              "goalReference": "generalize_using_climb_tree",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "background_knowledge"
+              ]
+            }
+          },
+          {
+            "name": "DefinitionUpdated",
+            "goalInvocation": {
+              "goalReference": "return_updated_definition",
+              "type": "task",
+              "actualArguments": [
+                "updated_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "GeneralizationFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "CheckCoverage",
+            "targetState": "DoNothing",
+            "dataCondition": "coverage_result == true"
+          },
+          {
+            "sourceState": "CheckCoverage",
+            "targetState": "TryDropLink",
+            "dataCondition": "coverage_result == false"
+          },
+          {
+            "sourceState": "CheckCoverage",
+            "targetState": "Fail",
+            "dataCondition": "coverage_result == null || current_concept_definition == null"
+          },
+          {
+            "sourceState": "TryDropLink",
+            "targetState": "DefinitionUpdated",
+            "dataCondition": "drop_link_applicable == true"
+          },
+          {
+            "sourceState": "TryDropLink",
+            "targetState": "TryEnlargeSet",
+            "dataCondition": "drop_link_applicable == false"
+          },
+          {
+            "sourceState": "TryDropLink",
+            "targetState": "Fail",
+            "dataCondition": "drop_link_applicable == null || current_concept_definition == null"
+          },
+          {
+            "sourceState": "TryEnlargeSet",
+            "targetState": "DefinitionUpdated",
+            "dataCondition": "enlarge_set_applicable == true"
+          },
+          {
+            "sourceState": "TryEnlargeSet",
+            "targetState": "TryClimbTree",
+            "dataCondition": "enlarge_set_applicable == false"
+          },
+          {
+            "sourceState": "TryEnlargeSet",
+            "targetState": "Fail",
+            "dataCondition": "enlarge_set_applicable == null || current_concept_definition == null"
+          },
+          {
+            "sourceState": "TryClimbTree",
+            "targetState": "DefinitionUpdated",
+            "dataCondition": "climb_tree_applicable == true"
+          },
+          {
+            "sourceState": "TryClimbTree",
+            "targetState": "Fail",
+            "dataCondition": "climb_tree_applicable == false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "process_negative_example",
+      "description": "Update concept definition to exclude negative example",
+      "inputParameters": [
+        "negative_example: negative_example",
+        "current_concept_definition: current_concept_definition"
+      ],
+      "outputParameters": [
+        "updated_concept_definition: updated_concept_definition"
+      ],
+      "requires": "example is a negative instance",
+      "provides": "concept definition excludes this negative example",
+      "organizer": {
+        "startState": "CheckCoverage",
+        "successState": "DefinitionUpdated",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "CheckCoverage",
+            "goalInvocation": {
+              "goalReference": "check_coverage",
+              "type": "task",
+              "actualArguments": [
+                "negative_example",
+                "current_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "DoNothing",
+            "goalInvocation": {
+              "goalReference": "do_nothing",
+              "type": "task",
+              "actualArguments": []
+            }
+          },
+          {
+            "name": "TryRequireLink",
+            "goalInvocation": {
+              "goalReference": "specialize_using_require_link",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "negative_example"
+              ]
+            }
+          },
+          {
+            "name": "TryForbidLink",
+            "goalInvocation": {
+              "goalReference": "specialize_using_forbid_link",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "negative_example"
+              ]
+            }
+          },
+          {
+            "name": "DefinitionUpdated",
+            "goalInvocation": {
+              "goalReference": "return_updated_definition",
+              "type": "task",
+              "actualArguments": [
+                "updated_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "SpecializationFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "CheckCoverage",
+            "targetState": "DoNothing",
+            "dataCondition": "coverage_result == false"
+          },
+          {
+            "sourceState": "CheckCoverage",
+            "targetState": "TryRequireLink",
+            "dataCondition": "coverage_result == true"
+          },
+          {
+            "sourceState": "CheckCoverage",
+            "targetState": "Fail",
+            "dataCondition": "coverage_result == null || current_concept_definition == null"
+          },
+          {
+            "sourceState": "TryRequireLink",
+            "targetState": "DefinitionUpdated",
+            "dataCondition": "require_link_applicable == true"
+          },
+          {
+            "sourceState": "TryRequireLink",
+            "targetState": "TryForbidLink",
+            "dataCondition": "require_link_applicable == false"
+          },
+          {
+            "sourceState": "TryRequireLink",
+            "targetState": "Fail",
+            "dataCondition": "require_link_applicable == null || current_concept_definition == null"
+          },
+          {
+            "sourceState": "TryForbidLink",
+            "targetState": "DefinitionUpdated",
+            "dataCondition": "forbid_link_applicable == true"
+          },
+          {
+            "sourceState": "TryForbidLink",
+            "targetState": "Fail",
+            "dataCondition": "forbid_link_applicable == false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "check_coverage",
+      "description": "Determine if current concept definition covers the given example",
+      "inputParameters": [
+        "example: example",
+        "current_concept_definition: current_concept_definition"
+      ],
+      "outputParameters": [
+        "coverage_result: coverage_result"
+      ],
+      "requires": "concept definition exists",
+      "provides": "determination whether example matches definition",
+      "organizer": {
+        "startState": "MatchStructure",
+        "successState": "CoverageChecked",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "MatchStructure",
+            "goalInvocation": {
+              "goalReference": "match_structure_and_constraints",
+              "type": "task",
+              "actualArguments": [
+                "example_structure",
+                "definition_structure"
+              ]
+            }
+          },
+          {
+            "name": "CoverageChecked",
+            "goalInvocation": {
+              "goalReference": "return_coverage_result",
+              "type": "task",
+              "actualArguments": [
+                "coverage_result"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "CoverageCheckFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "MatchStructure",
+            "targetState": "CoverageChecked",
+            "dataCondition": "structure_match_result != null"
+          },
+          {
+            "sourceState": "MatchStructure",
+            "targetState": "Fail",
+            "dataCondition": "structure_match_result == null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "generalize_using_drop_link",
+      "description": "Remove unnecessary link to generalize concept",
+      "inputParameters": [
+        "current_concept_definition: current_concept_definition",
+        "positive_example: positive_example"
+      ],
+      "outputParameters": [
+        "generalized_concept_definition: generalized_concept_definition"
+      ],
+      "requires": "structures overlap except for one extra link in current definition",
+      "provides": "more general definition without the extra link",
+      "organizer": {
+        "startState": "IdentifyExtraLink",
+        "successState": "LinkDropped",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "IdentifyExtraLink",
+            "goalInvocation": {
+              "goalReference": "identify_extra_link",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "positive_example"
+              ]
+            }
+          },
+          {
+            "name": "RemoveLink",
+            "goalInvocation": {
+              "goalReference": "remove_link_from_definition",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "extra_link"
+              ]
+            }
+          },
+          {
+            "name": "LinkDropped",
+            "goalInvocation": {
+              "goalReference": "return_generalized_definition",
+              "type": "task",
+              "actualArguments": [
+                "generalized_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "heuristic_not_applicable",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "IdentifyExtraLink",
+            "targetState": "RemoveLink",
+            "dataCondition": "extra_link_found == true"
+          },
+          {
+            "sourceState": "IdentifyExtraLink",
+            "targetState": "Fail",
+            "dataCondition": "extra_link_found == false"
+          },
+          {
+            "sourceState": "RemoveLink",
+            "targetState": "LinkDropped",
+            "dataCondition": "link_removed_successfully == true"
+          },
+          {
+            "sourceState": "RemoveLink",
+            "targetState": "Fail",
+            "dataCondition": "link_removed_successfully == false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "generalize_using_enlarge_set",
+      "description": "Add new value to set of acceptable values",
+      "inputParameters": [
+        "current_concept_definition: current_concept_definition",
+        "positive_example: positive_example"
+      ],
+      "outputParameters": [
+        "generalized_concept_definition: generalized_concept_definition"
+      ],
+      "requires": "example has different value for same feature",
+      "provides": "definition accepting multiple values (e.g., brick or wedge)",
+      "organizer": {
+        "startState": "IdentifyNewValue",
+        "successState": "SetEnlarged",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "IdentifyNewValue",
+            "goalInvocation": {
+              "goalReference": "identify_new_value",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "positive_example"
+              ]
+            }
+          },
+          {
+            "name": "AddValueToSet",
+            "goalInvocation": {
+              "goalReference": "add_value_to_feature_set",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "new_value"
+              ]
+            }
+          },
+          {
+            "name": "SetEnlarged",
+            "goalInvocation": {
+              "goalReference": "return_generalized_definition",
+              "type": "task",
+              "actualArguments": [
+                "generalized_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "heuristic_not_applicable",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "IdentifyNewValue",
+            "targetState": "AddValueToSet",
+            "dataCondition": "new_value_found == true"
+          },
+          {
+            "sourceState": "IdentifyNewValue",
+            "targetState": "Fail",
+            "dataCondition": "new_value_found == false"
+          },
+          {
+            "sourceState": "AddValueToSet",
+            "targetState": "SetEnlarged",
+            "dataCondition": "value_added_successfully == true"
+          },
+          {
+            "sourceState": "AddValueToSet",
+            "targetState": "Fail",
+            "dataCondition": "value_added_successfully == false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "generalize_using_climb_tree",
+      "description": "Generalize using background knowledge hierarchy",
+      "inputParameters": [
+        "current_concept_definition: current_concept_definition",
+        "background_knowledge: background_knowledge"
+      ],
+      "outputParameters": [
+        "generalized_concept_definition: generalized_concept_definition"
+      ],
+      "requires": "background knowledge contains superclass for multiple values",
+      "provides": "definition using superclass (e.g., block instead of brick or wedge)",
+      "organizer": {
+        "startState": "IdentifyMultipleValues",
+        "successState": "TreeClimbed",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "IdentifyMultipleValues",
+            "goalInvocation": {
+              "goalReference": "identify_multiple_values_in_definition",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "FindSuperclass",
+            "goalInvocation": {
+              "goalReference": "find_common_superclass",
+              "type": "task",
+              "actualArguments": [
+                "multiple_values",
+                "background_knowledge"
+              ]
+            }
+          },
+          {
+            "name": "ReplaceWithSuperclass",
+            "goalInvocation": {
+              "goalReference": "replace_values_with_superclass",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "superclass"
+              ]
+            }
+          },
+          {
+            "name": "TreeClimbed",
+            "goalInvocation": {
+              "goalReference": "return_generalized_definition",
+              "type": "task",
+              "actualArguments": [
+                "generalized_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "heuristic_not_applicable",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "IdentifyMultipleValues",
+            "targetState": "FindSuperclass",
+            "dataCondition": "multiple_values_found == true"
+          },
+          {
+            "sourceState": "IdentifyMultipleValues",
+            "targetState": "Fail",
+            "dataCondition": "multiple_values_found == false"
+          },
+          {
+            "sourceState": "FindSuperclass",
+            "targetState": "ReplaceWithSuperclass",
+            "dataCondition": "superclass_found == true"
+          },
+          {
+            "sourceState": "FindSuperclass",
+            "targetState": "Fail",
+            "dataCondition": "superclass_found == false"
+          },
+          {
+            "sourceState": "ReplaceWithSuperclass",
+            "targetState": "TreeClimbed",
+            "dataCondition": "replacement_successful == true"
+          },
+          {
+            "sourceState": "ReplaceWithSuperclass",
+            "targetState": "Fail",
+            "dataCondition": "replacement_successful == false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "specialize_using_require_link",
+      "description": "Make optional link required to exclude negative example",
+      "inputParameters": [
+        "current_concept_definition: current_concept_definition",
+        "negative_example: negative_example"
+      ],
+      "outputParameters": [
+        "specialized_concept_definition: specialized_concept_definition"
+      ],
+      "requires": "negative example lacks relationship present in positive examples",
+      "provides": "definition with must-have relationship",
+      "organizer": {
+        "startState": "IdentifyMissingLink",
+        "successState": "LinkRequired",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "IdentifyMissingLink",
+            "goalInvocation": {
+              "goalReference": "identify_missing_link",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "negative_example"
+              ]
+            }
+          },
+          {
+            "name": "MarkAsRequired",
+            "goalInvocation": {
+              "goalReference": "mark_link_as_required",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "missing_link"
+              ]
+            }
+          },
+          {
+            "name": "LinkRequired",
+            "goalInvocation": {
+              "goalReference": "return_specialized_definition",
+              "type": "task",
+              "actualArguments": [
+                "specialized_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "heuristic_not_applicable",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "IdentifyMissingLink",
+            "targetState": "MarkAsRequired",
+            "dataCondition": "missing_link_found == true"
+          },
+          {
+            "sourceState": "IdentifyMissingLink",
+            "targetState": "Fail",
+            "dataCondition": "missing_link_found == false"
+          },
+          {
+            "sourceState": "MarkAsRequired",
+            "targetState": "LinkRequired",
+            "dataCondition": "link_marked_successfully == true"
+          },
+          {
+            "sourceState": "MarkAsRequired",
+            "targetState": "Fail",
+            "dataCondition": "link_marked_successfully == false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "specialize_using_forbid_link",
+      "description": "Add forbidden relationship to exclude negative example",
+      "inputParameters": [
+        "current_concept_definition: current_concept_definition",
+        "negative_example: negative_example"
+      ],
+      "outputParameters": [
+        "specialized_concept_definition: specialized_concept_definition"
+      ],
+      "requires": "negative example has unwanted relationship not in positive examples",
+      "provides": "definition explicitly forbidding that relationship",
+      "organizer": {
+        "startState": "IdentifyUnwantedLink",
+        "successState": "LinkForbidden",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "IdentifyUnwantedLink",
+            "goalInvocation": {
+              "goalReference": "identify_unwanted_link",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "negative_example"
+              ]
+            }
+          },
+          {
+            "name": "AddForbiddenLink",
+            "goalInvocation": {
+              "goalReference": "add_forbidden_link",
+              "type": "task",
+              "actualArguments": [
+                "current_concept_definition",
+                "unwanted_link"
+              ]
+            }
+          },
+          {
+            "name": "LinkForbidden",
+            "goalInvocation": {
+              "goalReference": "return_specialized_definition",
+              "type": "task",
+              "actualArguments": [
+                "specialized_concept_definition"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "heuristic_not_applicable",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "IdentifyUnwantedLink",
+            "targetState": "AddForbiddenLink",
+            "dataCondition": "unwanted_link_found == true"
+          },
+          {
+            "sourceState": "IdentifyUnwantedLink",
+            "targetState": "Fail",
+            "dataCondition": "unwanted_link_found == false"
+          },
+          {
+            "sourceState": "AddForbiddenLink",
+            "targetState": "LinkForbidden",
+            "dataCondition": "link_forbidden_successfully == true"
+          },
+          {
+            "sourceState": "AddForbiddenLink",
+            "targetState": "Fail",
+            "dataCondition": "link_forbidden_successfully == false"
+          }
+        ]
+      }
+    }
+  ]
+}

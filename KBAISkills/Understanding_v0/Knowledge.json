@@ -1,0 +1,360 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "Thematic_Role_Frame",
+      "properties": [
+        {
+          "name": "verb",
+          "type": "STRING"
+        },
+        {
+          "name": "agent",
+          "type": "STRING"
+        },
+        {
+          "name": "object",
+          "type": "STRING"
+        },
+        {
+          "name": "beneficiary",
+          "type": "STRING"
+        },
+        {
+          "name": "instrument",
+          "type": "STRING"
+        },
+        {
+          "name": "conveyance",
+          "type": "STRING"
+        },
+        {
+          "name": "location",
+          "type": "STRING"
+        },
+        {
+          "name": "source",
+          "type": "STRING"
+        },
+        {
+          "name": "destination",
+          "type": "STRING"
+        },
+        {
+          "name": "companion",
+          "type": "STRING"
+        },
+        {
+          "name": "victim",
+          "type": "STRING"
+        },
+        {
+          "name": "default_values",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Preposition",
+      "properties": [
+        {
+          "name": "word",
+          "type": "STRING"
+        },
+        {
+          "name": "possible_roles",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Ambiguous_Verb",
+      "properties": [
+        {
+          "name": "base_form",
+          "type": "STRING"
+        },
+        {
+          "name": "meaning_count",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Semantic_Category",
+      "properties": [
+        {
+          "name": "category_name",
+          "type": "STRING"
+        },
+        {
+          "name": "properties",
+          "type": "STRING"
+        },
+        {
+          "name": "compatible_roles",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Particle",
+      "properties": [
+        {
+          "name": "word",
+          "type": "STRING"
+        },
+        {
+          "name": "associated_verb",
+          "type": "STRING"
+        },
+        {
+          "name": "signaled_meaning",
+          "type": "STRING"
+        }
+      ]
+    }
+  ],
+  "instances": [
+    {
+      "concept": "Thematic_Role_Frame",
+      "name": "Make_Frame",
+      "values": {
+        "verb": "make",
+        "agent": "Ashok",
+        "object": "pancakes",
+        "beneficiary": "David",
+        "instrument": "griddle",
+        "default_values": "beneficiary typically consumes the created object"
+      }
+    },
+    {
+      "concept": "Thematic_Role_Frame",
+      "name": "Go_Frame",
+      "values": {
+        "verb": "go",
+        "agent": "David",
+        "destination": "meeting",
+        "companion": "Ashok",
+        "conveyance": "car"
+      }
+    },
+    {
+      "concept": "Thematic_Role_Frame",
+      "name": "Take1_Steal",
+      "values": {
+        "verb": "take",
+        "agent": "thief",
+        "object": "item stolen",
+        "source": "person or place stolen from",
+        "default_values": "to steal from someone"
+      }
+    },
+    {
+      "concept": "Thematic_Role_Frame",
+      "name": "Take11_Assume_Control",
+      "values": {
+        "verb": "take",
+        "agent": "entity assuming control",
+        "object": "entity being controlled",
+        "default_values": "requires particle over"
+      }
+    },
+    {
+      "concept": "Thematic_Role_Frame",
+      "name": "Take12_Remove",
+      "values": {
+        "verb": "take",
+        "agent": "entity removing",
+        "object": "item being removed",
+        "default_values": "requires particle off"
+      }
+    },
+    {
+      "concept": "Thematic_Role_Frame",
+      "name": "Kill_Cause_Death",
+      "values": {
+        "verb": "kill",
+        "agent": "entity causing death",
+        "victim": "entity that dies",
+        "default_values": "to cause the death of someone"
+      }
+    },
+    {
+      "concept": "Thematic_Role_Frame",
+      "name": "Kill_End",
+      "values": {
+        "verb": "kill",
+        "agent": "entity ending something",
+        "object": "thing being ended",
+        "default_values": "to put an end to something"
+      }
+    },
+    {
+      "concept": "Preposition",
+      "name": "Preposition_By",
+      "values": {
+        "word": "by",
+        "possible_roles": "agent, conveyance, location"
+      }
+    },
+    {
+      "concept": "Preposition",
+      "name": "Preposition_For",
+      "values": {
+        "word": "for",
+        "possible_roles": "beneficiary, duration"
+      }
+    },
+    {
+      "concept": "Preposition",
+      "name": "Preposition_From",
+      "values": {
+        "word": "from",
+        "possible_roles": "source"
+      }
+    },
+    {
+      "concept": "Preposition",
+      "name": "Preposition_To",
+      "values": {
+        "word": "to",
+        "possible_roles": "destination, recipient"
+      }
+    },
+    {
+      "concept": "Preposition",
+      "name": "Preposition_With",
+      "values": {
+        "word": "with",
+        "possible_roles": "instrument, companion"
+      }
+    },
+    {
+      "concept": "Ambiguous_Verb",
+      "name": "Take_Verb",
+      "values": {
+        "base_form": "take",
+        "meaning_count": "12"
+      }
+    },
+    {
+      "concept": "Ambiguous_Verb",
+      "name": "Kill_Verb",
+      "values": {
+        "base_form": "kill",
+        "meaning_count": "2"
+      }
+    },
+    {
+      "concept": "Semantic_Category",
+      "name": "Candy_Category",
+      "values": {
+        "category_name": "candy",
+        "properties": "edible, sweet, not medicine, not quantity, physical object",
+        "compatible_roles": "object, theme"
+      }
+    },
+    {
+      "concept": "Semantic_Category",
+      "name": "People_Category",
+      "values": {
+        "category_name": "people",
+        "properties": "animate, human, living",
+        "compatible_roles": "agent, beneficiary, victim, source"
+      }
+    },
+    {
+      "concept": "Semantic_Category",
+      "name": "Vehicle_Category",
+      "values": {
+        "category_name": "vehicle",
+        "properties": "physical object, transportation device",
+        "compatible_roles": "conveyance, instrument"
+      }
+    },
+    {
+      "concept": "Particle",
+      "name": "Particle_Over",
+      "values": {
+        "word": "over",
+        "associated_verb": "take",
+        "signaled_meaning": "to assume control"
+      }
+    },
+    {
+      "concept": "Particle",
+      "name": "Particle_Off",
+      "values": {
+        "word": "off",
+        "associated_verb": "take",
+        "signaled_meaning": "to remove"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "name": "has_frame",
+      "description": "Associates an ambiguous verb with its multiple thematic role frames",
+      "domain": "Ambiguous_Verb",
+      "range": "Thematic_Role_Frame"
+    },
+    {
+      "name": "constrains_role",
+      "description": "Indicates which thematic roles a preposition can constrain",
+      "domain": "Preposition",
+      "range": "STRING"
+    },
+    {
+      "name": "signals_meaning",
+      "description": "Associates a particle with the specific verb meaning it indicates",
+      "domain": "Particle",
+      "range": "Thematic_Role_Frame"
+    },
+    {
+      "name": "compatible_with",
+      "description": "Indicates which thematic roles one or more semantic category can fill",
+      "domain": "Semantic_Category",
+      "range": "STRING"
+    },
+    {
+      "name": "requires_role",
+      "description": "Specifies which thematic roles are required in a frame",
+      "domain": "Thematic_Role_Frame",
+      "range": "STRING"
+    },
+    {
+      "name": "eliminates_frame",
+      "description": "Indicates that a constraint eliminates a particular frame interpretation",
+      "domain": "Semantic_Category",
+      "range": "Thematic_Role_Frame"
+    }
+  ],
+  "Assertions": [
+    {
+      "name": "SemanticUnderstanding",
+      "description": "Agent understands sentence meaning through frame representation",
+      "equivalentTo": "ThematicRoleFrameAnalysis + ConstructSemanticFrame"
+    },
+    {
+      "name": "StructuralConstraints",
+      "description": "Sentence structure provides constraints for role assignment",
+      "equivalentTo": "ApplyConstraints(ParseSentence)"
+    },
+    {
+      "name": "VerbAmbiguityResolution",
+      "description": "Multiple verb meanings resolved through contextual constraints",
+      "equivalentTo": "ResolveAmbiguity(ApplyConstraints)"
+    },
+    {
+      "name": "PrepositionConstraint",
+      "description": "Prepositions constrain possible thematic role assignments",
+      "equivalentTo": "ApplyConstraints.prepositionConstraints"
+    },
+    {
+      "name": "SemanticCategoryConstraint",
+      "description": "Background knowledge of semantic categories eliminates incompatible frames",
+      "equivalentTo": "ApplyConstraints.semanticConstraints"
+    }
+  ]
+}

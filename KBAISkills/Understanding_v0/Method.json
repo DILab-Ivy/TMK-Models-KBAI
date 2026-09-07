@@ -1,0 +1,686 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "ThematicRoleFrameAnalysis",
+      "description": "Analyzes sentences to extract semantic meaning through thematic role assignment and ambiguity resolution",
+      "inputParameters": [
+        "sentence: sentence",
+        "knowledge: backgroundKnowledge"
+      ],
+      "outputParameters": [
+        "frame: semanticFrame",
+        "inferences: inferences"
+      ],
+      "requires": "sentence with words to analyze",
+      "provides": "frame-based semantic representation with thematic roles assigned",
+      "organizer": {
+        "startState": "parseSentense",
+        "successState": "constructSemanticFrame",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "parseSentense",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "ParseSentence",
+              "actualArguments": [
+                "parsedSentence"
+              ]
+            }
+          },
+          {
+            "name": "identifyRoles",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "IdentifyVerbAndRoles",
+              "actualArguments": [
+                "prepositions",
+                "semanticCategories"
+              ]
+            }
+          },
+          {
+            "name": "applyConstraints",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "ApplyConstraints",
+              "actualArguments": [
+                "candidateFrames",
+                "backgroundKnowledge"
+              ]
+            }
+          },
+          {
+            "name": "resolveAmbiguity",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "ResolveAmbiguity",
+              "actualArguments": [
+                "semanticFrame"
+              ]
+            }
+          },
+          {
+            "name": "constructSemanticFrame",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "ConstructSemanticFrame",
+              "actualArguments": [
+                "semanticFrame"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "parseSentence",
+            "targetState": "identifyRoles",
+            "dataCondition": "parsedSentence != null"
+          },
+          {
+            "sourceState": "parseSentence",
+            "targetState": "Fail",
+            "dataCondition": "parsedSentence == null"
+          },
+          {
+            "sourceState": "identifyRoles",
+            "targetState": "applyConstraints",
+            "dataCondition": "semanticCategories != null"
+          },
+          {
+            "sourceState": "identifyRoles",
+            "targetState": "Fail",
+            "dataCondition": "semanticCategories == null"
+          },
+          {
+            "sourceState": "applyConstraints",
+            "targetState": "resolveAmbiguity",
+            "dataCondition": "candidateFrames != null"
+          },
+          {
+            "sourceState": "applyConstraints",
+            "targetState": "Fail",
+            "dataCondition": "candidateFrames == null"
+          },
+          {
+            "sourceState": "resolveAmbiguity",
+            "targetState": "constructSemanticFrame",
+            "dataCondition": "candidateFrames.count == 1"
+          },
+          {
+            "sourceState": "resolveAmbiguity",
+            "targetState": "Fail",
+            "dataCondition": "candidateFrames.count != 1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ParseSentence",
+      "description": "Performs lexical and syntactic analysis to break sentence into components",
+      "inputParameters": [
+        "sentence: sentence"
+      ],
+      "outputParameters": [
+        "words: words",
+        "categories: lexicalCategories",
+        "structure: syntacticStructure"
+      ],
+      "requires": "raw sentence text",
+      "provides": "structured representation of sentence components",
+      "organizer": {
+        "startState": "tokenizeSentence",
+        "successState": "sentenceParsed",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "tokenizeSentence",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "tokenizeSentence",
+              "actualArguments": [
+                "tokens"
+              ]
+            }
+          },
+          {
+            "name": "lexicalAnalysis",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "LexicalAnalysis",
+              "actualArguments": [
+                "categorizedTokens"
+              ]
+            }
+          },
+          {
+            "name": "sentenceParsed",
+            "type": "task",
+            "goalInvocation": {
+              "goalReference": "outputParsedStructure",
+              "actualArguments": [
+                "syntacticStructure"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "tokenizeSentence",
+            "targetState": "lexicalAnalysis",
+            "dataCondition": "tokens != null"
+          },
+          {
+            "sourceState": "tokenizeSentence",
+            "targetState": "Fail",
+            "dataCondition": "tokens == null"
+          },
+          {
+            "sourceState": "lexicalAnalysis",
+            "targetState": "sentenceParsed",
+            "dataCondition": "categorizedTokens != null"
+          },
+          {
+            "sourceState": "lexicalAnalysis",
+            "targetState": "Fail",
+            "dataCondition": "categorizedTokens == null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IdentifyVerbAndRoles",
+      "description": "Identifies the main verb/action and extracts potential thematic roles from sentence structure",
+      "inputParameters": [
+        "parsedSentence: parsedSentence"
+      ],
+      "outputParameters": [
+        "verb: mainVerb",
+        "roles: potentialRoles"
+      ],
+      "requires": "parsed sentence with syntactic structure",
+      "provides": "identified action and candidate thematic role assignments",
+      "organizer": {
+        "startState": "verbLocation",
+        "successState": "rolesExtracted",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "verbLocation",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "locateMainVerb",
+              "actualArguments": [
+                "verb"
+              ]
+            }
+          },
+          {
+            "name": "identifyNouns",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "identifyNouns",
+              "actualArguments": [
+                "nouns"
+              ]
+            }
+          },
+          {
+            "name": "extractPrepositions",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "extractPrepositions",
+              "actualArguments": [
+                "verb",
+                "nouns",
+                "prepositions"
+              ]
+            }
+          },
+          {
+            "name": "rolesExtracted",
+            "type": "task",
+            "goalInvocation": {
+              "goalReference": "mapWordsToRoles",
+              "actualArguments": [
+                "potentialRoles"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "verbLocation",
+            "targetState": "identifyNouns",
+            "dataCondition": "verb != null"
+          },
+          {
+            "sourceState": "verbLocation",
+            "targetState": "Fail",
+            "dataCondition": "verb == null"
+          },
+          {
+            "sourceState": "identifyNouns",
+            "targetState": "extractPrepositions",
+            "dataCondition": "nouns != null"
+          },
+          {
+            "sourceState": "identifyNouns",
+            "targetState": "extractPrepositions",
+            "dataCondition": "nouns == null"
+          },
+          {
+            "sourceState": "extractPrepositions",
+            "targetState": "rolesExtracted",
+            "dataCondition": "prepositions != null"
+          },
+          {
+            "sourceState": "extractPrepositions",
+            "targetState": "Fail",
+            "dataCondition": "prepositions == null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ApplyConstraints",
+      "description": "Uses prepositions and semantic categories to constrain possible thematic role assignments",
+      "inputParameters": [
+        "roles: potentialRoles",
+        "prepositions: prepositions",
+        "knowledge: backgroundKnowledge"
+      ],
+      "outputParameters": [
+        "constrainedRoles: constrainedRoles"
+      ],
+      "requires": "potential role assignments and linguistic knowledge",
+      "provides": "narrowed set of possible role assignments",
+      "organizer": {
+        "startState": "prepositionConstraints",
+        "successState": "constraintsApplied",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "prepositionConstraints",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "applyPrepositionConstraints",
+              "actualArguments": [
+                "semanticCategories",
+                "potentialRoles"
+              ]
+            }
+          },
+          {
+            "name": "semanticConstraints",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "eliminateIncompatibleRoles",
+              "actualArguments": [
+                "constrainedRoles"
+              ]
+            }
+          },
+          {
+            "name": "constraintsApplied",
+            "type": "task",
+            "goalInvocation": {
+              "goalReference": "outputConstrainedRoles",
+              "actualArguments": [
+                "constrainedRoles"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "prepositionConstraints",
+            "targetState": "semanticConstraints",
+            "dataCondition": "semantiCategories != null && potentialRoles != null"
+          },
+          {
+            "sourceState": "prepositionConstraints",
+            "targetState": "Fail",
+            "dataCondition": "semantiCategories == null || potentialRoles == null"
+          },
+          {
+            "sourceState": "semanticConstraints",
+            "targetState": "constraintsApplied",
+            "dataCondition": "constrainedRoles != null"
+          },
+          {
+            "sourceState": "semanticConstraints",
+            "targetState": "Fail",
+            "dataCondition": "constrainedRoles == null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ResolveAmbiguity",
+      "description": "Uses background knowledge to disambiguate between multiple possible verb meanings and role assignments",
+      "inputParameters": [
+        "verb: verb",
+        "constrainedRoles: constrainedRoles",
+        "knowledge: backgroundKnowledge"
+      ],
+      "outputParameters": [
+        "frames: selectedVerbFrame",
+        "roles: resolvedRoles"
+      ],
+      "requires": "verb with multiple possible meanings and background knowledge",
+      "provides": "single correct interpretation of verb and role assignments",
+      "organizer": {
+        "startState": "retrieveVerbFrames",
+        "successState": "ambiguityResolved",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "retrieveVerbFrames",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "retrieveVerbFrames",
+              "actualArguments": [
+                "frames",
+                "object",
+                "backgroundKnowledge"
+              ]
+            }
+          },
+          {
+            "name": "eliminateByObjectConstraints",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "eliminateByObjectConstraints",
+              "actualArguments": [
+                "remainingFrames",
+                "source",
+                "backgroundKnowledge"
+              ]
+            }
+          },
+          {
+            "name": "eliminateBySourceConstraints",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "eliminateBySourceConstraints",
+              "actualArguments": [
+                "remainingFrames",
+                "agent",
+                "backgroundKnowledge"
+              ]
+            }
+          },
+          {
+            "name": "eliminateByAgentConstraints",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "eliminateByAgentConstraints",
+              "actualArguments": [
+                "remainingFrames"
+              ]
+            }
+          },
+          {
+            "name": "ambiguityResolved",
+            "type": "task",
+            "goalInvocation": {
+              "goalReference": "outputSelectedFrame",
+              "actualArguments": [
+                "selectedVerbFrame"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "retrieveVerbFrames",
+            "targetState": "eliminateByObjectConstraints",
+            "dataCondition": "frames != null"
+          },
+          {
+            "sourceState": "retrieveVerbFrames",
+            "targetState": "Fail",
+            "dataCondition": "frames == null"
+          },
+          {
+            "sourceState": "eliminateByObjectConstraints",
+            "targetState": "eliminateBySourceConstraints",
+            "dataCondition": "remainingFrames.count >= 1"
+          },
+          {
+            "sourceState": "eliminateByObjectConstraints",
+            "targetState": "Fail",
+            "dataCondition": "remainingFrames.count < 1"
+          },
+          {
+            "sourceState": "eliminateBySourceConstraints",
+            "targetState": "eliminateByAgentConstraints",
+            "dataCondition": "remainingFrames.count >= 1"
+          },
+          {
+            "sourceState": "eliminateBySourceConstraints",
+            "targetState": "Fail",
+            "dataCondition": "remainingFrames.count < 1"
+          },
+          {
+            "sourceState": "eliminateByAgentConstraints",
+            "targetState": "ambiguityResolved",
+            "dataCondition": "remainingFrames.count == 1"
+          },
+          {
+            "sourceState": "eliminateByAgentConstraints",
+            "targetState": "Fail",
+            "dataCondition": "remainingFrames.count != 1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConstructSemanticFrame",
+      "description": "Builds complete frame representation with all thematic roles assigned",
+      "inputParameters": [
+        "frame: verbFrame",
+        "roles: resolvedRoles"
+      ],
+      "outputParameters": [
+        "frame: semanticFrame"
+      ],
+      "requires": "resolved verb meaning and role assignments",
+      "provides": "complete frame representation of sentence meaning",
+      "organizer": {
+        "startState": "createFrameStructure",
+        "successState": "frameConstructed",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "createFrameStructure",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "createFrameStructure",
+              "actualArguments": [
+                "frameStructure",
+                "resolvedRoles"
+              ]
+            }
+          },
+          {
+            "name": "assignThematicRoles",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "assignThematicRoles",
+              "actualArguments": [
+                "frame",
+                "roles",
+                "backgroundKnowledge"
+              ]
+            }
+          },
+          {
+            "name": "frameConstructed",
+            "type": "task",
+            "goalInvocation": {
+              "goalReference": "outputSemanticFrame",
+              "actualArguments": [
+                "semanticFrame"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "createFrameStructure",
+            "targetState": "assignThematicRoles",
+            "dataCondition": "frameStructure != null"
+          },
+          {
+            "sourceState": "createFrameStructure",
+            "targetState": "Fail",
+            "dataCondition": "frameStructure == null"
+          },
+          {
+            "sourceState": "assignThematicRoles",
+            "targetState": "frameConstructed",
+            "dataCondition": "roles.count >= 1"
+          },
+          {
+            "sourceState": "assignThematicRoles",
+            "targetState": "Fail",
+            "dataCondition": "roles.count < 1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DrawInferences",
+      "description": "Generates inferences from the semantic frame using default values and background knowledge",
+      "inputParameters": [
+        "frame: semanticFrame",
+        "knowledge: backgroundKnowledge"
+      ],
+      "outputParameters": [
+        "inferences: inferences"
+      ],
+      "requires": "complete semantic frame representation",
+      "provides": "set of valid inferences that can be drawn from the sentence",
+      "organizer": {
+        "startState": "identifyInferenceRules",
+        "successState": "inferencesGenerated",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "identifyInferenceRules",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "identifyInferenceRules",
+              "actualArguments": [
+                "rules",
+                "frame"
+              ]
+            }
+          },
+          {
+            "name": "applyBackgroundKnowledgeInferences",
+            "type": "operation",
+            "goalInvocation": {
+              "goalReference": "applyBackgroundKnowledgeInferences",
+              "actualArguments": [
+                "semanticFrame",
+                "backgroundKnowledge"
+              ]
+            }
+          },
+          {
+            "name": "inferencesGenerated",
+            "type": "task",
+            "goalInvocation": {
+              "goalReference": "validateInferences",
+              "actualArguments": [
+                "inferences"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "FailureGoal",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "identifyInferenceRules",
+            "targetState": "applyBackgroundKnowledgeInferences",
+            "dataCondition": "rules != null"
+          },
+          {
+            "sourceState": "identifyInferenceRules",
+            "targetState": "Fail",
+            "dataCondition": "rules == null"
+          },
+          {
+            "sourceState": "applyBackgroundKnowledgeInferences",
+            "targetState": "inferencesGenerated",
+            "dataCondition": "backgroundKnowledge != null"
+          },
+          {
+            "sourceState": "applyBackgroundKnowledgeInferences",
+            "targetState": "Fail",
+            "dataCondition": "backgroundKnowledge == null"
+          }
+        ]
+      }
+    }
+  ]
+}

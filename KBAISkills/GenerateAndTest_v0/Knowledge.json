@@ -1,0 +1,196 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "State",
+      "properties": [
+        {
+          "name": "configuration",
+          "type": "STRING"
+        },
+        {
+          "name": "legality",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "visited_status",
+          "type": "BOOLEAN"
+        }
+      ]
+    },
+    {
+      "name": "Generator",
+      "properties": [
+        {
+          "name": "intelligence_level",
+          "type": "STRING"
+        },
+        {
+          "name": "generation_rules",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Tester",
+      "properties": [
+        {
+          "name": "intelligence_level",
+          "type": "STRING"
+        },
+        {
+          "name": "testing_rules",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Constraint",
+      "properties": [
+        {}
+      ]
+    },
+    {
+      "name": "Transformation",
+      "properties": [
+        {}
+      ]
+    },
+    {
+      "name": "Solution",
+      "properties": [
+        {}
+      ]
+    }
+  ],
+  "instances": [
+    {
+      "concept": "State",
+      "name": "InitialState"
+    },
+    {
+      "concept": "State",
+      "name": "GoalState"
+    },
+    {
+      "concept": "State",
+      "name": "CurrentState"
+    },
+    {
+      "concept": "Generator",
+      "name": "DumbGenerator",
+      "values": {
+        "intelligence_level": "dumb",
+        "generation_rules": [
+          "Generate all possible successor states without filtering"
+        ]
+      }
+    },
+    {
+      "concept": "Generator",
+      "name": "SmartGenerator",
+      "values": {
+        "intelligence_level": "smart",
+        "generation_rules": [
+          "Apply domain knowledge",
+          "Avoid repeated states",
+          "Prevent unproductive states"
+        ]
+      }
+    },
+    {
+      "concept": "Tester",
+      "name": "DumbTester",
+      "values": {
+        "intelligence_level": "dumb",
+        "testing_rules": [
+          "Remove only clearly illegal states"
+        ]
+      }
+    },
+    {
+      "concept": "Tester",
+      "name": "SmartTester",
+      "values": {
+        "intelligence_level": "smart",
+        "testing_rules": [
+          "Detect repeated states",
+          "Apply complex filtering rules",
+          "Merge identical states"
+        ]
+      }
+    },
+    {
+      "concept": "Constraint",
+      "name": "ProblemSpecificationConstraint",
+      "values": {
+        "constraint_type": "specification",
+        "specification": "Rules defined by the problem statement that must be satisfied"
+      }
+    },
+    {
+      "concept": "Constraint",
+      "name": "RepetitionConstraint",
+      "values": {
+        "constraint_type": "repetition",
+        "specification": "States that have been previously visited should not be revisited"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "name": "generates",
+      "description": "Relates a generator to the states it produces",
+      "domain": "Generator",
+      "range": "State"
+    },
+    {
+      "name": "tests",
+      "description": "Relates a tester to the states it evaluates",
+      "domain": "Tester",
+      "range": "State"
+    },
+    {
+      "name": "succeeds",
+      "description": "Relates a current state to its successor state",
+      "domain": "State",
+      "range": "State"
+    },
+    {
+      "name": "satisfies",
+      "description": "Relates a state to constraints it meets",
+      "domain": "State",
+      "range": "Constraint"
+    },
+    {
+      "name": "violates",
+      "description": "Relates a state to constraints it breaks",
+      "domain": "State",
+      "range": "Constraint"
+    },
+    {
+      "name": "identical_to",
+      "description": "Relates states that are equivalent",
+      "domain": "State",
+      "range": "State"
+    },
+    {
+      "name": "transforms",
+      "description": "Relates a transformation to states it converts",
+      "domain": "Transformation",
+      "range": "State"
+    }
+  ],
+  "Assertions": [
+    {
+      "name": "DumbGenerateAndTest",
+      "description": "Generate and test method using dumb generator and dumb tester - generates all possible solutions and tests only for clearly illegal states",
+      "equivalentTo": "dumb generator && dumb tester"
+    },
+    {
+      "name": "SmartGenerateAndTest",
+      "description": "Generate and test method using smart generator and smart tester - generates only productive solutions and applies sophisticated testing including repetition detection and complex filtering",
+      "equivalentTo": "smart generator && smart tester"
+    }
+  ]
+}

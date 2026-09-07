@@ -1,0 +1,174 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "problem",
+      "description": "A situation or task that requires a solution."
+    },
+    {
+      "name": "solution",
+      "description": "An answer or method that solves a problem."
+    },
+    { 
+      "name": "case", 
+      "description": "A stored (problem, solution) experience. May or may not be a *successful* solution.", 
+      "properties": [
+        {
+          "name": "sourceProblem",
+          "type": "problem"
+        },
+        {
+          "name": "sourceSolution",
+          "type": "solution"
+        }
+      ]
+    },
+    { 
+      "name": "memoryStore", 
+      "description": "A collection of recorded cases for retrieval and reuse.", 
+      "properties": [
+        {
+          "name": "cases",
+          "type": "set<case>"
+        }
+      ]
+    },
+    {
+      "name": "indexingMethod",
+      "description": "A strategy for organising and retrieving cases efficiently."
+    },
+    {
+      "name": "discriminationTree",
+      "superConcept": ["indexingMethod"],
+      "description": "An indexing method that splits cases by feature tests in a tree structure."
+    },
+    {
+      "name": "coordinateIndex",
+      "superConcept": ["indexingMethod"],
+      "description": "An indexing method that organises cases in a multidimensional feature space, referring to them as ordered tuples (x_1, x_2, ..., x_n) in n dimensions."
+    }
+  ],
+  "relations": [
+    {
+      "name": "stores",
+      "domain": "memoryStore",
+      "range": "case",
+      "description": "Indicates that the memory store contains the case."
+    },
+    {
+      "name": "retrieves",
+      "domain": "memoryStore",
+      "range": "case",
+      "description": "Indicates that the case can be retrieved from the memory store."
+    },
+    {
+      "name": "adaptsFrom",
+      "domain": "solution",
+      "range": "case",
+      "description": "Indicates that the solution was adapted from a prior case."
+    }
+  ],
+  "assertions": [
+    {
+      "name": "isWellFormed",
+      "description": "Checks that a problem is syntactically and semantically valid."
+    },
+    {
+      "name": "solved",
+      "description": "Indicates that a solution successfully solves its problem."
+    },
+    {
+      "name": "contains",
+      "description": "States that a memory store includes a given problem-solution pair."
+    },
+    {
+      "name": "size",
+      "description": "Returns the number of elements in the collection."
+    }
+  ],
+  "instances": [
+    {
+      "name": "exampleMemory",
+      "concept": "memoryStore",
+      "description": "An example memory store initially containing no cases.",
+      "values": {
+        "cases": []
+      }
+    },
+    {
+      "name": "routeMemoryTable",
+      "concept": "memoryStore",
+      "description": "Memory store for the route finding problem, organised as a 2D table.",
+      "values": {
+        "cases": [
+          {
+            "route": "A",
+            "origin_x": "10E",
+            "origin_y": "9N"
+          },
+          {
+            "route": "B",
+            "origin_x": "1E",
+            "origin_y": "8N"
+          },
+          {
+            "route": "C",
+            "origin_x": "10E",
+            "origin_y": "4N"
+          },
+          {
+            "route": "D",
+            "origin_x": "2E",
+            "origin_y": "1N"
+          },
+          {
+            "route": "X",
+            "origin_x": "8E",
+            "origin_y": "2N"
+          },
+          {
+            "route": "Y",
+            "origin_x": "8E",
+            "origin_y": "2N"
+          },
+          {
+            "route": "Z",
+            "origin_x": "1E",
+            "origin_y": "9N"
+          }
+        ]
+      }
+    },
+    {
+      "name": "routeMemoryTree",
+      "concept": "memoryStore",
+      "description": "Memory store for the route finding problem, organised as a decision tree.",
+      "values": {
+        "cases": [
+          {
+            "condition": "North of 5N?",
+            "yes": {
+              "condition": "East of 5E?",
+              "yes": "C",
+              "no": {
+                "condition": "East of 3E?",
+                "yes": "X",
+                "no": {
+                  "condition": "East of 2E?",
+                  "yes": "A",
+                  "no": "Y"
+                }
+              }
+            },
+            "no": {
+              "condition": "East of 5E?",
+              "yes": "D",
+              "no": "B"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+

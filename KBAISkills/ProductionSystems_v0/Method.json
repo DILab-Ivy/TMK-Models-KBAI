@@ -1,0 +1,441 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "ProductionSystemCycle",
+      "description": "Main reasoning loop for production system that maps percepts and goals to actions through rule matching, activation, and execution",
+      "inputParameters": [
+        "percepts",
+        "goals"
+      ],
+      "outputParameters": [
+        "action"
+      ],
+      "requires": "working-memory, procedural-knowledge, episodic-knowledge",
+      "provides": "executed-action, updated-state",
+      "organizer": {
+        "startState": "LoadWorkingMemory",
+        "successState": "End",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "LoadWorkingMemory",
+            "goalInvocation": {
+              "goalReference": "LoadWorkingMemory",
+              "type": "task",
+              "actualArguments": [
+                "environment",
+                "goals"
+              ]
+            }
+          },
+          {
+            "name": "MatchPhase",
+            "goalInvocation": {
+              "goalReference": "UpdateWorkingMemoryInitial",
+              "type": "task",
+              "actualArguments": [
+                "percepts",
+                "goals"
+              ]
+            }
+          },
+          {
+            "name": "ActivationPhase",
+            "goalInvocation": {
+              "goalReference": "MatchRules",
+              "type": "task",
+              "actualArguments": [
+                "working-memory-contents",
+                "production-rules"
+              ]
+            }
+          },
+          {
+            "name": "DecisionPoint",
+            "goalInvocation": {
+              "goalReference": "ActivateRule",
+              "type": "task",
+              "actualArguments": [
+                "matched-rule"
+              ]
+            }
+          },
+          {
+            "name": "ExecutionPhase",
+            "goalInvocation": {
+              "goalReference": "SelectOperator",
+              "type": "task",
+              "actualArguments": [
+                "suggested-operators"
+              ]
+            }
+          },
+          {
+            "name": "ImpasseDetected",
+            "goalInvocation": {
+              "goalReference": "DetectImpasse",
+              "type": "task",
+              "actualArguments": [
+                "suggested-operators"
+              ]
+            }
+          },
+          {
+            "name": "EpisodeRetrieval",
+            "goalInvocation": {
+              "goalReference": "RetrieveEpisode",
+              "type": "task",
+              "actualArguments": [
+                "current-situation",
+                "episodic-memory"
+              ]
+            }
+          },
+          {
+            "name": "Learning",
+            "goalInvocation": {
+              "goalReference": "ChunkRule",
+              "type": "task",
+              "actualArguments": [
+                "past-episode",
+                "impasse",
+                "current-situation"
+              ]
+            }
+          },
+          {
+            "name": "End",
+            "goalInvocation": {
+              "goalReference": "",
+              "type": "",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "LoadWorkingMemory",
+            "targetState": "MatchPhase",
+            "dataCondition": "percepts != null && goals != null"
+          },
+          {
+            "sourceState": "LoadWorkingMemory",
+            "targetState": "Fail",
+            "dataCondition": "percepts == null || goals == null"
+          },
+          {
+            "sourceState": "MatchPhase",
+            "targetState": "ActivationPhase",
+            "dataCondition": "working-memory-state != null && procedural-knowledge != null"
+          },
+          {
+            "sourceState": "MatchPhase",
+            "targetState": "Fail",
+            "dataCondition": "working-memory-state == null || procedural-knowledge == null"
+          },
+          {
+            "sourceState": "ActivationPhase",
+            "targetState": "DecisionPoint",
+            "dataCondition": "satisfied-antecedents == true"
+          },
+          {
+            "sourceState": "ActivationPhase",
+            "targetState": "Fail",
+            "dataCondition": "satisfied-antecedents == false"
+          },
+          {
+            "sourceState": "DecisionPoint",
+            "targetState": "ExecutionPhase",
+            "dataCondition": "single-suggested-operator == true"
+          },
+          {
+            "sourceState": "DecisionPoint",
+            "targetState": "ImpasseDetected",
+            "dataCondition": "multiple-operators == true"
+          },
+          {
+            "sourceState": "DecisionPoint",
+            "targetState": "Fail",
+            "dataCondition": "single-suggested-operator == false && multiple-operators == false"
+          },
+          {
+            "sourceState": "ExecutionPhase",
+            "targetState": "End",
+            "dataCondition": "selected-operator == true"
+          },
+          {
+            "sourceState": "ExecutionPhase",
+            "targetState": "Fail",
+            "dataCondition": "selected-operator == false"
+          },
+          {
+            "sourceState": "ImpasseDetected",
+            "targetState": "EpisodeRetrieval",
+            "dataCondition": "current-percepts != null && episodic-knowledge != null && impasse-signal != null"
+          },
+          {
+            "sourceState": "ImpasseDetected",
+            "targetState": "Fail",
+            "dataCondition": "current-percepts == null || episodic-knowledge == null || impasse-signal == null"
+          },
+          {
+            "sourceState": "EpisodeRetrieval",
+            "targetState": "Learning",
+            "dataCondition": "episode-knowledge != null"
+          },
+          {
+            "sourceState": "EpisodeRetrieval",
+            "targetState": "Fail",
+            "dataCondition": "episode-knowledge == null"
+          },
+          {
+            "sourceState": "Learning",
+            "targetState": "End",
+            "dataCondition": "new-production-rule != null"
+          },
+          {
+            "sourceState": "Learning",
+            "targetState": "Fail",
+            "dataCondition": "new-production-rule == null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MatchAndActivate",
+      "description": "Match working memory contents against production rule antecedents and activate matching rules to suggest operators",
+      "inputParameters": [
+        "working-memory-contents",
+        "production-rules"
+      ],
+      "outputParameters": [
+        "activated-rules",
+        "suggested-operators"
+      ],
+      "requires": "working-memory-state, procedural-knowledge",
+      "provides": "rule-consequents, operator-suggestions",
+      "organizer": {
+        "startState": "CompareAntecedents",
+        "successState": "ExtractConsequents",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "CompareAntecedents",
+            "goalInvocation": {
+              "goalReference": "CompareAntecedents",
+              "type": "operation",
+              "actualArguments": [
+                "working-memory-contents",
+                "rule-antecedents"
+              ]
+            }
+          },
+          {
+            "name": "EvaluateLogicalOperators",
+            "goalInvocation": {
+              "goalReference": "EvaluateLogicalOperators",
+              "type": "operation",
+              "actualArguments": [
+                "rule-antecedents",
+                "matches"
+              ]
+            }
+          },
+          {
+            "name": "FireMatchedRules",
+            "goalInvocation": {
+              "goalReference": "FireMatchedRules",
+              "type": "operation",
+              "actualArguments": [
+                "satisfied-rules"
+              ]
+            }
+          },
+          {
+            "name": "ExtractConsequents",
+            "goalInvocation": {
+              "goalReference": "ExtractConsequents",
+              "type": "operation",
+              "actualArguments": [
+                "activated-rules"
+              ]
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "CompareAntecedents",
+            "targetState": "EvaluateLogicalOperators",
+            "dataCondition": "antecedent-matches != null && logical-operators != null"
+          },
+          {
+            "sourceState": "CompareAntecedents",
+            "targetState": "Fail",
+            "dataCondition": "antecedent-matches == null || logical-operators == null"
+          },
+          {
+            "sourceState": "EvaluateLogicalOperators",
+            "targetState": "FireMatchedRules",
+            "dataCondition": "rule-antecedents.match == true"
+          },
+          {
+            "sourceState": "EvaluateLogicalOperators",
+            "targetState": "Fail",
+            "dataCondition": "rule-antecedents.match == false"
+          },
+          {
+            "sourceState": "FireMatchedRules",
+            "targetState": "ExtractConsequents",
+            "dataCondition": "satisfied-rules != null"
+          },
+          {
+            "sourceState": "FireMatchedRules",
+            "targetState": "Fail",
+            "dataCondition": "satisfied-rules == null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ChunkingLearningProcess",
+      "description": "Learning mechanism that creates new production rules from episodic memory to resolve impasses",
+      "inputParameters": [
+        "impasse-signal",
+        "current-situation",
+        "episodic-memory"
+      ],
+      "outputParameters": [
+        "new-production-rule"
+      ],
+      "requires": "impasse-detected, episodic-knowledge, current-percepts",
+      "provides": "impasse-breaking-rule, updated-procedural-memory",
+      "organizer": {
+        "startState": "IdentifyImpasseType",
+        "successState": "ConstructProductionRule",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "IdentifyImpasseType",
+            "goalInvocation": {
+              "goalReference": "IdentifyImpasseType",
+              "type": "operation",
+              "actualArguments": [
+                "impasse-signal",
+                "conflicting-operators"
+              ]
+            }
+          },
+          {
+            "name": "SearchEpisodicMemory",
+            "goalInvocation": {
+              "goalReference": "SearchEpisodicMemory",
+              "type": "operation",
+              "actualArguments": [
+                "current-percepts",
+                "episodic-memory"
+              ]
+            }
+          },
+          {
+            "name": "SelectRelevantEpisode",
+            "goalInvocation": {
+              "goalReference": "SelectRelevantEpisode",
+              "type": "operation",
+              "actualArguments": [
+                "candidate-episodes",
+                "impasse-characteristics"
+              ]
+            }
+          },
+          {
+            "name": "ExtractRuleAntecedents",
+            "goalInvocation": {
+              "goalReference": "ExtractRuleAntecedents",
+              "type": "operation",
+              "actualArguments": [
+                "current-situation",
+                "impasse",
+                "episode"
+              ]
+            }
+          },
+          {
+            "name": "DetermineRuleConsequent",
+            "goalInvocation": {
+              "goalReference": "DetermineRuleConsequent",
+              "type": "operation",
+              "actualArguments": [
+                "episode-outcome",
+                "impasse-type"
+              ]
+            }
+          },
+          {
+            "name": "ConstructProductionRule",
+            "goalInvocation": {
+              "goalReference": "ConstructProductionRule",
+              "type": "operation",
+              "actualArguments": [
+                "rule-antecedents",
+                "rule-consequent"
+              ]
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "IdentifyImpasseType",
+            "targetState": "SearchEpisodicMemory",
+            "dataCondition": "current-situation-features != null && episodic-knowledge != null"
+          },
+          {
+            "sourceState": "IdentifyImpasseType",
+            "targetState": "Fail",
+            "dataCondition": "current-situation-features == null || episodic-knowledge == null"
+          },
+          {
+            "sourceState": "SearchEpisodicMemory",
+            "targetState": "SelectRelevantEpisode",
+            "dataCondition": "candidate-episodes != null && impasse-type != null"
+          },
+          {
+            "sourceState": "SearchEpisodicMemory",
+            "targetState": "Fail",
+            "dataCondition": "candidate-episodes == null || impasse-type == null"
+          },
+          {
+            "sourceState": "SelectRelevantEpisode",
+            "targetState": "ExtractRuleAntecedents",
+            "dataCondition": "current-percepts != null && impasse-operators != null && episode-percepts != null"
+          },
+          {
+            "sourceState": "SelectRelevantEpisode",
+            "targetState": "Fail",
+            "dataCondition": "current-percepts == null || impasse-operators == null || episode-percepts == null"
+          },
+          {
+            "sourceState": "ExtractRuleAntecedents",
+            "targetState": "DetermineRuleConsequent",
+            "dataCondition": "episode-result != null"
+          },
+          {
+            "sourceState": "ExtractRuleAntecedents",
+            "targetState": "Fail",
+            "dataCondition": "episode-result == null"
+          },
+          {
+            "sourceState": "DetermineRuleConsequent",
+            "targetState": "ConstructProductionRule",
+            "dataCondition": "antecedents != null"
+          },
+          {
+            "sourceState": "DetermineRuleConsequent",
+            "targetState": "Fail",
+            "dataCondition": "antecedents == null"
+          }
+        ]
+      }
+    }
+  ]
+}

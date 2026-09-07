@@ -1,0 +1,465 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "DiagnosisSolution",
+      "description": "FSM to manage the diagnostic process from symptom analysis to final hypothesis selection.",
+      "inputParameters": [
+        "initialConfiguration: configuration",
+        "kb: knowledgeBase"
+      ],
+      "outputParameters": [
+        "finalConfiguration: configuration"
+      ],
+      "requires": "!isEmpty(initialConfiguration.observedSymptoms) && isValid(kb)",
+      "provides": "goodDiagnosis(finalConfiguration)",
+      "organizer": {
+        "startState": "S0_Match",
+        "successState": "S4_Complete",
+        "failureState": "Fail",
+        "states": [
+          {
+            "name": "S0_Match",
+            "goalInvocation": {
+              "goalReference": "MatchDiseases",
+              "type": "task",
+              "actualArguments": [
+                "initialConfiguration.observedSymptoms",
+                "kb"
+              ]
+            }
+          },
+          {
+            "name": "S1_CheckCoverage",
+            "goalInvocation": {
+              "goalReference": "CheckCoverage",
+              "type": "task",
+              "actualArguments": [
+                "S0_Match.candidateHypotheses",
+                "initialConfiguration.observedSymptoms"
+              ]
+            }
+          },
+          {
+            "name": "S2_AssessParsimony",
+            "goalInvocation": {
+              "goalReference": "AssessParsimony",
+              "type": "task",
+              "actualArguments": [
+                "S1_CheckCoverage.coveredHypotheses"
+              ]
+            }
+          },
+          {
+            "name": "S3_Select",
+            "goalInvocation": {
+              "goalReference": "SelectBestHypothesis",
+              "type": "task",
+              "actualArguments": [
+                "S2_AssessParsimony.parsimoniousHypotheses"
+              ]
+            }
+          },
+          {
+            "name": "S4_Complete",
+            "goalInvocation": {
+              "goalReference": "DiagnosisComplete",
+              "type": "task",
+              "actualArguments": [
+                "S3_Select.finalHypotheses"
+              ]
+            }
+          },
+          {
+            "name": "Fail",
+            "goalInvocation": {
+              "goalReference": "DiagnosisFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "S0_Match",
+            "targetState": "S1_CheckCoverage",
+            "dataCondition": "!isEmpty(S0_Match.candidateHypotheses)"
+          },
+          {
+            "sourceState": "S0_Match",
+            "targetState": "Fail",
+            "dataCondition": "isEmpty(S0_Match.candidateHypotheses)"
+          },
+          {
+            "sourceState": "S1_CheckCoverage",
+            "targetState": "S2_AssessParsimony",
+            "dataCondition": "!isEmpty(S1_CheckCoverage.coveredHypotheses)"
+          },
+          {
+            "sourceState": "S1_CheckCoverage",
+            "targetState": "Fail",
+            "dataCondition": "isEmpty(S1_CheckCoverage.coveredHypotheses)"
+          },
+          {
+            "sourceState": "S2_AssessParsimony",
+            "targetState": "S3_Select",
+            "dataCondition": "!isEmpty(S2_AssessParsimony.parsimoniousHypotheses)"
+          },
+          {
+            "sourceState": "S2_AssessParsimony",
+            "targetState": "Fail",
+            "dataCondition": "isEmpty(S2_AssessParsimony.parsimoniousHypotheses)"
+          },
+          {
+            "sourceState": "S3_Select",
+            "targetState": "S4_Complete",
+            "dataCondition": "goodDiagnosis(S3_Select.finalHypotheses)"
+          },
+          {
+            "sourceState": "S3_Select",
+            "targetState": "Fail",
+            "dataCondition": "!goodDiagnosis(S3_Select.finalHypotheses)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MatchDiseasesMechanism",
+      "description": "FSM to match symptoms to diseases in the knowledge base.",
+      "inputParameters": [
+        "symptoms: array of symptom",
+        "kb: knowledgeBase"
+      ],
+      "outputParameters": [
+        "candidateHypotheses: array of disease"
+      ],
+      "requires": "!isEmpty(symptoms)",
+      "provides": "explainsAny(candidateHypotheses, symptoms)",
+      "organizer": {
+        "startState": "MD_S0",
+        "successState": "MD_S1",
+        "failureState": "MD_Fail",
+        "states": [
+          {
+            "name": "MD_S0",
+            "goalInvocation": {
+              "goalReference": "CompareSymptoms",
+              "type": "operation",
+              "actualArguments": [
+                "symptoms",
+                "kb"
+              ]
+            }
+          },
+          {
+            "name": "MD_S1",
+            "goalInvocation": {
+              "goalReference": "GenerateCandidates",
+              "type": "operation",
+              "actualArguments": [
+                "MD_S0"
+              ]
+            }
+          },
+          {
+            "name": "MD_Fail",
+            "goalInvocation": {
+              "goalReference": "DiagnosisFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "MD_S0",
+            "targetState": "MD_S1",
+            "dataCondition": "!isEmpty(MD_S0)"
+          },
+          {
+            "sourceState": "MD_S0",
+            "targetState": "MD_Fail",
+            "dataCondition": "isEmpty(MD_S0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CheckCoverageMechanism",
+      "description": "FSM to check if hypotheses cover all symptoms.",
+      "inputParameters": [
+        "candidates: array of disease",
+        "symptoms: array of symptom"
+      ],
+      "outputParameters": [
+        "coveredHypotheses: array of disease"
+      ],
+      "requires": "!isEmpty(candidates)",
+      "provides": "covers(coveredHypotheses, symptoms)",
+      "organizer": {
+        "startState": "CC_S0",
+        "successState": "CC_S1",
+        "failureState": "CC_Fail",
+        "states": [
+          {
+            "name": "CC_S0",
+            "goalInvocation": {
+              "goalReference": "TestCoverage",
+              "type": "operation",
+              "actualArguments": [
+                "candidates",
+                "symptoms"
+              ]
+            }
+          },
+          {
+            "name": "CC_S1",
+            "goalInvocation": {
+              "goalReference": "FilterCovered",
+              "type": "operation",
+              "actualArguments": [
+                "CC_S0"
+              ]
+            }
+          },
+          {
+            "name": "CC_Fail",
+            "goalInvocation": {
+              "goalReference": "DiagnosisFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "CC_S0",
+            "targetState": "CC_S1",
+            "dataCondition": "!isEmpty(CC_S0)"
+          },
+          {
+            "sourceState": "CC_S0",
+            "targetState": "CC_Fail",
+            "dataCondition": "isEmpty(CC_S0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssessParsimonyMechanism",
+      "description": "FSM to assess parsimony of hypotheses.",
+      "inputParameters": [
+        "covered: array of disease"
+      ],
+      "outputParameters": [
+        "parsimoniousHypotheses: array of disease"
+      ],
+      "requires": "!isEmpty(covered)",
+      "provides": "isParsimonious(parsimoniousHypotheses)",
+      "organizer": {
+        "startState": "AP_S0",
+        "successState": "AP_S1",
+        "failureState": "AP_Fail",
+        "states": [
+          {
+            "name": "AP_S0",
+            "goalInvocation": {
+              "goalReference": "CountHypotheses",
+              "type": "operation",
+              "actualArguments": [
+                "covered"
+              ]
+            }
+          },
+          {
+            "name": "AP_S1",
+            "goalInvocation": {
+              "goalReference": "SelectSmallest",
+              "type": "operation",
+              "actualArguments": [
+                "AP_S0"
+              ]
+            }
+          },
+          {
+            "name": "AP_Fail",
+            "goalInvocation": {
+              "goalReference": "DiagnosisFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "AP_S0",
+            "targetState": "AP_S1",
+            "dataCondition": "!isEmpty(AP_S0)"
+          },
+          {
+            "sourceState": "AP_S0",
+            "targetState": "AP_Fail",
+            "dataCondition": "isEmpty(AP_S0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SelectBestHypothesisMechanism",
+      "description": "FSM to select the best hypothesis.",
+      "inputParameters": [
+        "parsimonious: array of disease"
+      ],
+      "outputParameters": [
+        "finalHypotheses: array of disease"
+      ],
+      "requires": "!isEmpty(parsimonious)",
+      "provides": "goodDiagnosis(finalHypotheses)",
+      "organizer": {
+        "startState": "SB_S0",
+        "successState": "SB_S1",
+        "failureState": "SB_Fail",
+        "states": [
+          {
+            "name": "SB_S0",
+            "goalInvocation": {
+              "goalReference": "RankHypotheses",
+              "type": "operation",
+              "actualArguments": [
+                "parsimonious"
+              ]
+            }
+          },
+          {
+            "name": "SB_S1",
+            "goalInvocation": {
+              "goalReference": "ChooseBest",
+              "type": "operation",
+              "actualArguments": [
+                "SB_S0"
+              ]
+            }
+          },
+          {
+            "name": "SB_Fail",
+            "goalInvocation": {
+              "goalReference": "DiagnosisFailed",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "sourceState": "SB_S0",
+            "targetState": "SB_S1",
+            "dataCondition": "!isEmpty(SB_S0)"
+          },
+          {
+            "sourceState": "SB_S0",
+            "targetState": "SB_Fail",
+            "dataCondition": "isEmpty(SB_S0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompareSymptoms",
+      "description": "Operation to compare symptoms with disease profiles.",
+      "inputParameters": [
+        "symptoms: array of symptom",
+        "kb: knowledgeBase"
+      ],
+      "outputParameters": [
+        "matches: array of disease"
+      ],
+      "requires": "!isEmpty(symptoms)",
+      "provides": "!isEmpty(matches)"
+    },
+    {
+      "name": "GenerateCandidates",
+      "description": "Operation to generate candidate hypotheses.",
+      "inputParameters": [
+        "matches: array of disease"
+      ],
+      "outputParameters": [
+        "candidateHypotheses: array of disease"
+      ],
+      "requires": "!isEmpty(matches)",
+      "provides": "explainsAny(candidateHypotheses, matches)"
+    },
+    {
+      "name": "TestCoverage",
+      "description": "Operation to test coverage of symptoms by hypotheses.",
+      "inputParameters": [
+        "candidates: array of disease",
+        "symptoms: array of symptom"
+      ],
+      "outputParameters": [
+        "coverageResults: array of disease"
+      ],
+      "requires": "!isEmpty(candidates)",
+      "provides": "!isEmpty(coverageResults)"
+    },
+    {
+      "name": "FilterCovered",
+      "description": "Operation to filter hypotheses that cover all symptoms.",
+      "inputParameters": [
+        "coverageResults: array of disease"
+      ],
+      "outputParameters": [
+        "coveredHypotheses: array of disease"
+      ],
+      "requires": "!isEmpty(coverageResults)",
+      "provides": "covers(coveredHypotheses, coverageResults)"
+    },
+    {
+      "name": "CountHypotheses",
+      "description": "Operation to count the number of hypotheses.",
+      "inputParameters": [
+        "covered: array of disease"
+      ],
+      "outputParameters": [
+        "counted: array of disease"
+      ],
+      "requires": "!isEmpty(covered)",
+      "provides": "!isEmpty(counted)"
+    },
+    {
+      "name": "SelectSmallest",
+      "description": "Operation to select the most parsimonious hypothesis.",
+      "inputParameters": [
+        "counted: array of disease"
+      ],
+      "outputParameters": [
+        "parsimoniousHypotheses: array of disease"
+      ],
+      "requires": "!isEmpty(counted)",
+      "provides": "isParsimonious(parsimoniousHypotheses)"
+    },
+    {
+      "name": "RankHypotheses",
+      "description": "Operation to rank hypotheses by evaluation scores.",
+      "inputParameters": [
+        "parsimonious: array of disease"
+      ],
+      "outputParameters": [
+        "ranked: array of disease"
+      ],
+      "requires": "!isEmpty(parsimonious)",
+      "provides": "!isEmpty(ranked)"
+    },
+    {
+      "name": "ChooseBest",
+      "description": "Operation to choose the best hypothesis.",
+      "inputParameters": [
+        "ranked: array of disease"
+      ],
+      "outputParameters": [
+        "finalHypotheses: array of disease"
+      ],
+      "requires": "!isEmpty(ranked)",
+      "provides": "goodDiagnosis(finalHypotheses)"
+    }
+  ]
+}

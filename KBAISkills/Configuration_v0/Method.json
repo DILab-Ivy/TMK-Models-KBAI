@@ -1,0 +1,190 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "solve using configuration",
+      "description": "Configure objects/systems by mapping requirements to component specifications, satisfying all constraints through iterative refinement.",
+      "inputParameters": [
+        "requirements: requirementSet",
+        "components: componentSet"
+      ],
+      "outputParameters": [
+        "validatedConfiguration: configuration"
+      ],
+      "requires": "initial requirements and available component options",
+      "provides": "validated configuration",
+
+      "organiser": {
+        "startState": "CFG_ProcessRequirements",
+        "successState": "CFG_Validated",
+        "failureState": "CFG_Fail",
+
+        "states": [
+          {
+            "name": "CFG_ProcessRequirements",
+            "goalInvocation": {
+              "goalReference": "ProcessRequirements",
+              "type": "operation",
+              "actualArguments": [
+                "requirements",
+                "constraints"
+              ]
+            }
+          },
+          {
+            "name": "CFG_MapConstraints",
+            "goalInvocation": {
+              "goalReference": "MapConstraintsToComponents",
+              "type": "operation",
+              "actualArguments": [
+                "constraints",
+                "components",
+                "mapping"
+              ]
+            }
+          },
+          {
+            "name": "CFG_Assemble",
+            "goalInvocation": {
+              "goalReference": "AssembleConfiguration",
+              "type": "operation",
+              "actualArguments": [
+                "mapping",
+                "proposedConfig"
+              ]
+            }
+          },
+          {
+            "name": "CFG_Validate",
+            "goalInvocation": {
+              "goalReference": "ValidateConfiguration",
+              "type": "operation",
+              "actualArguments": [
+                "proposedConfig",
+                "validatedConfiguration",
+                "valid"
+              ]
+            }
+          },
+          {
+            "name": "CFG_Validated",
+            "goalInvocation": {
+              "goalReference": "ConfigurationSuccess",
+              "type": "task",
+              "actualArguments": [
+                "validatedConfiguration"
+              ]
+            }
+          },
+          {
+            "name": "CFG_Fail",
+            "goalInvocation": {
+              "goalReference": "ConfigurationFailure",
+              "type": "task",
+              "actualArguments": []
+            }
+          }
+        ],
+
+        "transitions": [
+          {
+            "sourceState": "CFG_ProcessRequirements",
+            "targetState": "CFG_MapConstraints",
+            "dataCondition": "constraints != null"
+          },
+          {
+            "sourceState": "CFG_ProcessRequirements",
+            "targetState": "CFG_Fail",
+            "dataCondition": "constraints == null"
+          },
+          {
+            "sourceState": "CFG_MapConstraints",
+            "targetState": "CFG_Assemble",
+            "dataCondition": "mapping != null"
+          },
+          {
+            "sourceState": "CFG_MapConstraints",
+            "targetState": "CFG_Fail",
+            "dataCondition": "mapping == null"
+          },
+          {
+            "sourceState": "CFG_Assemble",
+            "targetState": "CFG_Validate",
+            "dataCondition": "proposedConfig != null"
+          },
+          {
+            "sourceState": "CFG_Assemble",
+            "targetState": "CFG_Fail",
+            "dataCondition": "proposedConfig == null"
+          },
+          {
+            "sourceState": "CFG_Validate",
+            "targetState": "CFG_Validated",
+            "dataCondition": "valid"
+          },
+          {
+            "sourceState": "CFG_Validate",
+            "targetState": "CFG_Fail",
+            "dataCondition": "not valid"
+          }
+        ]
+      }
+    },
+    
+    {
+      "name": "ProcessRequirements",
+      "description": "Processes requirements and derive constraints.",
+      "inputParameters": [
+        "requirements: requirementSet",
+        "constraints: constraintSet"
+      ],
+      "outputParameters": [
+        "constraints: constraintSet"
+      ],
+      "requires": "!isEmpty(requirements)",
+      "provides": "constraints != null"
+    },
+    {
+      "name": "MapConstraints",
+      "description": "Maps derived constraints to available components.",
+      "inputParameters": [
+        "constraints: constraintSet",
+        "components: componentSet",
+        "mapping: mappingSet"
+      ],
+      "outputParameters": [
+        "mapping: mappingSet"
+      ],
+      "requires": "!isEmpty(constraints) && !isEmpty(components)",
+      "provides": "mapping != null"
+    },
+    {
+      "name": "Assemble",
+      "description": "Assembles a proposed configuration from mapped components.",
+      "inputParameters": [
+        "mapping: mappingSet",
+        "proposedConfig: configuration"
+      ],
+      "outputParameters": [
+        "proposedConfig: configuration"
+      ],
+      "requires": "!isEmpty(mapping)",
+      "provides": "proposedConfig != null"
+    },
+    {
+      "name": "Validate",
+      "description": "Validates the proposed configuration against requirements and constraints.",
+      "inputParameters": [
+        "proposedConfig: configuration",
+        "validatedConfiguration: configuration",
+        "valid: boolean"
+      ],
+      "outputParameters": [
+        "validatedConfiguration: configuration",
+        "valid: boolean"
+      ],
+      "requires": "proposedConfig != null",
+      "provides": "valid || not valid"
+    }
+  ]
+}

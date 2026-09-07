@@ -1,0 +1,131 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "DiagnoseIllness",
+      "description": "Abductively identify the fault(s) responsible for a system's malfunction by mapping observed data to explanatory hypotheses.",
+      "inputParameters": [
+        "initialConfiguration: configuration",
+        "faultKnowledgeBase: knowledgeBase"
+      ],
+      "outputParameters": [
+        "finalConfiguration: configuration"
+      ],
+      "given": "!isEmpty(initialConfiguration.observedSymptoms) && isValid(faultKnowledgeBase)",
+      "makes": "goodDiagnosis(finalConfiguration)",
+      "means": [
+        {
+          "mechanismReference": "DiagnosisSolution",
+          "actualArguments": [
+            "initialConfiguration",
+            "faultKnowledgeBase"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MatchDiseases",
+      "description": "Match observed symptoms to diseases in the knowledge base to generate candidate hypotheses.",
+      "inputParameters": [
+        "symptoms: array of symptom",
+        "kb: knowledgeBase"
+      ],
+      "outputParameters": [
+        "candidateHypotheses: array of disease"
+      ],
+      "given": "!isEmpty(symptoms)",
+      "makes": "explainsAny(candidateHypotheses, symptoms)",
+      "means": [
+        {
+          "mechanismReference": "MatchDiseasesMechanism",
+          "actualArguments": [
+            "symptoms",
+            "kb"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CheckCoverage",
+      "description": "Check if each candidate hypothesis covers all observed symptoms.",
+      "inputParameters": [
+        "candidates: array of disease",
+        "symptoms: array of symptom"
+      ],
+      "outputParameters": [
+        "coveredHypotheses: array of disease"
+      ],
+      "given": "!isEmpty(candidates)",
+      "makes": "covers(coveredHypotheses, symptoms)",
+      "means": [
+        {
+          "mechanismReference": "CheckCoverageMechanism",
+          "actualArguments": [
+            "candidates",
+            "symptoms"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AssessParsimony",
+      "description": "Evaluate the parsimony of hypotheses, preferring a smallest cardinality.",
+      "inputParameters": [
+        "covered: array of disease"
+      ],
+      "outputParameters": [
+        "parsimoniousHypotheses: array of disease"
+      ],
+      "given": "!isEmpty(covered)",
+      "makes": "isParsimonious(parsimoniousHypotheses)",
+      "means": [
+        {
+          "mechanismReference": "AssessParsimonyMechanism",
+          "actualArguments": [
+            "covered"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SelectBestHypothesis",
+      "description": "Select the optimal hypothesis or set of hypotheses that best explains the data.",
+      "inputParameters": [
+        "parsimonious: array of disease"
+      ],
+      "outputParameters": [
+        "finalHypotheses: array of disease"
+      ],
+      "given": "!isEmpty(parsimonious)",
+      "makes": "goodDiagnosis(finalHypotheses)",
+      "means": [
+        {
+          "mechanismReference": "SelectBestHypothesisMechanism",
+          "actualArguments": [
+            "parsimonious"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DiagnosisComplete",
+      "description": "Represents the successful completion of the diagnostic process.",
+      "inputParameters": [
+        "finalHypotheses: array of disease"
+      ],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "true",
+      "means": []
+    },
+    {
+      "name": "DiagnosisFailed",
+      "description": "Represents a failure state in the diagnosis task.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "false",
+      "means": []
+    }
+  ]
+}

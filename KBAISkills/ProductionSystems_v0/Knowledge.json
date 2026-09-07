@@ -1,0 +1,294 @@
+{
+  "model": "Knowledge",
+  "concepts": [
+    {
+      "name": "MemoryComponent",
+      "properties": []
+    },
+    {
+      "name": "ProductionRule",
+      "properties": [
+        {
+          "name": "antecedents",
+          "type": "STRING"
+        },
+        {
+          "name": "consequents",
+          "type": "STRING"
+        },
+        {
+          "name": "logical-operators",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Operator",
+      "properties": []
+    },
+    {
+      "name": "GameState",
+      "properties": [
+        {
+          "name": "inning",
+          "type": "STRING"
+        },
+        {
+          "name": "portion",
+          "type": "STRING"
+        },
+        {
+          "name": "runners",
+          "type": "STRING"
+        },
+        {
+          "name": "outs",
+          "type": "INTEGER"
+        },
+        {
+          "name": "batter",
+          "type": "STRING"
+        },
+        {
+          "name": "average",
+          "type": "INTEGER"
+        },
+        {
+          "name": "bats",
+          "type": "STRING"
+        },
+        {
+          "name": "score",
+          "type": "INTEGER"
+        },
+        {
+          "name": "goal",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Impasse",
+      "properties": [
+        {
+          "name": "impasse-type",
+          "type": "STRING"
+        },
+        {
+          "name": "conflicting-operators",
+          "type": "STRING"
+        }
+      ]
+    }
+  ],
+  "instances": [
+    {
+      "concept": "MemoryComponent",
+      "name": "WorkingMemory",
+      "values": {
+        "type": "short-term",
+        "capacity": "limited"
+      }
+    },
+    {
+      "concept": "MemoryComponent",
+      "name": "LongTermMemory",
+      "values": {
+        "type": "long-term",
+        "capacity": "unlimited"
+      }
+    },
+    {
+      "concept": "MemoryComponent",
+      "name": "ProceduralMemory",
+      "values": {
+        "type": "procedural",
+        "capacity": "unlimited"
+      }
+    },
+    {
+      "concept": "MemoryComponent",
+      "name": "EpisodicMemory",
+      "values": {
+        "type": "episodic",
+        "capacity": "unlimited"
+      }
+    },
+    {
+      "concept": "MemoryComponent",
+      "name": "SemanticMemory",
+      "values": {
+        "type": "semantic",
+        "capacity": "unlimited"
+      }
+    },
+    {
+      "concept": "ProductionRule",
+      "name": "EscapeInningRule",
+      "values": {
+        "antecedents": "goal=escape-inning",
+        "consequents": "evaluate-pitch-or-walk",
+        "logical-operators": "AND"
+      }
+    },
+    {
+      "concept": "ProductionRule",
+      "name": "IntentionalWalkRule",
+      "values": {
+        "antecedents": "outs<2 AND batter-average>0.300 AND runners-on-base",
+        "consequents": "select-intentional-walk",
+        "logical-operators": "AND"
+      }
+    },
+    {
+      "concept": "ProductionRule",
+      "name": "PitchSelectionRule",
+      "values": {
+        "antecedents": "decision=pitch AND batter-handedness=known",
+        "consequents": "select-pitch-type",
+        "logical-operators": "AND"
+      }
+    },
+    {
+      "concept": "ProductionRule",
+      "name": "OperatorSelectionRule",
+      "values": {
+        "antecedents": "multiple-operators-suggested",
+        "consequents": "trigger-impasse",
+        "logical-operators": "OR"
+      }
+    },
+    {
+      "concept": "Operator",
+      "name": "IntentionalWalk",
+      "values": {
+        "action-type": "strategic-avoidance",
+        "parameters": "batter-id"
+      }
+    },
+    {
+      "concept": "Operator",
+      "name": "ThrowCurveball",
+      "values": {
+        "action-type": "pitch",
+        "parameters": "pitch-type=curveball"
+      }
+    },
+    {
+      "concept": "Operator",
+      "name": "ThrowFastball",
+      "values": {
+        "action-type": "pitch",
+        "parameters": "pitch-type=fastball"
+      }
+    },
+    {
+      "concept": "Operator",
+      "name": "ThrowSlider",
+      "values": {
+        "action-type": "pitch",
+        "parameters": "pitch-type=slider"
+      }
+    },
+    {
+      "concept": "GameState",
+      "name": "CurrentPercepts",
+      "values": {
+        "inning": "7th",
+        "portion": "top",
+        "runners": "2nd and 3rd",
+        "outs": "2",
+        "batter": "Prado",
+        "average": "0,287",
+        "bats": "right-handed",
+        "score": "3-2",
+        "goal": "escape-inning"
+      }
+    },
+    {
+      "concept": "GameState",
+      "name": "PreviousEvent"
+    },
+    {
+      "concept": "Impasse",
+      "name": "MultipleOperatorSelection",
+      "values": {
+        "impasse-type": "tie",
+        "conflicting-operators": "multiple"
+      }
+    },
+    {
+      "concept": "Impasse",
+      "name": "NoOperatorSelection",
+      "values": {
+        "impasse-type": "no-change",
+        "conflicting-operators": "none"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "name": "stores",
+      "description": "Memory component stores knowledge type",
+      "domain": "MemoryComponent",
+      "range": "ProductionRule"
+    },
+    {
+      "name": "suggests",
+      "description": "Production rule suggests operator",
+      "domain": "ProductionRule",
+      "range": "Operator"
+    },
+    {
+      "name": "triggers",
+      "description": "Game state triggers impasse",
+      "domain": "GameState",
+      "range": "Impasse"
+    },
+    {
+      "name": "resolves",
+      "description": "Production rule resolves impasse",
+      "domain": "ProductionRule",
+      "range": "Impasse"
+    },
+    {
+      "name": "contains",
+      "description": "Working memory contains game state",
+      "domain": "MemoryComponent",
+      "range": "GameState"
+    },
+    {
+      "name": "retrieves",
+      "description": "Episodic memory retrieves previous event",
+      "domain": "MemoryComponent",
+      "range": "GameState"
+    }
+  ],
+  "Assertions": [
+    {
+      "name": "WorkingMemoryContainsCurrentState",
+      "description": "Working memory always contains the current game state percepts",
+      "equivalentTo": "WorkingMemory contains CurrentPercepts"
+    },
+    {
+      "name": "ProceduralMemoryStoresRules",
+      "description": "Procedural memory stores all production rules for decision making",
+      "equivalentTo": "ProceduralMemory stores ProductionRule"
+    },
+    {
+      "name": "EpisodicMemoryStoresPastEvents",
+      "description": "Episodic memory retrieves past game events for learning",
+      "equivalentTo": "EpisodicMemory retrieves PreviousEvent"
+    },
+    {
+      "name": "ImpasseRequiresLearning",
+      "description": "When an impasse occurs, new production rules must be learned",
+      "equivalentTo": "Impasse resolves ProductionRule"
+    },
+    {
+      "name": "RulesSuggestOperators",
+      "description": "Production rules fire to suggest operators for execution",
+      "equivalentTo": "ProductionRule suggests Operator"
+    }
+  ]
+}

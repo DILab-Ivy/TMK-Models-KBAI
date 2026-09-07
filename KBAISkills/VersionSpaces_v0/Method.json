@@ -1,0 +1,298 @@
+{
+  "model": "Method",
+  "methods": [
+    {
+      "name": "VersionSpaceLearning",
+      "description": "FSM for finding food allergy conditions using version space refinement with explicit, causally grounded conditions.",
+      "inputParameters": ["examples: Set of Example"],
+      "outputParameters": ["allergyCondition: Condition"],
+      "requires": "examples != {}",
+      "provides": "allergyCondition != null",
+      "organizer": {
+        "startState": "S0",
+        "successState": "S8",
+        "failureState": "Fail",
+        "states": [
+          { "name": "S0", "goalInvocation": { "goalReference": "ProcessExample", "type": "task", "actualArguments": ["examples"] } },
+          { "name": "S1", "goalInvocation": { "goalReference": "InitializeModel", "type": "task", "actualArguments": ["example"] } },
+          { "name": "S2", "goalInvocation": { "goalReference": "ProcessExample", "type": "task", "actualArguments": ["examples"] } },
+          { "name": "S3", "goalInvocation": { "goalReference": "GeneralizeSpecific", "type": "task", "actualArguments": ["specificModels", "example"] } },
+          { "name": "S4", "goalInvocation": { "goalReference": "SpecializeGeneral", "type": "task", "actualArguments": ["generalModels", "example"] } },
+          { "name": "S5", "goalInvocation": { "goalReference": "PruneInconsistent", "type": "task", "actualArguments": ["specificModels", "generalModels", "example"] } },
+          { "name": "S6", "goalInvocation": { "goalReference": "CheckConvergence", "type": "task", "actualArguments": ["specificModels", "generalModels"] } },
+          { "name": "S7", "goalInvocation": { "goalReference": "ExtractCondition", "type": "task", "actualArguments": ["allergyCondition"] } },
+          { "name": "Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "task", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "S0", "targetState": "S1", "dataCondition": "examples != {} && CurrentExample.isPositive == true" },
+          { "sourceState": "S0", "targetState": "Fail", "dataCondition": "examples == {} || CurrentExample.isPositive != true" },
+          { "sourceState": "S1", "targetState": "S2", "dataCondition": "CurrentExample.isPositive == true && ModelInitialized == true" },
+          { "sourceState": "S1", "targetState": "Fail", "dataCondition": "CurrentExample.isPositive != true || ModelInitialized != true" },
+          { "sourceState": "S2", "targetState": "S3", "dataCondition": "examples != {} && CurrentExample.isPositive == true" },
+          { "sourceState": "S2", "targetState": "S4", "dataCondition": "examples != {} && CurrentExample.isPositive != true" },
+          { "sourceState": "S2", "targetState": "Fail", "dataCondition": "examples == {}" },
+          { "sourceState": "S3", "targetState": "S5", "dataCondition": "ModelInitialized == true && CurrentExample.isPositive == true && SpecificModelGeneralized == True" },
+          { "sourceState": "S3", "targetState": "Fail", "dataCondition": "ModelInitialized != true || CurrentExample.isPositive != true || SpecificModelGeneralized != True" },
+          { "sourceState": "S4", "targetState": "S5", "dataCondition": "ModelInitialized == true && CurrentExample.isPositive != true && GeneralModelSpecialized == True" },
+          { "sourceState": "S4", "targetState": "Fail", "dataCondition": "ModelInitialized != true || CurrentExample.isPositive == true || GeneralModelSpecialized != True" },
+          { "sourceState": "S5", "targetState": "S6", "dataCondition": "ModelInitialized == true && VersionSpaceConsistent == true" },
+          { "sourceState": "S5", "targetState": "Fail", "dataCondition": "ModelInitialized != true || VersionSpaceConsistent != true" },
+          { "sourceState": "S6", "targetState": "S7", "dataCondition": "ModelInitialized == true && ModelConverged == true" },
+          { "sourceState": "S6", "targetState": "S2", "dataCondition": "ModelInitialized == true && ModelConverged != true" },
+          { "sourceState": "S6", "targetState": "Fail", "dataCondition": "ModelInitialized != true" }
+        ]
+      }
+    },
+    { 
+      "name": "ProcessExampleMechanism",
+      "description": "Processes an example from given set of example.", 
+      "inputParameters": ["examples: Set of Example"], 
+      "outputParameters": ["currentExample: Example"], 
+      "requires": "examples != {}", 
+      "provides": "examples.length -=1",
+      "organizer": {
+        "startState": "PE_S0",
+        "successState": "PE_S2",
+        "failureState": "Fail",
+        "states": [
+          { "name": "PE_S0", "goalInvocation": { "goalReference": "popExample", "type": "operation", "actualArguments": ["examples"] } },
+          { "name": "PE_S1", "goalInvocation": { "goalReference": "checkCurrentExample", "type": "operation", "actualArguments": ["currentExample"] } },
+          { "name": "PE_S2", "goalInvocation": { "goalReference": "Success", "type": "operation", "actualArguments": [] } },
+          { "name": "PE_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "operation", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "PE_S0", "targetState": "PE_S1", "dataCondition": "examples != {}" },
+          { "sourceState": "PE_S0", "targetState": "PE_Fail", "dataCondition": "examples == {}" },
+          { "sourceState": "PE_S1", "targetState": "PE_S2", "dataCondition": "currentExampleValid" },
+          { "sourceState": "PE_S1", "targetState": "PE_Fail", "dataCondition": "currentExampleValid != true" }
+        ]
+      }
+    },
+    {
+      "name": "InitializeModelMechanism",
+      "description": "Initializes the specific and general boundaries of the version space based on the first positive example.",
+      "inputParameters": ["example: Example"],
+      "outputParameters": [],
+      "requires": "example != null",
+      "provides": "specificModels != null && generalModels != null",
+      "organizer": {
+        "startState": "IM_S0",
+        "successState": "IM_S3",
+        "failureState": "IM_Fail",
+        "states": [
+          { "name": "IM_S0", "goalInvocation": { "goalReference": "CheckCurrentExample", "type": "operation", "actualArguments": ["example"] } },
+          { "name": "IM_S1", "goalInvocation": { "goalReference": "InitializeSpecificModel", "type": "operation", "actualArguments": ["example"] } },
+          { "name": "IM_S2", "goalInvocation": { "goalReference": "InitializeGeneralModel", "type": "operation", "actualArguments": ["example"] } },
+          { "name": "IM_S3", "goalInvocation": { "goalReference": "Success", "type": "operation", "actualArguments": [] } },
+          { "name": "IM_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "operation", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "IM_S0", "targetState": "IM_S1", "dataCondition": "example.isPositive == true" },
+          { "sourceState": "IM_S0", "targetState": "IM_Fail", "dataCondition": "example.isPositive != true" },
+          { "sourceState": "IM_S1", "targetState": "IM_S2", "dataCondition": "SpecificModelInitialized == true" },
+          { "sourceState": "IM_S1", "targetState": "IM_Fail", "dataCondition": "SpecificModelInitialized != true" },
+          { "sourceState": "IM_S2", "targetState": "IM_S3", "dataCondition": "GeneralModelInitialized == true" },
+          { "sourceState": "IM_S2", "targetState": "IM_Fail", "dataCondition": "GeneralModelInitialized != true" }
+        ]
+      }
+    },
+    {
+      "name": "GeneralizeSpecificMechanism",
+      "description": "Generalizes the specific models of the version space based on a positive example.",
+      "inputParameters": ["specificModels: SpecificModels", "example: Example"],
+      "outputParameters": ["specificModels: SpecificModels"],
+      "requires": "example.isPositive == true && specificModels != null",
+      "provides": "specificModels.includes(example) == true",
+      "organizer": {
+        "startState": "GS_S0",
+        "successState": "GS_S3",
+        "failureState": "GS_Fail",
+        "states": [
+          { "name": "GS_S0", "goalInvocation": { "goalReference": "CheckCurrentExample", "type": "operation", "actualArguments": ["example"] } },
+          { "name": "GS_S1", "goalInvocation": { "goalReference": "CheckIfModelIncludesExample", "type": "operation", "actualArguments": ["specificModels", "example"] } },
+          { "name": "GS_S2", "goalInvocation": { "goalReference": "ApplyGeneralization", "type": "operation", "actualArguments": ["specificModels", "example"] } },
+          { "name": "GS_S3", "goalInvocation": { "goalReference": "Success", "type": "operation", "actualArguments": [] } },
+          { "name": "GS_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "operation", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "GS_S0", "targetState": "GS_S1", "dataCondition": "example.isPositive == true" },
+          { "sourceState": "GS_S0", "targetState": "GS_Fail", "dataCondition": "example.isPositive != true" },
+          { "sourceState": "GS_S1", "targetState": "GS_S2", "dataCondition": "specificModels.includes(example) != true" },
+          { "sourceState": "GS_S1", "targetState": "GS_S3", "dataCondition": "specificModels.includes(example) == true" },
+          { "sourceState": "GS_S2", "targetState": "GS_S3", "dataCondition": "specificModels.includes(example) == true" },
+          { "sourceState": "GS_S2", "targetState": "GS_Fail", "dataCondition": "specificModels.includes(example) != true" }
+        ]
+      }
+    },
+    {
+      "name": "SpecializeGeneralMechanism",
+      "description": "Specialize the general models of the version space based on a negative example.",
+      "inputParameters": ["generalModels: GeneralModels", "example: Example"],
+      "outputParameters": ["generalModels: GeneralModels"],
+      "requires": "example.isPositive != true && generalModels != null",
+      "provides": "generalModels.includes(example) != true",
+      "organizer": {
+        "startState": "SG_S0",
+        "successState": "SG_S3",
+        "failureState": "SG_Fail",
+        "states": [
+          { "name": "SG_S0", "goalInvocation": { "goalReference": "CheckCurrentExample", "type": "operation", "actualArguments": ["example"] } },
+          { "name": "SG_S1", "goalInvocation": { "goalReference": "CheckIfModelIncludesExample", "type": "operation", "actualArguments": ["generalModels", "example"] } },
+          { "name": "SG_S2", "goalInvocation": { "goalReference": "ApplySpecialization", "type": "operation", "actualArguments": ["generalModels", "example"] } },
+          { "name": "SG_S3", "goalInvocation": { "goalReference": "Success", "type": "operation", "actualArguments": [] } },
+          { "name": "SG_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "operation", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "SG_S0", "targetState": "SG_S1", "dataCondition": "example.isPositive != true" },
+          { "sourceState": "SG_S0", "targetState": "SG_Fail", "dataCondition": "example.isPositive == true" },
+          { "sourceState": "SG_S1", "targetState": "SG_S2", "dataCondition": "generalModels.includes(example) == true" },
+          { "sourceState": "SG_S1", "targetState": "SG_S3", "dataCondition": "generalModels.includes(example) != true" },
+          { "sourceState": "SG_S2", "targetState": "SG_S3", "dataCondition": "generalModels.includes(example) != true" },
+          { "sourceState": "SG_S2", "targetState": "SG_Fail", "dataCondition": "generalModels.includes(example) != true" }
+        ]
+      }
+    },
+    {
+      "name": "PruneInconsistentMechanism",
+      "description": "Prunes inconsistent models from the version space based on the current example, also remove redundant models that are consumed by others",
+      "inputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels", "example: Example"],
+      "outputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels"],
+      "requires": "example != null && generalModels != null && && specificModels != null",
+      "provides": "InconsistenciesRemoved ==true && SubsumedModelsRemoved == true",
+      "organizer": {
+        "startState": "PI_S0",
+        "successState": "PI_S3",
+        "failureState": "PI_Fail",
+        "states": [
+          { "name": "PI_S0", "goalInvocation": { "goalReference": "CheckCurrentExample", "type": "operation", "actualArguments": ["example"] } },
+          { "name": "PI_S1", "goalInvocation": { "goalReference": "RemoveInconsistentModels", "type": "operation", "actualArguments": ["specificModels", "generalModels", "example"] } },
+          { "name": "PI_S2", "goalInvocation": { "goalReference": "RemoveSubsumedModels", "type": "operation", "actualArguments": ["specificModels", "generalModels"] } },
+          { "name": "PI_S3", "goalInvocation": { "goalReference": "Success", "type": "operation", "actualArguments": [] } },
+          { "name": "PI_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "operation", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "PI_S0", "targetState": "PI_S1", "dataCondition": "example != null" },
+          { "sourceState": "PI_S0", "targetState": "PI_Fail", "dataCondition": "example == null" },
+          { "sourceState": "PI_S1", "targetState": "PI_S2", "dataCondition": "InconsistenciesRemoved == true" },
+          { "sourceState": "PI_S1", "targetState": "PI_Fail", "dataCondition": "InconsistenciesRemoved != true" },
+          { "sourceState": "PI_S2", "targetState": "PI_S3", "dataCondition": "SubsumedModelsRemoved == true" },
+          { "sourceState": "PI_S2", "targetState": "PI_Fail", "dataCondition": "SubsumedModelsRemoved != true" }
+        ]
+      }
+    },
+    {
+      "name": "CheckConvergenceMechanism",
+      "description": "Checks whether the specific and general models of the version space have converged.",
+      "inputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels"],
+      "outputParameters": ["modelConverged: BOOLEAN"],
+      "requires": "specificModels != null && generalModels != null",
+      "provides": "modelConverged != null",
+      "organizer": {
+        "startState": "CC_S0",
+        "successState": "CC_S2",
+        "failureState": "CC_Fail",
+        "states": [
+          { "name": "CC_S0", "goalInvocation": { "goalReference": "CheckModelConvergence", "type": "operation", "actualArguments": ["specificModes", "generalModels"] } },
+          { "name": "CC_S1", "goalInvocation": { "goalReference": "Converge", "type": "operation", "actualArguments": ["specificModels", "generalModels"] } },
+          { "name": "CC_S2", "goalInvocation": { "goalReference": "Success", "type": "operation", "actualArguments": [] } },
+          { "name": "CC_Fail", "goalInvocation": { "goalReference": "FailureGoal", "type": "operation", "actualArguments": [] } }
+        ],
+        "transitions": [
+          { "sourceState": "CC_S0", "targetState": "CC_S1", "dataCondition": "ModelInitialized == true && modelsMatch == true" },
+          { "sourceState": "CC_S0", "targetState": "CC_S2", "dataCondition": "ModelInitialized == true && modelsMatch != true" },
+          { "sourceState": "CC_S0", "targetState": "CC_Fail", "dataCondition": "ModelInitialized != true" },
+          { "sourceState": "CC_S1", "targetState": "CC_S2", "dataCondition": "modelConverged == true" },
+          { "sourceState": "CC_S1", "targetState": "CC_Fail", "dataCondition": "modelConverged != true" }
+        ]
+      }
+    },
+    {
+      "name": "popExample",
+      "description": "Removes and returns the next example from the set of examples.",
+      "inputParameters": ["examples: Set of Example"],
+      "outputParameters": ["CurrentExample"],
+      "requires": "examples != {}",
+      "provides": "CurrentExample != null"
+    },
+    {
+      "name": "checkCurrentExample",
+      "description": "Validates the format, content, and property of the current example.",
+      "inputParameters": ["CurrentExample: Example"],
+      "outputParameters": ["CurrentExample.isPositive: BOOLEAN"],
+      "requires": "CurrentExample != null",
+      "provides": "CurrentExampleValid == true"
+    },
+    {
+      "name": "InitializeSpecificModel",
+      "description": "Initializes the most specific boundary of the version space using a positive example to exactly match the example",
+      "inputParameters": ["example: Example"],
+      "outputParameters": ["specificModels: SpecificModels"],
+      "requires": "example.isPositive == true",
+      "provides": "SpecificModelInitialized == true"
+    },
+    {
+      "name": "InitializeGeneralModel",
+      "description": "Initializes the most general boundary of the version space using a positive example. It is initialized to include any example",
+      "inputParameters": ["example: Example"],
+      "outputParameters": ["generalModels: GeneralModels"],
+      "requires": "example.isPositive == true",
+      "provides": "GeneralModelInitialized == true"
+    },
+    {
+      "name": "CheckIfModelIncludesExample",
+      "description": "Determines whether the provided model includes the given example.",
+      "inputParameters": ["model: Model", "example: Example"],
+      "outputParameters": ["model.includes(example): BOOLEAN"],
+      "requires": "model != null && example != null",
+      "provides": "model.includes(example) != null"
+    },
+    {
+      "name": "ApplyGeneralization",
+      "description": "Applies generalization to the specific model based on the given positive example so that it includes the positive example.",
+      "inputParameters": ["specificModels: SpecificModels", "example: Example"],
+      "outputParameters": ["specificModels: SpecificModels"],
+      "requires": "specificModels != null && example.isPositive == true",
+      "provides": "specificModels.includes(example) == true"
+    },
+    {
+      "name": "ApplySpecialization",
+      "description": "Applies specialization to the general model based on the given negative example so that it excludes the negative example.",
+      "inputParameters": ["generalModels: GeneralModels", "example: Example"],
+      "outputParameters": ["generalModels: GeneralModels"],
+      "requires": "generalModel != null && example.isPositive != true",
+      "provides": "generalModel.includes(example) != true"
+    },
+    {
+      "name": "RemoveInconsistentModels",
+      "description": "Removes models from the version space that are inconsistent with the current example.",
+      "inputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels", "example: Example"],
+      "outputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels"],
+      "requires": "generalModels != null && specificModels != null && example != null",
+      "provides": "InconsistenciesRemoved == true"
+    },
+    {
+      "name": "RemoveSubsumedModels",
+      "description": "Removes redundant models that are fully subsumed by other models. Remove specific models that are subsumed by other specific models, and remove general model that are subsumed by other general models",
+      "inputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels"],
+      "outputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels"],
+      "requires": "generalModels != null && specificModels != null",
+      "provides": "SubsumedModelsRemoved == true"
+    },
+    {
+      "name": "CheckModelConvergence",
+      "description": "Checks whether the specific and general models have matching models.",
+      "inputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels"],
+      "outputParameters": ["modelsMatch: BOOLEAN"],
+      "requires": "generalModels != null && specificModels != null",
+      "provides": "modelsMatch != null"
+    },
+    {
+      "name": "Converge",
+      "description": "Converge the specific and general models if they have matching models.",
+      "inputParameters": ["specificModels: SpecificModels", "generalModels: GeneralModels"],
+      "outputParameters": ["condition: Condition"],
+      "requires": "modelsMatch == true",
+      "provides": "modelConverged == true"
+    }
+  ]
+}

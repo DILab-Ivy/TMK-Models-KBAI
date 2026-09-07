@@ -1,0 +1,201 @@
+{
+  "model": "Task",
+  "tasks": [
+    {
+      "name": "TransportPassengersAcrossRiver",
+      "description": "Safely move guards and prisoners across the river.",
+      "inputParameters": ["initialConfiguration: configuration"],
+      "outputParameters": ["finalConfiguration: configuration"],
+      "given": "safe(initialConfiguration)",
+      "makes": "safe(finalConfiguration)",
+      "means": [
+        {
+          "mechanismReference": "GPPsolution",
+          "actualArguments": ["initialConfiguration", "finalConfiguration"]
+        }
+      ]
+    },
+    {
+      "name": "SafeConfiguration",
+      "description": "Determines if a configuration is safe based on guard-to-prisoner rules on both banks.",
+      "inputParameters": ["config: configuration"],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "(config.leftBank.guardCount == 0 || config.leftBank.guardCount >= config.leftBank.prisonerCount) && (config.rightBank.guardCount == 0 || config.rightBank.guardCount >= config.rightBank.prisonerCount)",
+      "means": []
+    },
+    {
+      "name": "MoveGuardAndPrisoner",
+      "description": "Move one guard and one prisoner across the river using the boat.",
+      "inputParameters": ["b: boat", "g: guard", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "MoveGuardAndPrisonerMechanism",
+          "actualArguments": ["b", "g", "p", "c"]
+        }
+      ]
+    },
+    {
+      "name": "ReturnGuard",
+      "description": "Return one guard back across the river.",
+      "inputParameters": ["b: boat", "g: guard", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "ReturnGuardMechanism",
+          "actualArguments": ["b", "g", "c"]
+        }
+      ]
+    },
+    {
+      "name": "ReturnPrisoner",
+      "description": "Return one prisoner back across the river.",
+      "inputParameters": ["b: boat", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "ReturnPrisonerMechanism",
+          "actualArguments": ["b", "p", "c"]
+        }
+      ]
+    },
+    {
+      "name": "MoveTwoPrisoners",
+      "description": "Move two prisoners across the river using the boat.",
+      "inputParameters": ["b: boat", "p1: prisoner", "p2: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "MoveTwoPrisonersMechanism",
+          "actualArguments": ["b", "p1", "p2", "c"]
+        }
+      ]
+    },
+    {
+      "name": "MoveTwoGuards",
+      "description": "Move two guards across the river using the boat.",
+      "inputParameters": ["b: boat", "g1: guard", "g2: guard", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "MoveTwoGuardsMechanism",
+          "actualArguments": ["b", "g1", "g2", "c"]
+        }
+      ]
+    },
+    {
+      "name": "ReturnGuardAndPrisoner",
+      "description": "Return a guard and a prisoner together across the river.",
+      "inputParameters": ["b: boat", "g: guard", "p: prisoner", "c: configuration"],
+      "outputParameters": ["newConfig: configuration"],
+      "given": "safe(c)",
+      "makes": "safe(newConfig)",
+      "means": [
+        {
+          "mechanismReference": "ReturnGuardAndPrisonerMechanism",
+          "actualArguments": ["b", "g", "p", "c"]
+        }
+      ]
+    },
+    {
+      "name": "FailureGoal",
+      "description": "Represents a failure state in the task execution.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "false",
+      "means": []
+    },
+    {
+      "name": "SuccessGoal",
+      "description": "Represents a success state in the task execution.",
+      "inputParameters": [],
+      "outputParameters": [],
+      "given": "true",
+      "makes": "true",
+      "means": []
+    },
+
+    {
+      "name": "SolveRavenProgressiveMatrixProblem",
+      "description": "Solve a Raven’s Progressive Matrices (RPM) problem using Semantic Networks via a composed sequence of mechanisms.",
+      "inputParameters": ["MatrixCells: figure", "Candidates: figure", "Weights: weights"],
+      "outputParameters": ["Answer: Candidates"],
+      "given": "MatrixCells != null && Candidates != null && (Weights != null || Weights == default)",
+      "makes": "Answer != null",
+      "means": [
+        { "mechanismReference": "RPMSolution", "actualArguments": ["MatrixCells", "Candidates", "Weights"] }
+      ]
+    },
+    {
+      "name": "RepresentFigures",
+      "description": "Convert all matrix cells and candidates into per-figure semantic-network graphs.",
+      "inputParameters": ["MatrixCells: cells", "Candidates: cells"],
+      "outputParameters": ["SN_Matrix: graph_representation", "SN_Candidates: graph_representation"],
+      "given": "MatrixCells != null && Candidates != null",
+      "makes": "SN_Matrix != null && SN_Candidates != null",
+      "means": [
+        { "mechanismReference": "RepresentFiguresSolution", "actualArguments": ["MatrixCells", "Candidates", "SN_Matrix", "SN_Candidates"] }
+      ]
+    },
+
+    {
+      "name": "RepresentMatrixTransforms",
+      "description": "Build transformation representations across matrix cells (row/column pairings).",
+      "inputParameters": ["SN_Matrix: graph_representation"],
+      "outputParameters": ["Matrix_Transform: graph_representation"],
+      "given": "SN_Matrix != null",
+      "makes": "Matrix_Transform != null",
+      "means": [
+        { "mechanismReference": "RepresentMatrixTransformsSolution", "actualArguments": ["SN_Matrix", "Matrix_Transform"] }
+      ]
+    },
+
+    {
+      "name": "RepresentCandidateTransforms",
+      "description": "Build transformation representations for each candidate relative to the target position.",
+      "inputParameters": ["SN_Candidates: graph_representation"],
+      "outputParameters": ["Candidate_Transform: graph_representation"],
+      "given": "SN_Candidates != null",
+      "makes": "Candidate_Transform != null",
+      "means": [
+        { "mechanismReference": "RepresentCandidateTransformsSolution", "actualArguments": ["SN_Candidates", "Candidate_Transform"] }
+      ]
+    },
+
+    {
+      "name": "CompareTransformPatterns",
+      "description": "Compare reference (matrix) transforms against candidate transforms and compute weighted similarity scores.",
+      "inputParameters": ["Matrix_Transform: graph_representation", "Candidate_Transform: graph_representation", "Weights: weights"],
+      "outputParameters": ["Similarity_Scores: float[]"],
+      "given": "Matrix_Transform != null && Candidate_Transform != null && (Weights != null || Weights == default)",
+      "makes": "Similarity_Scores != null",
+      "means": [
+        { "mechanismReference": "CompareTransformPatternsSolution", "actualArguments": ["Matrix_Transform", "Candidate_Transform", "Weights", "Similarity_Scores"] }
+      ]
+    },
+
+    {
+      "name": "SelectAnswer",
+      "description": "Select the best candidate based on similarity scores and output the chosen answer.",
+      "inputParameters": ["Similarity_Scores: float[]", "Candidates: figure"],
+      "outputParameters": ["Answer: Candidates"],
+      "given": "Similarity_Scores != null && Candidates != null && count(Similarity_Scores) == count(Candidates)",
+      "makes": "Answer != null",
+      "means": [
+        { "mechanismReference": "SelectAnswerSolution", "actualArguments": ["Similarity_Scores", "Candidates", "Answer"] }
+      ]
+    }
+  ]
+}
