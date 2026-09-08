@@ -17,7 +17,7 @@ If you want to climb after painting, you would need an additional drying step or
 
 ### TMK Ontology Trace
 
-([Full trace including intermediate responses here](TODO ADD LINK))
+[Full trace including intermediate responses here.](https://github.com/DILab-Ivy/TMK-Models-KBAI/blob/main/Evaluations/Planning_Ladder_FullTrace.md)
 
 ```
 metadata_trace: ['Task', 'Knowledge', 'Method', 'Method']
