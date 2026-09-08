@@ -4,7 +4,14 @@ This repository contains Task-Method-Knowledge (TMK) ontological models for **24
 
 All models comply with the **v0 specification** and are designed for integration with **AIC**.
 
-## Included Skills
+## Table of Contents
+
+* [KBAI Skills](https://github.com/DILab-Ivy/TMK-Models-KBAI/tree/main/KBAISkills)
+* [Evaluations](https://github.com/DILab-Ivy/TMK-Models-KBAI/tree/main/Evaluations)
+  * [Running example full trace: Ivy](https://github.com/DILab-Ivy/TMK-Models-KBAI/blob/main/Evaluations/Planning_Ladder_FullTrace.md)
+  * [Running example head-to-head: Ivy vs JW vs GPT-5 nano vs Rubric-SP vs Human answer](https://github.com/DILab-Ivy/TMK-Models-KBAI/blob/main/Evaluations/Planning_Ladder_HeadToHead.md)
+
+## Skills included in `KBAISkills/`
 
 1. Advanced Topics
 2. Analogical Reasoning
